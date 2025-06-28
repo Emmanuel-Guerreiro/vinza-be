@@ -1,0 +1,13 @@
+---
+description: 
+globs: src/**/service.ts
+alwaysApply: false
+---
+- Use the @src/evento/service.ts as an exaple for a service
+- For filters generate the corresponding zed schema that must validate the call
+  - The filters schema must extend the pagination schema at @src/pagination/schemas.ts for pagination logic
+- If the includes are not extensive (3 or less) generate the include rules at the query level, otherwise create a function
+- The query generation functions must be created at the end of the class
+- The functions order during generation must be: create, findAll, findOne, update, delete, ...others, query generation, mappings and other class level utils
+- The findAll method must paginate based on the params.
+- The findAll method must return following the PaginatedResponse at @src/pagination/types.ts. Generate the corresponding metadata

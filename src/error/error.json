@@ -13,6 +13,12 @@
         "message_eng": "General error",
         "status": 404
       },
+      "validation_error": {
+        "key": "app.general.validation_error",
+        "message": "Error de validación",
+        "message_eng": "Validation error",
+        "status": 400
+      },
       "misconfigured_audit_middleware": {
         "key": "app.general.misconfigured_audit_middleware",
         "message": "Misconfigured audit middleware",

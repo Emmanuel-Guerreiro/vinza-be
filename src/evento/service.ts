@@ -1,12 +1,20 @@
-import { errors } from '@/error';
-import { Evento } from './model';
-import { CreateEventoDto, UpdateEventoDto } from './types';
 import { auditEmitter } from '@/audit/event';
-import { estadoEventoService } from '@/estado-evento/service';
-import { sequelize } from '@/db';
-import { categoriaEventoService } from '@/categoria-evento/service';
 import { CategoriaEvento } from '@/categoria-evento/model';
+import { categoriaEventoService } from '@/categoria-evento/service';
+import { sequelize } from '@/db';
+import { errors } from '@/error';
 import { EstadoEvento } from '@/estado-evento/model';
+import { estadoEventoService } from '@/estado-evento/service';
+import { Sucursal } from '@/sucursal/model';
+import { Op, WhereOptions } from 'sequelize';
+import { Evento } from './model';
+import { CreateEventoDto, FindAllParams, UpdateEventoDto } from './types';
+import logger from '@/logger';
+import { PaginatedResponse } from '@/pagination/types';
+import {
+  generatePaginationParams,
+  generateOrderConditions,
+} from '@/pagination';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
@@ -49,17 +57,46 @@ class EventoService {
     }
   }
 
-  public findAll() {
-    return Evento.findAll({
-      include: [
-        {
-          model: CategoriaEvento,
-        },
-        {
-          model: EstadoEvento,
-        },
-      ],
-    });
+  public async findAll(
+    params: FindAllParams,
+  ): Promise<PaginatedResponse<Evento>> {
+    logger.debug(`evento findAll params ${JSON.stringify(params)}`);
+    const where = this.generateWhereConditions(params);
+    const order = generateOrderConditions(params);
+    const { limit, offset } = generatePaginationParams(params);
+
+    const [meta, items] = await Promise.all([
+      this.getCountAndMetadata(params, where, limit),
+      Evento.findAll({
+        where,
+        order,
+        limit,
+        offset,
+        include: [
+          // Where and required will work as a filter when its based on related models
+          {
+            model: CategoriaEvento,
+            where: params.categoriaId ? { id: params.categoriaId } : undefined,
+            required: !!params.categoriaId,
+          },
+          {
+            model: EstadoEvento,
+            where: params.estadoId ? { id: params.estadoId } : undefined,
+            required: !!params.estadoId,
+          },
+          {
+            model: Sucursal,
+            where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
+            required: !!params.bodegaId,
+          },
+        ],
+      }),
+    ]);
+
+    return {
+      items,
+      meta,
+    };
   }
 
   public async findOne(id: number) {
@@ -129,6 +166,103 @@ class EventoService {
       valor: evento.dataValues,
     });
     return evento;
+  }
+
+  /**
+   * Generate where conditions for the findAll query based on model specific fields
+   * If the filter is based on a related model, it will be handled in the include with where condition
+   *
+   * TODO:
+   * - Puntuacion minima
+   * - Fechas bien implementado
+   */
+  private generateWhereConditions(params: FindAllParams): WhereOptions {
+    const where: WhereOptions = {};
+
+    if (params.sucursalId) {
+      where.sucursalId = params.sucursalId;
+    }
+
+    // Es horrible pero funciona
+    if (params.fechaDesde && params.fechaHasta) {
+      where.created_at = {
+        [Op.and]: [
+          {
+            [Op.gte]: params.fechaDesde,
+          },
+          {
+            [Op.lte]: params.fechaHasta,
+          },
+        ],
+      };
+    }
+
+    if (params.fechaDesde && !params.fechaHasta) {
+      where.created_at = {
+        [Op.gte]: params.fechaDesde,
+      };
+    }
+
+    if (params.fechaHasta && !params.fechaDesde) {
+      where.created_at = {
+        [Op.lte]: params.fechaHasta,
+      };
+    }
+
+    if (params.precioMaximo) {
+      where.precio = {
+        [Op.lte]: params.precioMaximo,
+      };
+    }
+
+    if (params.puntuacionMinima) {
+      // This will need to be implemented when puntuacion field is added to Evento model
+    }
+
+    if (params.nombre) {
+      where.nombre = {
+        [Op.iLike]: `%${params.nombre}%`,
+      };
+    }
+
+    return where;
+  }
+
+  /**
+   * Get total count of items and generate complete pagination metadata
+   */
+  private async getCountAndMetadata(
+    params: FindAllParams,
+    where: WhereOptions,
+    limit: number,
+  ) {
+    const totalItems = await Evento.count({
+      where,
+      include: [
+        {
+          model: CategoriaEvento,
+          where: params.categoriaId ? { id: params.categoriaId } : undefined,
+          required: !!params.categoriaId,
+        },
+        {
+          model: EstadoEvento,
+          where: params.estadoId ? { id: params.estadoId } : undefined,
+          required: !!params.estadoId,
+        },
+        {
+          model: Sucursal,
+          where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
+          required: !!params.bodegaId,
+        },
+      ],
+    });
+
+    return {
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: params.page || 1,
+      itemsPerPage: limit,
+    };
   }
 }
 

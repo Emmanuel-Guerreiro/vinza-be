@@ -15,31 +15,19 @@ export class SucursalController {
   }
 
   public getAll(_req: Request, res: Response) {
-    this.sucursalService
-      .findAll()
-      .then((data) => {
-        res.json(data);
-      })
-      .catch((err) => res.json(err));
+    this.sucursalService.findAll().then((data) => res.json(data));
   }
 
   public getOne(req: Request, res: Response) {
-    this.sucursalService
-      .findOne(+req.params.id)
-      .then((data) => res.json(data))
-      .catch((err) => res.json(err));
+    this.sucursalService.findOne(+req.params.id).then((data) => res.json(data));
   }
 
   public create(req: Request, res: Response) {
     createSucursalSchema
       .parseAsync(req.body)
-      .then((dto) => {
-        return this.sucursalService
-          .create(dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err));
-      })
-      .catch((err) => res.status(400).json({ error: err.message }));
+      .then((dto) =>
+        this.sucursalService.create(dto).then((data) => res.json(data)),
+      );
   }
 
   public update(req: Request, res: Response) {
@@ -48,10 +36,8 @@ export class SucursalController {
       .then((dto) =>
         this.sucursalService
           .update(+req.params.id, dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err)),
-      )
-      .catch((err) => res.status(400).json({ error: err.message }));
+          .then((data) => res.json(data)),
+      );
   }
 
   public delete(req: Request, res: Response) {

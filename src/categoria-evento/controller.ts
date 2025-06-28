@@ -18,31 +18,21 @@ export class CategoriaEventoController {
   }
 
   public getAll(_req: Request, res: Response) {
-    this.categoriaEventoService
-      .findAll()
-      .then((data) => {
-        res.json(data);
-      })
-      .catch((err) => res.json(err));
+    this.categoriaEventoService.findAll().then((data) => res.json(data));
   }
 
   public getOne(req: Request, res: Response) {
     this.categoriaEventoService
       .findOne(+req.params.id)
-      .then((data) => res.json(data))
-      .catch((err) => res.json(err));
+      .then((data) => res.json(data));
   }
 
   public create(req: Request, res: Response) {
     createCategoriaEventoSchema
       .parseAsync(req.body)
-      .then((dto) => {
-        return this.categoriaEventoService
-          .create(dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err));
-      })
-      .catch((err) => res.status(400).json({ error: err.message }));
+      .then((dto) =>
+        this.categoriaEventoService.create(dto).then((data) => res.json(data)),
+      );
   }
 
   public update(req: Request, res: Response) {
@@ -51,10 +41,8 @@ export class CategoriaEventoController {
       .then((dto) =>
         this.categoriaEventoService
           .update(+req.params.id, dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err)),
-      )
-      .catch((err) => res.status(400).json({ error: err.message }));
+          .then((data) => res.json(data)),
+      );
   }
 
   public delete(req: Request, res: Response) {

@@ -1,0 +1,14 @@
+---
+description: 
+globs: src/**/router.ts
+alwaysApply: false
+---
+
+- Prefer put over patch
+- Always create the OpenAPI comments to document the endpoints
+- Within OpenAPI comments, if its a get method, use the params schema at the params file in the same directory and the model to generate the filtering options
+- Within OpenAPI comments, if its a post or update method, use the schemas and model in the same directory to create the creation and update objects
+- Within OpenAPI comments, if its a post or update method, try to provide examples for the fields. Otherwise dont provide default values.
+- Within OpenAPI comments, remember to define the responses.
+- If its a new router, include it at @src/app.ts initializeRouter
+- Dont create validations at OpenApi comment levels, let the controller with zod validate and return

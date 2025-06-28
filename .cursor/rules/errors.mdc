@@ -1,3 +1,9 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
 - Dont generate local erros at module levels
 - Centralice errors at @error/error.json
 - Use consistent error codes with the error semantic.

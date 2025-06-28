@@ -110,6 +110,7 @@ async function seed() {
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEvento1.id,
+      precio: 100,
     });
 
     const evento2 = await eventoService.create({
@@ -119,6 +120,7 @@ async function seed() {
       sucursalId: mainSucursal.id,
       estadoId: inactivoEstadoEvento.id,
       categoriaId: categoriaEvento2.id,
+      precio: 500,
     });
 
     // Create 3 valoraciones for each event

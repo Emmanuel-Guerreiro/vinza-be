@@ -16,29 +16,23 @@ export class ValoracionController {
   }
 
   public getAll(_req: Request, res: Response) {
-    this.valoracionService
-      .findAll()
-      .then((data) => res.json(data))
-      .catch((err) => res.json(err));
+    this.valoracionService.findAll().then((data) => res.json(data));
   }
 
   public getOne(req: Request, res: Response) {
     this.valoracionService
       .findOne(+req.params.id)
-      .then((data) => res.json(data))
-      .catch((err) => res.json(err));
+      .then((data) => res.json(data));
   }
 
   public create(req: Request, res: Response) {
     createValoracionSchema
       .parseAsync(req.body)
-      .then((dto) => {
-        return this.valoracionService
+      .then((dto) =>
+        this.valoracionService
           .create({ ...dto, userId: req.user! })
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err));
-      })
-      .catch((err) => res.status(400).json({ error: err.message }));
+          .then((data) => res.json(data)),
+      );
   }
 
   public update(req: Request, res: Response) {
@@ -47,10 +41,8 @@ export class ValoracionController {
       .then((dto) =>
         this.valoracionService
           .update(+req.params.id, dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err)),
-      )
-      .catch((err) => res.status(400).json({ error: err.message }));
+          .then((data) => res.json(data)),
+      );
   }
 
   public delete(req: Request, res: Response) {
@@ -62,7 +54,6 @@ export class ValoracionController {
   public getAverageByEvento(req: Request, res: Response) {
     this.valoracionService
       .getAverageByEvento(+req.params.eventoId)
-      .then((avg) => res.json({ avg }))
-      .catch((err) => res.json(err));
+      .then((avg) => res.json({ avg }));
   }
 }

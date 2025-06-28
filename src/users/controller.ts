@@ -29,26 +29,16 @@ export class UsersController {
     createUserSchema
       .parseAsync(req.body)
       .then((dto) =>
-        this.usersService
-          .create(dto)
-          .then((data) => {
-            res.json(data);
-          })
-          .catch((err) => res.json(err)),
-      )
-      .catch((err) => res.status(400).json({ error: err.message }));
+        this.usersService.create(dto).then((data) => res.json(data)),
+      );
   }
 
   public update(req: Request, res: Response) {
-    UpdateUserSchema.parseAsync(req.body)
-      .then((dto) =>
-        this.usersService
-          .update(+req.params.id, dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.status(400).json({ error: err.message })),
-      )
-      // TODO: Handle zod errors
-      .catch((err) => res.status(400).json({ error: err.message }));
+    UpdateUserSchema.parseAsync(req.body).then((dto) =>
+      this.usersService
+        .update(+req.params.id, dto)
+        .then((data) => res.json(data)),
+    );
   }
 
   public delete(req: Request, res: Response) {
