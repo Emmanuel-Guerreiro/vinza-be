@@ -10,7 +10,7 @@
 - Passera Nino
 ```
 
-## How to run
+## How to initialize databases
 
 `sudo docker compose -f docker-compose.local.yml up`
 
@@ -25,6 +25,11 @@ sudo docker compose -f docker-compose.local.yml down
 sudo docker compose -f docker-compose.local.yml build
 sudo docker compose -f docker-compose.local.yml up
 ```
+
+## How to run
+Once the apps are up
+
+`npm run dev`
 
 ###### Template based on
 
