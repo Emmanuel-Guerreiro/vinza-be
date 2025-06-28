@@ -10,6 +10,7 @@ import { EstadoEvento } from '@/estado-evento/model';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
+    //comentario
     const transaction = await sequelize.transaction();
     try {
       let evento = await Evento.create(dto, { transaction });
