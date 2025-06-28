@@ -4,10 +4,10 @@
 
 ```
 - Emmanuel Guerreiro 47262
-- Izuel Tomas
-- Ozan Giuliana
-- Garcia Zacarias
-- Passera Nino
+- Izuel Tomas 47700
+- Ozan Giuliana 47856
+- Garcia Zacarias 46454
+- Passera Nino 46479
 ```
 
 ## How to run
