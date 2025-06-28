@@ -2,6 +2,7 @@ import { errors } from '@/error';
 import { IError } from '@/error/types';
 import logger from '@/logger';
 import { NextFunction, Response, Request, Express } from 'express';
+import { ZodError } from 'zod';
 
 export interface AppError extends Error {
   status?: number;
@@ -19,6 +20,21 @@ function createGeneralError(err: any): IError {
   };
 }
 
+function createZodError(zodError: ZodError): IError {
+  const baseError = errors.app.general.validation_error;
+
+  // Get the first validation error for a more specific message
+  const firstError = zodError.errors[0];
+  const fieldName = firstError?.path?.join('.') || 'unknown';
+
+  return {
+    status: baseError.status,
+    key: baseError.key,
+    message: `Error de validación en el campo '${fieldName}': ${firstError?.message || 'Campo inválido'}`,
+    message_eng: `Validation error in field '${fieldName}': ${firstError?.message || 'Invalid field'}`,
+  };
+}
+
 function handleUnhandledError(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   err: any,
@@ -31,6 +47,13 @@ function handleUnhandledError(
   // If the error is already in the correct format (has key, message, etc)
   if (err.key && err.message && err.message_eng && err.status) {
     res.status(err.status).json(err);
+    return;
+  }
+
+  // Handle Zod validation errors
+  if (err instanceof ZodError) {
+    const zodError = createZodError(err);
+    res.status(zodError.status).json(zodError);
     return;
   }
 

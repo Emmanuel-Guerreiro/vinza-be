@@ -15,40 +15,27 @@ export class BodegaController {
   }
 
   public getAll(_req: Request, res: Response) {
-    this.bodegaService
-      .findAll()
-      .then((data) => res.json(data))
-      .catch((err) => res.json(err));
+    this.bodegaService.findAll().then((data) => res.json(data));
   }
 
   public getOne(req: Request, res: Response) {
-    this.bodegaService
-      .findOne(+req.params.id)
-      .then((data) => res.json(data))
-      .catch((err) => res.json(err));
+    this.bodegaService.findOne(+req.params.id).then((data) => res.json(data));
   }
 
   public create(req: Request, res: Response) {
     createBodegaSchema
       .parseAsync(req.body)
       .then((dto) =>
-        this.bodegaService
-          .create(dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err)),
-      )
-      .catch((err) => res.status(400).json({ error: err.message }));
+        this.bodegaService.create(dto).then((data) => res.json(data)),
+      );
   }
 
   public update(req: Request, res: Response) {
-    UpdateBodegaSchema.parseAsync(req.body)
-      .then((dto) =>
-        this.bodegaService
-          .update(+req.params.id, dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err)),
-      )
-      .catch((err) => res.status(400).json({ error: err.message }));
+    UpdateBodegaSchema.parseAsync(req.body).then((dto) =>
+      this.bodegaService
+        .update(+req.params.id, dto)
+        .then((data) => res.json(data)),
+    );
   }
 
   public delete(req: Request, res: Response) {

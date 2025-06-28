@@ -13,9 +13,88 @@ const router = Router();
  *     summary: Get all eventos
  *     tags:
  *       - Eventos
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: limit
+ *         in: query
+ *         description: Number of items per page
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: sucursalId
+ *         in: query
+ *         description: Filter by specific sucursal ID
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: categoriaId
+ *         in: query
+ *         description: Filter by specific category ID
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: estadoId
+ *         in: query
+ *         description: Filter by specific state ID
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: bodegaId
+ *         in: query
+ *         description: Filter by specific bodega ID (through sucursal relationship)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: fechaDesde
+ *         in: query
+ *         description: Filter events created from this date (ISO format)
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - name: fechaHasta
+ *         in: query
+ *         description: Filter events created until this date (ISO format)
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - name: precioMaximo
+ *         in: query
+ *         description: Filter events with price less than or equal to this value
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: puntuacionMinima
+ *         in: query
+ *         description: Filter events with minimum rating (0-5 scale)
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: nombre
+ *         in: query
+ *         description: Filter events by name (case-insensitive search)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: orderBy
+ *         in: query
+ *         description: "Order results by field and direction (format: field:direction)"
+ *         required: false
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: Success
+ *         description: List of eventos retrieved successfully
+ *       400:
+ *         description: Bad request - Invalid filter parameters
+ *       500:
+ *         description: Internal server error
  */
 router.get('', controller.getAll);
 

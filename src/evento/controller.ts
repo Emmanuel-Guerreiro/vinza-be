@@ -1,6 +1,10 @@
-import { IEventoService } from './service';
 import type { Request, Response } from 'express';
-import { createEventoSchema, updateEventoSchema } from './schema';
+import {
+  createEventoSchema,
+  findAllParamsSchema,
+  updateEventoSchema,
+} from './schema';
+import { IEventoService } from './service';
 
 export class EventoController {
   readonly eventoService;
@@ -14,44 +18,32 @@ export class EventoController {
     this.delete = this.delete.bind(this);
   }
 
-  public getAll(_req: Request, res: Response) {
-    this.eventoService
-      .findAll()
-      .then((data) => {
-        res.json(data);
-      })
-      .catch((err) => res.json(err));
+  public getAll(req: Request, res: Response) {
+    findAllParamsSchema.parseAsync(req.query).then((query) => {
+      this.eventoService.findAll(query).then((data) => res.json(data));
+    });
   }
 
   public getOne(req: Request, res: Response) {
-    this.eventoService
-      .findOne(+req.params.id)
-      .then((data) => res.json(data))
-      .catch((err) => res.json(err));
+    this.eventoService.findOne(+req.params.id).then((data) => res.json(data));
   }
 
   public create(req: Request, res: Response) {
-    createEventoSchema
-      .parseAsync(req.body)
-      .then((dto) => {
-        return this.eventoService
-          .create(dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err));
-      })
-      .catch((err) => res.status(400).json({ error: err.message }));
+    createEventoSchema.parseAsync(req.body).then((dto) =>
+      this.eventoService
+        .create(dto)
+        .then((data) => res.json(data))
+        .catch((err) => res.json(err)),
+    );
   }
 
   public update(req: Request, res: Response) {
-    updateEventoSchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.eventoService
-          .update(+req.params.id, dto)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err)),
-      )
-      .catch((err) => res.status(400).json({ error: err.message }));
+    updateEventoSchema.parseAsync(req.body).then((dto) =>
+      this.eventoService
+        .update(+req.params.id, dto)
+        .then((data) => res.json(data))
+        .catch((err) => res.json(err)),
+    );
   }
 
   public delete(req: Request, res: Response) {

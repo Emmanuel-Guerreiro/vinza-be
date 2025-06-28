@@ -27,6 +27,7 @@ export type EventoCreationAttributes = Omit<
   EventoAttributes,
   'id' | 'estados' | 'categorias'
 > & {
+  precio: number;
   estadoId: EstadoEvento['id'];
   categoriaId: CategoriaEvento['id'];
 };
@@ -54,6 +55,9 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
 
   @Column({ type: DataType.STRING, allowNull: false })
   cupo!: string;
+
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  precio!: number;
 
   @ForeignKey(() => Sucursal)
   @Column({ type: DataType.INTEGER, allowNull: false })
