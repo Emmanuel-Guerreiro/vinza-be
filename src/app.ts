@@ -19,6 +19,7 @@ import bodegaRouter from './bodega/router';
 import auditRouter from './audit/router';
 import { contextMiddleware } from './context';
 import valoracionRouter from './valoracion/router';
+import maximosDiasAdelanteReservaRouter from './maximos-dias-adelante-reserva/router';
 
 function initializeRouter() {
   const router = Router();
@@ -33,6 +34,10 @@ function initializeRouter() {
   router.use('/bodegas', bodegaRouter);
   router.use('/audits', auditRouter);
   router.use('/valoraciones', valoracionRouter);
+  router.use(
+    '/maximos-dias-adelante-reserva',
+    maximosDiasAdelanteReservaRouter,
+  );
   return router;
 }
 

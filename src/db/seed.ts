@@ -10,6 +10,7 @@ import config from '@/config';
 import { categoriaEventoService } from '@/categoria-evento/service';
 import { sequelize } from '.';
 import { Valoracion } from '@/valoracion/model';
+import { maximosDiasAdelanteReservaService } from '@/maximos-dias-adelante-reserva/service';
 
 async function seed() {
   try {
@@ -134,6 +135,8 @@ async function seed() {
         await Valoracion.create({ ...val, eventoId: evento.id });
       }
     }
+
+    await maximosDiasAdelanteReservaService.patch({ valor: 30 });
 
     // eslint-disable-next-line no-console
     console.log('Database seeded successfully');
