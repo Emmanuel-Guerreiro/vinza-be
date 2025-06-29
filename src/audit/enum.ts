@@ -17,6 +17,7 @@ export enum AuditModel {
   BODEDA = 'bodega',
   SUCURSAL = 'sucursal',
   EVENTO = 'evento',
+  MAXIMOS_DIAS_ADELANTE_RESERVA = 'maximos-dias-adelante-reserva',
 }
 // Define the type for the audit events
 export type AuditEventType = `${AuditModel}:${AuditEvent}`;

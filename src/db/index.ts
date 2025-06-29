@@ -12,6 +12,7 @@ import { Evento } from '@/evento/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
 import { HCategoriaEvento } from '@/categoria-evento/model';
 import { Valoracion } from '@/valoracion/model';
+import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
 
 export const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -39,6 +40,7 @@ export const sequelize = new Sequelize({
     HCategoriaEvento,
     Valoracion,
     CodigoRecuperarContra,
+    MaximosDiasAdelanteReserva,
   ], // or [Player, Team],
 });
 
