@@ -27,6 +27,7 @@ async function seed() {
       nombre: 'main',
       es_principal: true,
       direccion: 'direccion 1',
+      aclaraciones: 'Sucursal principal de ejemplo',
       bodegaId: zuccardi.id,
     });
 
