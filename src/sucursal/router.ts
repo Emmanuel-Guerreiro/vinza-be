@@ -69,6 +69,10 @@ router.get('/:id', controller.getOne);
  *                 description: Dirección de la sucursal
  *                 required: true
  *                 example: "Calle 123, Ciudad"
+ *               aclaraciones:
+ *                 type: string
+ *                 description: Aclaraciones adicionales sobre la sucursal
+ *                 example: "Sucursal ubicada en el centro comercial"
  *               bodegaId:
  *                 type: number
  *                 description: ID de la bodega a la que pertenece
@@ -115,6 +119,10 @@ router.post('', controller.create);
  *                 type: string
  *                 description: Dirección de la sucursal
  *                 example: "Calle 123, Ciudad"
+ *               aclaraciones:
+ *                 type: string
+ *                 description: Aclaraciones adicionales sobre la sucursal
+ *                 example: "Sucursal ubicada en el centro comercial"
  *     responses:
  *       200:
  *         description: Sucursal updated successfully

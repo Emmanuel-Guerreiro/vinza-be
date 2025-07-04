@@ -13,6 +13,7 @@ export interface SucursalAttributes {
   nombre: string;
   es_principal: boolean;
   direccion: string;
+  aclaraciones?: string;
   bodegaId: number;
 }
 
@@ -44,6 +45,9 @@ export class Sucursal extends Model<
 
   @Column({ type: DataType.STRING, allowNull: false })
   direccion!: string;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  aclaraciones?: string;
 
   @ForeignKey(() => Bodega)
   @Column({ type: DataType.INTEGER, allowNull: false })
