@@ -33,7 +33,7 @@ export class AuthService {
     this.sendValidationEmail(user);
 
     // The user can be authenticated immediately with this
-    return this.login({ email: user.email, password: hashed });
+    return this.login({ email: user.email, password: dto.password });
   }
 
   private async sendValidationEmail(user: UserAttributes) {
@@ -136,7 +136,7 @@ export class AuthService {
   }: {
     email: string;
     code: string;
-  }): Promise<{ success: boolean }> {
+  }): Promise<AuthenticatedUser> {
     const user = await usersService.findOneByEmail(email);
     if (!user) throw errors.app.user.not_found;
     const recovery = await CodigoRecuperarContra.findOne({
@@ -151,7 +151,10 @@ export class AuthService {
     user.validado = new Date();
     await user.save();
     await recovery.destroy();
-    return { success: true };
+    const token = this.generateAuthToken(user.dataValues);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { contrasena, ...userWithoutPassword } = user.dataValues;
+    return { ...userWithoutPassword, token };
   }
 }
 
