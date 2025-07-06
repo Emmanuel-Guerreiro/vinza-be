@@ -8,6 +8,7 @@ export const createSucursalSchema = z.object({
     .default(false)
     .transform((val) => !!val),
   direccion: z.string(),
+  aclaraciones: z.string().optional(),
   bodegaId: z.number(),
 });
 
@@ -15,4 +16,5 @@ export const updateSucursalSchema = z.object({
   nombre: z.string().optional(),
   es_principal: z.boolean().optional(),
   direccion: z.string().optional(),
+  aclaraciones: z.string().optional(),
 });
