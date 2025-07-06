@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { AuditService } from './service';
+import { auditFilterSchema } from './types';
 
 export class AuditController {
   constructor(private readonly auditService: AuditService) {
@@ -7,9 +8,8 @@ export class AuditController {
   }
 
   async findAll(req: Request, res: Response) {
-    this.auditService
-      .findAll()
-      .then((r) => res.json(r))
-      .catch((err) => res.json(err));
+    auditFilterSchema.parseAsync(req.query).then((query) => {
+      this.auditService.findAll(query).then((data) => res.json(data));
+    });
   }
 }
