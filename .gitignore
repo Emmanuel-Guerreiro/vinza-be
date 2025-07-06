@@ -4,4 +4,4 @@ data/
 .env
 yarn-lock.json
 package-lock.json
-    
+bun.lockb
