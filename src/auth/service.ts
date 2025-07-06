@@ -20,20 +20,20 @@ import { JwtAuthPayload, LoginDto, RegisterDto } from './types';
 export class AuthService {
   public async register(dto: RegisterDto): Promise<AuthenticatedUser> {
     const role = await this.createDefaultRole();
-    const password = await hashPassword(dto.password);
     // Set user as not validated
+    const hashed = await hashPassword(dto.password);
     const user = await usersService.create({
       nombre: dto.name,
       apellido: dto.name, // You might want to add a lastname field to your DTO
       email: dto.email,
-      contrasena: password,
+      contrasena: hashed,
       validado: null,
       roles: [role.id],
     } as UserCreationAttributes);
     this.sendValidationEmail(user);
 
     // The user can be authenticated immediately with this
-    return this.login({ email: user.email, password });
+    return this.login({ email: user.email, password: dto.password });
   }
 
   private async sendValidationEmail(user: UserAttributes) {
@@ -53,7 +53,6 @@ export class AuthService {
   public async login(dto: LoginDto): Promise<AuthenticatedUser> {
     // If more strategies are added must extend this
     const user = await usersService.findOneByEmail(dto.email);
-
     if (!user || !(await bcrypt.compare(dto.password, user.contrasena))) {
       throw errors.app.auth.non_valid_credentials;
     }
@@ -137,7 +136,7 @@ export class AuthService {
   }: {
     email: string;
     code: string;
-  }): Promise<{ success: boolean }> {
+  }): Promise<AuthenticatedUser> {
     const user = await usersService.findOneByEmail(email);
     if (!user) throw errors.app.user.not_found;
     const recovery = await CodigoRecuperarContra.findOne({
@@ -152,7 +151,10 @@ export class AuthService {
     user.validado = new Date();
     await user.save();
     await recovery.destroy();
-    return { success: true };
+    const token = this.generateAuthToken(user.dataValues);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { contrasena, ...userWithoutPassword } = user.dataValues;
+    return { ...userWithoutPassword, token };
   }
 }
 
