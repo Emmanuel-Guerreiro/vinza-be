@@ -14,7 +14,7 @@ const options = {
     },
     servers: [
       {
-        url: `http://localhost:5000/api/${config.API_VERSION}`,
+        url: `http://localhost:${config.PORT}/api/${config.API_VERSION}`,
         description: 'Local server',
       },
     ],
@@ -36,5 +36,5 @@ const swaggerSpec = swaggerJSDoc(options);
 export function setupDocs(app: Express) {
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-  logger.info('Initialized docs at http://localhost:5000/docs');
+  logger.info(`Initialized docs at http://localhost:${config.PORT}/docs`);
 }
