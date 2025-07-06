@@ -87,15 +87,16 @@ export function injectLogger(req: Request, _res: Response, next: NextFunction) {
   next();
 }
 
-export function logRequests(req: Request, res: Response, next: NextFunction) {
+const reqLog = (req: Request, res: Response) => {
   const start = Date.now();
-
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-
-    logger.info(
-      `${res.statusCode} - ${config.IS_TRACING_ENABLED ? `[trace_id=${req.trace_id || 'no-trace'}]` : ''}[${req.method} ${req.originalUrl}] - ${duration}ms`,
-    );
-  });
+  const duration = Date.now() - start;
+  logger.info(
+    `${res.statusCode} - ${config.IS_TRACING_ENABLED ? `[trace_id=${req.trace_id || 'no-trace'}]` : ''}[${req.method} ${req.originalUrl}] - ${duration}ms`,
+  );
+};
+export function logRequests(req: Request, res: Response, next: NextFunction) {
+  res.on('finish', () => reqLog(req, res));
+  res.on('error', () => reqLog(req, res));
+  // res.on('close', () => reqLog(req, res));
   next();
 }

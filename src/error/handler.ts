@@ -43,7 +43,7 @@ function handleNotFoundError(
   _res: Response,
   next: NextFunction,
 ) {
-  logger.error('Not found path');
+  logger.error(`Not found path!, ${_req.path}`);
   next(errors.app.general.not_found);
 }
 

@@ -18,32 +18,24 @@ export class AuthController {
   }
 
   public async login(req: Request, res: Response) {
-    this.authService
-      .login(req.body)
-      .then((response) => {
-        res.json(response);
-      })
-      .catch((e) => res.json(e));
+    this.authService.login(req.body).then((response) => {
+      res.json(response);
+    });
   }
 
   public async requestPasswordRecovery(req: Request, res: Response) {
     this.authService
       .requestPasswordRecovery(req.body)
-      .then((result) => res.json(result))
-      .catch((e) => res.status(400).json({ error: e.message || e }));
+      .then((result) => res.json(result));
   }
 
   public async resetPassword(req: Request, res: Response) {
-    this.authService
-      .resetPassword(req.body)
-      .then((result) => res.json(result))
-      .catch((e) => res.status(400).json({ error: e.message || e }));
+    this.authService.resetPassword(req.body).then((result) => res.json(result));
   }
 
   public async validateAccount(req: Request, res: Response) {
     this.authService
       .validateAccount(req.body)
-      .then((result) => res.json(result))
-      .catch((e) => res.status(400).json({ error: e.message || e }));
+      .then((result) => res.json(result));
   }
 }

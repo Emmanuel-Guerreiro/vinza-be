@@ -1,5 +1,4 @@
 import { auditEmitter } from '@/audit/event';
-import { hashPassword } from '@/auth/auth';
 import { sequelize } from '@/db';
 import { errors } from '@/error';
 import logger from '@/logger';
@@ -10,14 +9,10 @@ import { CreateUserDto, UpdateUserDto } from './types';
 
 class UsersService {
   public async create(dto: CreateUserDto) {
-    const { contrasena, roles, ...rest } = dto;
+    const { roles, ...rest } = dto;
     const transaction = await sequelize.transaction();
     try {
-      const hashed = await hashPassword(contrasena);
-      let user = await User.create(
-        { ...rest, contrasena: hashed },
-        { transaction },
-      );
+      let user = await User.create(rest, { transaction });
 
       if (roles && roles.length > 0) {
         await user.$set('roles', roles, { transaction });
