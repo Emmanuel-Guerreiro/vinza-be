@@ -44,6 +44,12 @@
         "message": "Invalid or expired code",
         "message_eng": "Invalid or expired code",
         "status": 401
+      },
+      "validation_code_too_recent": {
+        "key": "app.auth.validation_code_too_recent",
+        "message": "Debe esperar al menos 45 segundos antes de solicitar un nuevo código de validación",
+        "message_eng": "You must wait at least 45 seconds before requesting a new validation code",
+        "status": 400
       }
     },
     "user": {

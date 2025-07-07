@@ -1,14 +1,23 @@
-export type RegisterDto = {
-  name: string;
-  age: number;
-  email: string;
-  password: string;
-};
+import { z } from 'zod';
+import {
+  registerSchema,
+  loginSchema,
+  requestValidationCodeSchema,
+  requestPasswordRecoverySchema,
+  resetPasswordSchema,
+  validateAccountSchema,
+} from './schema';
 
-export type LoginDto = {
-  email: string;
-  password: string;
-};
+export type RegisterDto = z.infer<typeof registerSchema>;
+export type LoginDto = z.infer<typeof loginSchema>;
+export type RequestValidationCodeDto = z.infer<
+  typeof requestValidationCodeSchema
+>;
+export type RequestPasswordRecoveryDto = z.infer<
+  typeof requestPasswordRecoverySchema
+>;
+export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;
+export type ValidateAccountDto = z.infer<typeof validateAccountSchema>;
 
 export type JwtAuthPayload = {
   user: number;

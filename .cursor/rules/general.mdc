@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+- Dont create unnecesary comments
+- If there is an expected type from the user consuming the api:
+    - Create the schema to validate it at the local module schema file (create the file if it dont exists)
+    - Use the zod inferer to create the type at the local module type file (Create the fiel if it dont exists)
+    - Validate the type with the validateAsync method at controller level 
