@@ -176,5 +176,34 @@ router.post('/reset-password', controller.resetPassword);
  */
 router.post('/validate', controller.validateAccount);
 
+/**
+ * @openapi
+ * /auth/request-validation:
+ *   post:
+ *     summary: Request validation code
+ *     tags:
+ *       - Auth
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: The email of the user
+ *                 required: true
+ *                 example: "john.doe@example.com"
+ *     responses:
+ *       200:
+ *         description: Validation code sent successfully
+ *       400:
+ *         description: Bad request - validation code too recent
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/request-validation', controller.requestValidationCode);
+
 logger.debug('Auth router initialized');
 export default router;

@@ -1,4 +1,12 @@
 import { Request, Response } from 'express';
+import {
+  loginSchema,
+  registerSchema,
+  requestPasswordRecoverySchema,
+  requestValidationCodeSchema,
+  resetPasswordSchema,
+  validateAccountSchema,
+} from './schema';
 import { IAuthService } from './service';
 
 export class AuthController {
@@ -8,34 +16,60 @@ export class AuthController {
     this.requestPasswordRecovery = this.requestPasswordRecovery.bind(this);
     this.resetPassword = this.resetPassword.bind(this);
     this.validateAccount = this.validateAccount.bind(this);
+    this.requestValidationCode = this.requestValidationCode.bind(this);
   }
 
-  public async register(req: Request, res: Response) {
-    this.authService
-      .register(req.body)
-      .then((user) => res.json(user))
-      .catch((e) => res.json(e));
+  public register(req: Request, res: Response) {
+    registerSchema
+      .parseAsync(req.body)
+      .then((dto) =>
+        this.authService.register(dto).then((user) => res.json(user)),
+      );
   }
 
-  public async login(req: Request, res: Response) {
-    this.authService.login(req.body).then((response) => {
-      res.json(response);
-    });
+  public login(req: Request, res: Response) {
+    loginSchema
+      .parseAsync(req.body)
+      .then((dto) =>
+        this.authService.login(dto).then((response) => res.json(response)),
+      );
   }
 
-  public async requestPasswordRecovery(req: Request, res: Response) {
-    this.authService
-      .requestPasswordRecovery(req.body)
-      .then((result) => res.json(result));
+  public requestPasswordRecovery(req: Request, res: Response) {
+    requestPasswordRecoverySchema
+      .parseAsync(req.body)
+      .then((dto) =>
+        this.authService
+          .requestPasswordRecovery(dto)
+          .then((result) => res.json(result)),
+      );
   }
 
-  public async resetPassword(req: Request, res: Response) {
-    this.authService.resetPassword(req.body).then((result) => res.json(result));
+  public resetPassword(req: Request, res: Response) {
+    resetPasswordSchema
+      .parseAsync(req.body)
+      .then((dto) =>
+        this.authService.resetPassword(dto).then((result) => res.json(result)),
+      );
   }
 
-  public async validateAccount(req: Request, res: Response) {
-    this.authService
-      .validateAccount(req.body)
-      .then((result) => res.json(result));
+  public validateAccount(req: Request, res: Response) {
+    validateAccountSchema
+      .parseAsync(req.body)
+      .then((dto) =>
+        this.authService
+          .validateAccount(dto)
+          .then((result) => res.json(result)),
+      );
+  }
+
+  public requestValidationCode(req: Request, res: Response) {
+    requestValidationCodeSchema
+      .parseAsync(req.body)
+      .then((dto) =>
+        this.authService
+          .requestValidationCode(dto)
+          .then((result) => res.json(result)),
+      );
   }
 }

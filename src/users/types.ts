@@ -8,4 +8,4 @@ export type AuthenticatedUser = Omit<UserAttributes, 'contrasena'> & {
 
 export type CreateUserDto = UserCreationAttributes;
 
-export type UpdateUserDto = Partial<CreateUserDto>;
+export type UpdateUserDto = Partial<CreateUserDto> & { validado?: Date };
