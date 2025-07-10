@@ -129,6 +129,20 @@
         "message_eng": "Valoración not found",
         "status": 404
       }
+    },
+    "reserva": {
+      "not_found": {
+        "key": "app.reserva.not_found",
+        "message": "Reserva not found",
+        "message_eng": "Reserva not found",
+        "status": 404
+      },  
+      "estado_not_found": {
+        "key": "app.reserva.estado_not_found",
+        "message": "Estado not found",
+        "message_eng": "Estado not found",
+        "status": 404
+      }
     }
   }
 }
