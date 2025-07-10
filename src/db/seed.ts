@@ -11,6 +11,9 @@ import { categoriaEventoService } from '@/categoria-evento/service';
 import { sequelize } from '.';
 import { Valoracion } from '@/valoracion/model';
 import { maximosDiasAdelanteReservaService } from '@/maximos-dias-adelante-reserva/service';
+import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum';
+import { estadoReservaService } from '@/estado-reserva/service';
+import { EstadoReserva } from '@/estado-reserva/enum';
 
 async function seed() {
   try {
@@ -105,6 +108,8 @@ async function seed() {
       }),
     );
 
+   
+
     const evento1 = await eventoService.create({
       nombre: 'evento 1',
       descripcion: 'descripcion 1',
@@ -138,7 +143,23 @@ async function seed() {
     }
 
     await maximosDiasAdelanteReservaService.patch({ valor: 30 });
-
+ // Create all estado reserva
+ const estadoReserva = await Promise.all(
+  Object.values(EstadoReserva).map(async (nombre) => {
+    return await estadoReservaService.create({
+      nombre,
+    });
+  }),
+);
+ 
+// Create all estado instancia evento
+const estadoInstanciaEvento = await Promise.all(
+  Object.values(EstadoInstanciaEvento).map(async (estadoInstanciaEvento) => {
+    return await estadoEventoService.create({
+      nombre: estadoInstanciaEvento,
+    });
+  }),
+);
     // eslint-disable-next-line no-console
     console.log('Database seeded successfully');
   } catch (error) {
@@ -148,7 +169,8 @@ async function seed() {
   } finally {
     config.IS_AUDIT_DISABLED = false;
   }
-}
+
+
 
 // Run the seed
 seed()
@@ -162,3 +184,4 @@ seed()
     console.error('Seed failed:', error);
     process.exit(1);
   });
+}
