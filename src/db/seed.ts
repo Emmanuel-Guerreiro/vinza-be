@@ -11,9 +11,9 @@ import { categoriaEventoService } from '@/categoria-evento/service';
 import { sequelize } from '.';
 import { Valoracion } from '@/valoracion/model';
 import { maximosDiasAdelanteReservaService } from '@/maximos-dias-adelante-reserva/service';
+import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum';
 import { estadoReservaService } from '@/estado-reserva/service';
 import { EstadoReserva } from '@/estado-reserva/enum';
-
 
 async function seed() {
   try {
@@ -154,6 +154,10 @@ async function seed() {
     config.IS_AUDIT_DISABLED = false;
   }
 
+  const estadoInstanciaEvento = await Promise.all(
+    Object.values(EstadoInstanciaEvento).map(async (estadoInstanciaEvento) => {
+      return await estadoEventoService.create({
+        nombre: estadoInstanciaEvento,
   const estadoReserva = await Promise.all(
     Object.values(EstadoReserva).map(async (nombre) => {
       return await estadoReservaService.create({
