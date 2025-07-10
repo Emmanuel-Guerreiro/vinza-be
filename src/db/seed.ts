@@ -143,7 +143,23 @@ async function seed() {
     }
 
     await maximosDiasAdelanteReservaService.patch({ valor: 30 });
-
+ // Create all estado reserva
+ const estadoReserva = await Promise.all(
+  Object.values(EstadoReserva).map(async (nombre) => {
+    return await estadoReservaService.create({
+      nombre,
+    });
+  }),
+);
+ 
+// Create all estado instancia evento
+const estadoInstanciaEvento = await Promise.all(
+  Object.values(EstadoInstanciaEvento).map(async (estadoInstanciaEvento) => {
+    return await estadoEventoService.create({
+      nombre: estadoInstanciaEvento,
+    });
+  }),
+);
     // eslint-disable-next-line no-console
     console.log('Database seeded successfully');
   } catch (error) {
@@ -154,18 +170,7 @@ async function seed() {
     config.IS_AUDIT_DISABLED = false;
   }
 
-  const estadoInstanciaEvento = await Promise.all(
-    Object.values(EstadoInstanciaEvento).map(async (estadoInstanciaEvento) => {
-      return await estadoEventoService.create({
-        nombre: estadoInstanciaEvento,
-  const estadoReserva = await Promise.all(
-    Object.values(EstadoReserva).map(async (nombre) => {
-      return await estadoReservaService.create({
-        nombre,
-      });
-    }),
-  );
-}
+
 
 // Run the seed
 seed()
@@ -179,3 +184,4 @@ seed()
     console.error('Seed failed:', error);
     process.exit(1);
   });
+}
