@@ -1,4 +1,4 @@
-import { InstanciaEvento } from '@/InstanciaEvento/model';
+// import { InstanciaEvento } from '@/instancia-evento/model'; // Comentado temporalmente
 import {
   BelongsToMany,
   Column,
@@ -57,8 +57,8 @@ export class EstadoInstanciaEvento extends Model<
   @Column({ type: DataType.DATE })
   deleted_at!: string | null;
 
-  @BelongsToMany(() => InstanciaEvento, () => HEstadoInstanciaEvento)
-  eventos!: InstanciaEvento[];
+  // @BelongsToMany(() => InstanciaEvento, () => HEstadoInstanciaEvento) // Comentado temporalmente
+  // eventos!: InstanciaEvento[]; // Comentado temporalmente
 }
 
 export interface HEstadoInstanciaEventoAttributes {
@@ -92,7 +92,7 @@ export class HEstadoInstanciaEvento extends Model<
   })
   id!: number;
 
-  @ForeignKey(() => InstanciaEvento)
+  // @ForeignKey(() => InstanciaEvento) // Comentado temporalmente
   @Column({ type: DataType.INTEGER, allowNull: false })
   instanciaeventoId!: number;
 

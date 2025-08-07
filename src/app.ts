@@ -20,6 +20,7 @@ import auditRouter from './audit/router';
 import { contextMiddleware } from './context';
 import valoracionRouter from './valoracion/router';
 import maximosDiasAdelanteReservaRouter from './maximos-dias-adelante-reserva/router';
+import recurrenciaEventoRouter from './recurrencia-evento/router';
 import { initializeCronJobs } from './cron';
 
 function initializeRouter() {
@@ -39,6 +40,7 @@ function initializeRouter() {
     '/maximos-dias-adelante-reserva',
     maximosDiasAdelanteReservaRouter,
   );
+  router.use('/recurrencia-evento', recurrenciaEventoRouter);
   return router;
 }
 

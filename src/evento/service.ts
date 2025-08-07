@@ -15,10 +15,10 @@ import {
   generatePaginationParams,
   generateOrderConditions,
 } from '@/pagination';
+import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
-    //comentario
     const transaction = await sequelize.transaction();
     try {
       let evento = await Evento.create(dto, { transaction });
@@ -39,6 +39,16 @@ class EventoService {
         );
 
         await evento.$set('categorias', [categoriaEvento.id], { transaction });
+      }
+
+      // Crear recurrencias si se proporcionan
+      if (dto.recurrencias && dto.recurrencias.length > 0) {
+        const recurrenciasData = dto.recurrencias.map(recurrencia => ({
+          ...recurrencia,
+          eventoId: evento.id,
+        }));
+        
+        await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
       }
 
       evento = await evento.save({ transaction, returning: true });
@@ -108,6 +118,9 @@ class EventoService {
         {
           model: EstadoEvento,
         },
+        {
+          model: RecurrenciaEvento,
+        },
       ],
     });
     if (!evento) throw errors.app.evento.not_found;
@@ -139,7 +152,29 @@ class EventoService {
         await evento.$set('categorias', [categoriaEvento.id], { transaction });
       }
 
-      const updatedEvento = await evento.update(dto, {
+      // Manejar recurrencias si se proporcionan
+      if (dto.recurrencias !== undefined) {
+        // Eliminar recurrencias existentes
+        await RecurrenciaEvento.destroy({
+          where: { eventoId: id },
+          transaction,
+        });
+
+        // Crear nuevas recurrencias si se proporcionan
+        if (dto.recurrencias.length > 0) {
+          const recurrenciasData = dto.recurrencias.map(recurrencia => ({
+            ...recurrencia,
+            eventoId: id,
+          }));
+          
+          await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
+        }
+      }
+
+      // Filtrar campos que no pertenecen al modelo Evento
+      const { recurrencias, estadoId, categoriaId, ...eventoData } = dto;
+      
+      const updatedEvento = await evento.update(eventoData, {
         returning: true,
         transaction,
       });
@@ -167,6 +202,8 @@ class EventoService {
     });
     return evento;
   }
+
+
 
   /**
    * Generate where conditions for the findAll query based on model specific fields

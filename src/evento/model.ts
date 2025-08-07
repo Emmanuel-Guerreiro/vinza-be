@@ -6,12 +6,14 @@ import {
   Model,
   Table,
   BelongsToMany,
+  HasMany,
 } from 'sequelize-typescript';
 import { HEstadoEvento } from '@/estado-evento/model';
 import { Sucursal } from '@/sucursal/model';
 import { EstadoEvento } from '@/estado-evento/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
 import { HCategoriaEvento } from '@/categoria-evento/model';
+import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 
 export interface EventoAttributes {
   id: number;
@@ -21,11 +23,12 @@ export interface EventoAttributes {
   sucursalId: number;
   estados: EstadoEvento[];
   categorias: CategoriaEvento[];
+  recurrencias?: RecurrenciaEvento[];
 }
 
 export type EventoCreationAttributes = Omit<
   EventoAttributes,
-  'id' | 'estados' | 'categorias'
+  'id' | 'estados' | 'categorias' | 'recurrencias'
 > & {
   precio: number;
   estadoId: EstadoEvento['id'];
@@ -71,4 +74,7 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
 
   @BelongsToMany(() => CategoriaEvento, () => HCategoriaEvento)
   categorias!: CategoriaEvento[];
+
+  @HasMany(() => RecurrenciaEvento)
+  recurrencias?: RecurrenciaEvento[];
 }
