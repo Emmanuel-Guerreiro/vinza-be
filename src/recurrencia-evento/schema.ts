@@ -1,6 +1,16 @@
 import { z } from 'zod';
 import { DiaSemana, HoraEvento } from './model';
 
+// Función para convertir string a Date - VERSION NUEVA
+const stringToDate = (val: string): Date => {
+  console.log('Convirtiendo fecha:', val, typeof val);
+  const date = new Date(val);
+  if (isNaN(date.getTime())) {
+    throw new Error('Fecha inválida');
+  }
+  return date;
+};
+
 export const createRecurrenciaEventoSchema = z.object({
   dia: z.nativeEnum(DiaSemana, {
     required_error: 'El día es requerido',
@@ -10,17 +20,11 @@ export const createRecurrenciaEventoSchema = z.object({
     required_error: 'La hora es requerida',
     invalid_type_error: 'La hora debe ser una hora válida',
   }),
-  fecha_desde: z.date({
-    required_error: 'La fecha desde es requerida',
-    invalid_type_error: 'La fecha desde debe ser una fecha válida',
-  }).refine((date) => date > new Date(), {
+  fecha_desde: z.string().transform(stringToDate).refine((date) => date > new Date(), {
     message: 'La fecha desde debe ser posterior a la fecha actual',
     path: ['fecha_desde'],
   }),
-  fecha_hasta: z.date({
-    required_error: 'La fecha hasta es requerida',
-    invalid_type_error: 'La fecha hasta debe ser una fecha válida',
-  }).refine((date) => date > new Date(), {
+  fecha_hasta: z.string().transform(stringToDate).refine((date) => date > new Date(), {
     message: 'La fecha hasta debe ser posterior a la fecha actual',
     path: ['fecha_hasta'],
   }),
@@ -37,15 +41,11 @@ export const updateRecurrenciaEventoSchema = z.object({
   hora: z.nativeEnum(HoraEvento, {
     invalid_type_error: 'La hora debe ser una hora válida',
   }).optional(),
-  fecha_desde: z.date({
-    invalid_type_error: 'La fecha desde debe ser una fecha válida',
-  }).refine((date) => date > new Date(), {
+  fecha_desde: z.string().transform(stringToDate).refine((date) => date > new Date(), {
     message: 'La fecha desde debe ser posterior a la fecha actual',
     path: ['fecha_desde'],
   }).optional(),
-  fecha_hasta: z.date({
-    invalid_type_error: 'La fecha hasta debe ser una fecha válida',
-  }).refine((date) => date > new Date(), {
+  fecha_hasta: z.string().transform(stringToDate).refine((date) => date > new Date(), {
     message: 'La fecha hasta debe ser posterior a la fecha actual',
     path: ['fecha_hasta'],
   }).optional(),

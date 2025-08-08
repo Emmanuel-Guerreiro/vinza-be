@@ -146,7 +146,7 @@ router.get('/:id', controller.getOne);
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
  *                 type: string
- *                 description: Cupo del evento
+ *                 description: Cupo del evento (debe ser un número válido mayor a 0)
  *                 required: true
  *                 example: "50"
  *               sucursalId:
@@ -157,12 +157,12 @@ router.get('/:id', controller.getOne);
  *               estadoId:
  *                 type: number
  *                 description: ID del estado del evento
- *                 required: true
+ *                 required: false
  *                 example: 1
  *               categoriaId:
  *                 type: number
  *                 description: ID de la categoría del evento
- *                 required: true
+ *                 required: false
  *                 example: 1
  *               precio:
  *                 type: number
@@ -190,12 +190,12 @@ router.get('/:id', controller.getOne);
  *                       type: string
  *                       format: date
  *                       description: Fecha desde la cual comienza la recurrencia
- *                       example: "2024-01-01"
+ *                       example: "2026-01-01"
  *                     fecha_hasta:
  *                       type: string
  *                       format: date
  *                       description: Fecha hasta la cual termina la recurrencia
- *                       example: "2024-12-31"
+ *                       example: "2026-12-31"
  *     responses:
  *       201:
  *         description: Evento created successfully
@@ -235,7 +235,7 @@ router.post('', controller.create);
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
  *                 type: string
- *                 description: Cupo del evento
+ *                 description: Cupo del evento (debe ser un número válido mayor a 0)
  *                 example: "50"
  *               sucursalId:
  *                 type: number

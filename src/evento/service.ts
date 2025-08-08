@@ -21,15 +21,13 @@ class EventoService {
   public async create(dto: CreateEventoDto) {
     const transaction = await sequelize.transaction();
     try {
-      let evento = await Evento.create(dto, { transaction });
-
+      // Validar que estadoId y categoriaId existan si se proporcionan
       if (dto.estadoId) {
         const estadoEvento = await estadoEventoService.findOne(
           dto.estadoId,
           transaction,
         );
         if (!estadoEvento) throw errors.app.evento.estado_not_found;
-        await evento.$set('estados', [estadoEvento.id], { transaction });
       }
 
       if (dto.categoriaId) {
@@ -37,9 +35,10 @@ class EventoService {
           dto.categoriaId,
           transaction,
         );
-
-        await evento.$set('categorias', [categoriaEvento.id], { transaction });
+        if (!categoriaEvento) throw errors.app.evento.categoria_evento_not_found;
       }
+
+      let evento = await Evento.create(dto, { transaction });
 
       // Crear recurrencias si se proporcionan
       if (dto.recurrencias && dto.recurrencias.length > 0) {
@@ -83,7 +82,6 @@ class EventoService {
         limit,
         offset,
         include: [
-          // Where and required will work as a filter when its based on related models
           {
             model: CategoriaEvento,
             where: params.categoriaId ? { id: params.categoriaId } : undefined,
@@ -98,6 +96,9 @@ class EventoService {
             model: Sucursal,
             where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
             required: !!params.bodegaId,
+          },
+          {
+            model: RecurrenciaEvento,
           },
         ],
       }),
@@ -119,6 +120,9 @@ class EventoService {
           model: EstadoEvento,
         },
         {
+          model: Sucursal,
+        },
+        {
           model: RecurrenciaEvento,
         },
       ],
@@ -134,13 +138,13 @@ class EventoService {
       const evento = await Evento.findByPk(id);
       if (!evento) throw errors.app.evento.not_found;
 
+      // Validar que estadoId y categoriaId existan si se proporcionan
       if (dto.estadoId) {
         const estadoEvento = await estadoEventoService.findOne(
           dto.estadoId,
           transaction,
         );
         if (!estadoEvento) throw errors.app.evento.estado_not_found;
-        await evento.$set('estados', [estadoEvento.id], { transaction });
       }
 
       if (dto.categoriaId) {
@@ -148,8 +152,7 @@ class EventoService {
           dto.categoriaId,
           transaction,
         );
-
-        await evento.$set('categorias', [categoriaEvento.id], { transaction });
+        if (!categoriaEvento) throw errors.app.evento.categoria_evento_not_found;
       }
 
       // Manejar recurrencias si se proporcionan
@@ -172,7 +175,7 @@ class EventoService {
       }
 
       // Filtrar campos que no pertenecen al modelo Evento
-      const { recurrencias, estadoId, categoriaId, ...eventoData } = dto;
+      const { recurrencias, ...eventoData } = dto;
       
       const updatedEvento = await evento.update(eventoData, {
         returning: true,

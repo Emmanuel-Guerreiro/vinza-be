@@ -12,14 +12,14 @@ const recurrenciaSchema = z.object({
     required_error: 'La hora es requerida',
     invalid_type_error: 'La hora debe ser una hora válida',
   }),
-  fecha_desde: z.date({
+  fecha_desde: z.coerce.date({
     required_error: 'La fecha desde es requerida',
     invalid_type_error: 'La fecha desde debe ser una fecha válida',
   }).refine((date) => date > new Date(), {
     message: 'La fecha desde debe ser posterior a la fecha actual',
     path: ['fecha_desde'],
   }),
-  fecha_hasta: z.date({
+  fecha_hasta: z.coerce.date({
     required_error: 'La fecha hasta es requerida',
     invalid_type_error: 'La fecha hasta debe ser una fecha válida',
   }).refine((date) => date > new Date(), {
@@ -34,22 +34,26 @@ const recurrenciaSchema = z.object({
 export const createEventoSchema = z.object({
   nombre: z.string(),
   descripcion: z.string(),
-  cupo: z.string(),
+  cupo: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+    message: 'El cupo debe ser un número válido mayor a 0',
+  }),
   sucursalId: z.number(),
-  estadoId: z.number(),
-  categoriaId: z.number(),
-  precio: z.number(),
+  estadoId: z.number().optional(),
+  categoriaId: z.number().optional(),
+  precio: z.number().min(0, 'El precio debe ser un número mayor o igual a 0'),
   recurrencias: z.array(recurrenciaSchema).optional(),
 });
 
 export const updateEventoSchema = z.object({
   nombre: z.string().optional(),
   descripcion: z.string().optional(),
-  cupo: z.string().optional(),
+  cupo: z.string().refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+    message: 'El cupo debe ser un número válido mayor a 0',
+  }).optional(),
   sucursalId: z.number().optional(),
   estadoId: z.number().optional(),
   categoriaId: z.number().optional(),
-  precio: z.number().optional(),
+  precio: z.number().min(0, 'El precio debe ser un número mayor o igual a 0').optional(),
   recurrencias: z.array(recurrenciaSchema).optional(),
 });
 

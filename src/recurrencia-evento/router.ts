@@ -4,6 +4,11 @@ import { RecurrenciaEventoController } from './controller';
 const router = Router();
 const controller = new RecurrenciaEventoController();
 
+// Wrapper para manejar funciones async en Express
+const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
 /**
  * @openapi
  * /recurrencia-evento:
@@ -66,7 +71,80 @@ const controller = new RecurrenciaEventoController();
  *                 error:
  *                   type: string
  */
-router.post('/', (req, res) => controller.create(req, res));
+router.post('/', asyncHandler((req: any, res: any) => controller.create(req, res)));
+
+/**
+ * @openapi
+ * /recurrencia-evento/create-many:
+ *   post:
+ *     tags:
+ *       - Recurrencia Evento
+ *     summary: Crear múltiples recurrencias de evento
+ *     description: Crea múltiples recurrencias de evento con los datos proporcionados
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - recurrencias
+ *             properties:
+ *               recurrencias:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - dia
+ *                     - hora
+ *                     - fecha_desde
+ *                     - fecha_hasta
+ *                     - eventoId
+ *                   properties:
+ *                     dia:
+ *                       type: string
+ *                       description: Día de la semana para la recurrencia
+ *                       enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+ *                       example: "Lunes"
+ *                     hora:
+ *                       type: string
+ *                       description: Hora de la recurrencia (formato HH:MM)
+ *                       enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
+ *                       example: "18:00"
+ *                     fecha_desde:
+ *                       type: string
+ *                       format: date
+ *                       description: Fecha desde la cual comienza la recurrencia
+ *                       example: "2024-01-01"
+ *                     fecha_hasta:
+ *                       type: string
+ *                       format: date
+ *                       description: Fecha hasta la cual termina la recurrencia
+ *                       example: "2024-12-31"
+ *                     eventoId:
+ *                       type: integer
+ *                       description: ID del evento al que pertenece la recurrencia
+ *                       example: 1
+ *     responses:
+ *       201:
+ *         description: Recurrencias creadas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/RecurrenciaEvento'
+ *       400:
+ *         description: Error de validación
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
+router.post('/create-many', asyncHandler((req: any, res: any) => controller.createMany(req, res)));
 
 /**
  * @openapi
@@ -95,7 +173,7 @@ router.post('/', (req, res) => controller.create(req, res));
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/', (req, res) => controller.findAll(req, res));
+router.get('/', asyncHandler((req: any, res: any) => controller.findAll(req, res)));
 
 /**
  * @openapi
@@ -125,7 +203,7 @@ router.get('/', (req, res) => controller.findAll(req, res));
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/:id', controller.findById.bind(controller));
+router.get('/:id', asyncHandler((req: any, res: any) => controller.findById(req, res)));
 
 /**
  * @openapi
@@ -186,7 +264,7 @@ router.get('/:id', controller.findById.bind(controller));
  *       404:
  *         description: Recurrencia no encontrada
  */
-router.put('/:id', controller.update.bind(controller));
+router.put('/:id', asyncHandler((req: any, res: any) => controller.update(req, res)));
 
 /**
  * @openapi
@@ -212,7 +290,7 @@ router.put('/:id', controller.update.bind(controller));
  *       500:
  *         description: Error interno del servidor
  */
-router.delete('/:id', controller.delete.bind(controller));
+router.delete('/:id', asyncHandler((req: any, res: any) => controller.delete(req, res)));
 
 export default router;
 

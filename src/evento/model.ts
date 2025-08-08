@@ -20,20 +20,17 @@ export interface EventoAttributes {
   nombre: string;
   descripcion: string;
   cupo: string;
+  precio: number;
   sucursalId: number;
-  estados: EstadoEvento[];
-  categorias: CategoriaEvento[];
+  estadoId?: number;
+  categoriaId?: number;
   recurrencias?: RecurrenciaEvento[];
 }
 
 export type EventoCreationAttributes = Omit<
   EventoAttributes,
-  'id' | 'estados' | 'categorias' | 'recurrencias'
-> & {
-  precio: number;
-  estadoId: EstadoEvento['id'];
-  categoriaId: CategoriaEvento['id'];
-};
+  'id' | 'recurrencias'
+>;
 
 @Table({
   tableName: 'eventos',
@@ -59,7 +56,7 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
   @Column({ type: DataType.STRING, allowNull: false })
   cupo!: string;
 
-  @Column({ type: DataType.INTEGER, allowNull: false })
+  @Column({ type: DataType.DECIMAL(10, 2), allowNull: false })
   precio!: number;
 
   @ForeignKey(() => Sucursal)
@@ -69,11 +66,21 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
   @BelongsTo(() => Sucursal)
   sucursal?: Sucursal;
 
-  @BelongsToMany(() => EstadoEvento, () => HEstadoEvento)
-  estados!: EstadoEvento[];
+  @ForeignKey(() => EstadoEvento)
+  @Column({ type: DataType.INTEGER, allowNull: true })
+  estadoId?: number;
 
-  @BelongsToMany(() => CategoriaEvento, () => HCategoriaEvento)
-  categorias!: CategoriaEvento[];
+  @BelongsTo(() => EstadoEvento)
+  estado?: EstadoEvento;
+
+  @ForeignKey(() => CategoriaEvento)
+  @Column({ type: DataType.INTEGER, allowNull: true })
+  categoriaId?: number;
+
+  @BelongsTo(() => CategoriaEvento)
+  categoria?: CategoriaEvento;
+
+
 
   @HasMany(() => RecurrenciaEvento)
   recurrencias?: RecurrenciaEvento[];
