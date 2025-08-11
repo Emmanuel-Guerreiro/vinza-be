@@ -1,16 +1,17 @@
 import { hashPassword } from '@/auth/auth';
-import { Permissions } from '@/rbac/permissions';
-import { permissionsService, rolesService } from '@/rbac/service';
-import { User } from '@/users/model';
 import { Bodega } from '@/bodega/model';
+import { categoriaEventoService } from '@/categoria-evento/service';
+import config from '@/config';
 import { estadoEventoService } from '@/estado-evento/service';
 import { eventoService } from '@/evento/service';
-import { sucursalService } from '@/sucursal/service';
-import config from '@/config';
-import { categoriaEventoService } from '@/categoria-evento/service';
-import { sequelize } from '.';
-import { Valoracion } from '@/valoracion/model';
 import { maximosDiasAdelanteReservaService } from '@/maximos-dias-adelante-reserva/service';
+import { Permissions } from '@/rbac/permissions';
+import { permissionsService, rolesService } from '@/rbac/service';
+import { DiaSemana, HoraEvento } from '@/recurrencia-evento/model';
+import { sucursalService } from '@/sucursal/service';
+import { User } from '@/users/model';
+import { Valoracion } from '@/valoracion/model';
+import { sequelize } from '.';
 // import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum'; // Comentado temporalmente
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
@@ -108,8 +109,6 @@ async function seed() {
       }),
     );
 
-   
-
     // Evento 1: Clases de yoga semanales
     const evento1 = await eventoService.create({
       nombre: 'Clases de Yoga',
@@ -121,20 +120,20 @@ async function seed() {
       precio: 150,
       recurrencias: [
         {
-          dia: 'Lunes',
-          hora: '18:00',
+          dia: DiaSemana.LUNES,
+          hora: HoraEvento.HORA_18_00,
           fecha_desde: new Date('2024-12-01'),
           fecha_hasta: new Date('2024-12-31'),
         },
         {
-          dia: 'Miércoles',
-          hora: '18:00',
+          dia: DiaSemana.MIERCOLES,
+          hora: HoraEvento.HORA_18_00,
           fecha_desde: new Date('2024-12-01'),
           fecha_hasta: new Date('2024-12-31'),
         },
         {
-          dia: 'Viernes',
-          hora: '18:00',
+          dia: DiaSemana.VIERNES,
+          hora: HoraEvento.HORA_18_00,
           fecha_desde: new Date('2024-12-01'),
           fecha_hasta: new Date('2024-12-31'),
         },
@@ -152,14 +151,14 @@ async function seed() {
       precio: 300,
       recurrencias: [
         {
-          dia: 'Sábado',
-          hora: '10:00',
+          dia: DiaSemana.SABADO,
+          hora: HoraEvento.HORA_10_00,
           fecha_desde: new Date('2024-12-01'),
           fecha_hasta: new Date('2024-12-31'),
         },
         {
-          dia: 'Domingo',
-          hora: '10:00',
+          dia: DiaSemana.DOMINGO,
+          hora: HoraEvento.HORA_10_00,
           fecha_desde: new Date('2024-12-01'),
           fecha_hasta: new Date('2024-12-31'),
         },
@@ -177,26 +176,26 @@ async function seed() {
       precio: 200,
       recurrencias: [
         {
-          dia: 'Martes',
-          hora: '19:00',
+          dia: DiaSemana.MARTES,
+          hora: HoraEvento.HORA_19_00,
           fecha_desde: new Date('2024-12-01'),
           fecha_hasta: new Date('2024-12-31'),
         },
         {
-          dia: 'Martes',
-          hora: '20:30',
+          dia: DiaSemana.MARTES,
+          hora: HoraEvento.HORA_20_30,
           fecha_desde: new Date('2024-12-01'),
           fecha_hasta: new Date('2024-12-31'),
         },
         {
-          dia: 'Jueves',
-          hora: '19:00',
+          dia: DiaSemana.JUEVES,
+          hora: HoraEvento.HORA_19_00,
           fecha_desde: new Date('2024-12-01'),
           fecha_hasta: new Date('2024-12-31'),
         },
         {
-          dia: 'Jueves',
-          hora: '20:30',
+          dia: DiaSemana.JUEVES,
+          hora: HoraEvento.HORA_20_30,
           fecha_desde: new Date('2024-12-01'),
           fecha_hasta: new Date('2024-12-31'),
         },
@@ -227,23 +226,23 @@ async function seed() {
     }
 
     await maximosDiasAdelanteReservaService.patch({ valor: 30 });
- // Create all estado reserva - Comentado temporalmente
- // const estadoReserva = await Promise.all(
- //  Object.values(EstadoReserva).map(async (nombre) => {
- //    return await estadoReservaService.create({
- //      nombre,
- //    });
- //  }),
- // );
- 
-// Create all estado instancia evento - Comentado temporalmente
-// const estadoInstanciaEvento = await Promise.all(
-//   Object.values(EstadoInstanciaEvento).map(async (estadoInstanciaEvento) => {
-//     return await estadoEventoService.create({
-//       nombre: estadoInstanciaEvento,
-//     });
-//   }),
-// );
+    // Create all estado reserva - Comentado temporalmente
+    // const estadoReserva = await Promise.all(
+    //  Object.values(EstadoReserva).map(async (nombre) => {
+    //    return await estadoReservaService.create({
+    //      nombre,
+    //    });
+    //  }),
+    // );
+
+    // Create all estado instancia evento - Comentado temporalmente
+    // const estadoInstanciaEvento = await Promise.all(
+    //   Object.values(EstadoInstanciaEvento).map(async (estadoInstanciaEvento) => {
+    //     return await estadoEventoService.create({
+    //       nombre: estadoInstanciaEvento,
+    //     });
+    //   }),
+    // );
     // eslint-disable-next-line no-console
     console.log('Database seeded successfully');
   } catch (error) {
@@ -253,9 +252,7 @@ async function seed() {
   } finally {
     config.IS_AUDIT_DISABLED = false;
   }
-
-
-
+}
 // Run the seed
 seed()
   .then(() => {
@@ -268,4 +265,3 @@ seed()
     console.error('Seed failed:', error);
     process.exit(1);
   });
-}

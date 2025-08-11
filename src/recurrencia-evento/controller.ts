@@ -23,7 +23,9 @@ export class RecurrenciaEventoController {
 
   public getAll(req: Request, res: Response) {
     findAllRecurrenciaEventoParamsSchema.parseAsync(req.query).then((query) => {
-      this.recurrenciaEventoService.findAll(query.eventoId).then((data) => res.json(data));
+      this.recurrenciaEventoService
+        .findAll(query.eventoId)
+        .then((data) => res.json(data));
     });
   }
 
@@ -60,16 +62,11 @@ export class RecurrenciaEventoController {
   }
 
   public createMany(req: Request, res: Response) {
-    createManyRecurrenciaEventoSchema.parseAsync(req.body).then((validatedBody) => {
-      Promise.all(
-        validatedBody.recurrencias.map((recurrencia) => createRecurrenciaEventoSchema.parseAsync(recurrencia))
-      ).then((validatedRecurrencias) =>
-        this.recurrenciaEventoService
-          .createMany(validatedRecurrencias)
-          .then((data) => res.json(data))
-          .catch((err) => res.json(err)),
-      );
-    });
+    createManyRecurrenciaEventoSchema.parseAsync(req.body).then((dto) =>
+      this.recurrenciaEventoService
+        .createMany(dto.recurrencias)
+        .then((data) => res.json(data))
+        .catch((err) => res.json(err)),
+    );
   }
 }
-

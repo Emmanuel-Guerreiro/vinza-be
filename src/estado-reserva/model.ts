@@ -1,6 +1,4 @@
-// import { Reserva } from '@/reserva/model'; // Comentado temporalmente
 import {
-  BelongsToMany,
   Column,
   CreatedAt,
   DataType,
@@ -31,7 +29,6 @@ export type EstadoReservaCreationAttributes = Omit<
   updatedAt: 'updated_at',
   deletedAt: 'deleted_at',
 })
-
 export class EstadoReserva extends Model<
   EstadoReservaAttributes,
   EstadoReservaCreationAttributes

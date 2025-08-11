@@ -5,14 +5,11 @@ import {
   BelongsTo,
   Model,
   Table,
-  BelongsToMany,
   HasMany,
 } from 'sequelize-typescript';
-import { HEstadoEvento } from '@/estado-evento/model';
 import { Sucursal } from '@/sucursal/model';
 import { EstadoEvento } from '@/estado-evento/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
-import { HCategoriaEvento } from '@/categoria-evento/model';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 
 export interface EventoAttributes {
@@ -79,8 +76,6 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
 
   @BelongsTo(() => CategoriaEvento)
   categoria?: CategoriaEvento;
-
-
 
   @HasMany(() => RecurrenciaEvento)
   recurrencias?: RecurrenciaEvento[];

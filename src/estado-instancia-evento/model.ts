@@ -1,6 +1,4 @@
-
 import {
-  BelongsToMany,
   Column,
   CreatedAt,
   DataType,
@@ -20,7 +18,7 @@ export interface EstadoInstanciaEventoAttributes {
 }
 
 export type EstadoInstanciaaEventoCreationAttributes = Omit<
-EstadoInstanciaEventoAttributes,
+  EstadoInstanciaEventoAttributes,
   'id' | 'created_at' | 'updated_at' | 'deleted_at'
 >;
 
@@ -56,8 +54,6 @@ export class EstadoInstanciaEvento extends Model<
   @DeletedAt
   @Column({ type: DataType.DATE })
   deleted_at!: string | null;
-
-
 }
 
 export interface HEstadoInstanciaEventoAttributes {
@@ -90,7 +86,6 @@ export class HEstadoInstanciaEvento extends Model<
     autoIncrement: true,
   })
   id!: number;
-
 
   @Column({ type: DataType.INTEGER, allowNull: false })
   instanciaeventoId!: number;

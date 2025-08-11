@@ -35,18 +35,19 @@ class EventoService {
           dto.categoriaId,
           transaction,
         );
-        if (!categoriaEvento) throw errors.app.evento.categoria_evento_not_found;
+        if (!categoriaEvento)
+          throw errors.app.evento.categoria_evento_not_found;
       }
 
       let evento = await Evento.create(dto, { transaction });
 
       // Crear recurrencias si se proporcionan
       if (dto.recurrencias && dto.recurrencias.length > 0) {
-        const recurrenciasData = dto.recurrencias.map(recurrencia => ({
+        const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
           ...recurrencia,
           eventoId: evento.id,
         }));
-        
+
         await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
       }
 
@@ -152,7 +153,8 @@ class EventoService {
           dto.categoriaId,
           transaction,
         );
-        if (!categoriaEvento) throw errors.app.evento.categoria_evento_not_found;
+        if (!categoriaEvento)
+          throw errors.app.evento.categoria_evento_not_found;
       }
 
       // Manejar recurrencias si se proporcionan
@@ -165,21 +167,22 @@ class EventoService {
 
         // Crear nuevas recurrencias si se proporcionan
         if (dto.recurrencias.length > 0) {
-          const recurrenciasData = dto.recurrencias.map(recurrencia => ({
+          const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
             ...recurrencia,
             eventoId: id,
           }));
-          
+
           await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
         }
       }
 
       // Filtrar campos que no pertenecen al modelo Evento
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { recurrencias, ...eventoData } = dto;
-      
+
       // Actualizar el evento usando la transacción
       await evento.update(eventoData, { transaction });
-      
+
       // Recargar el evento para obtener los datos actualizados
       await evento.reload({ transaction });
 
@@ -208,8 +211,6 @@ class EventoService {
     });
     return evento;
   }
-
-
 
   /**
    * Generate where conditions for the findAll query based on model specific fields

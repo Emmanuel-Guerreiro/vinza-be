@@ -85,15 +85,15 @@ export class RecurrenciaEvento extends Model<
   })
   id!: number;
 
-  @Column({ 
-    type: DataType.ENUM(...Object.values(DiaSemana)), 
-    allowNull: false 
+  @Column({
+    type: DataType.ENUM(...Object.values(DiaSemana)),
+    allowNull: false,
   })
   dia!: DiaSemana;
 
-  @Column({ 
-    type: DataType.ENUM(...Object.values(HoraEvento)), 
-    allowNull: false 
+  @Column({
+    type: DataType.ENUM(...Object.values(HoraEvento)),
+    allowNull: false,
   })
   hora!: HoraEvento;
 
@@ -110,4 +110,3 @@ export class RecurrenciaEvento extends Model<
   @BelongsTo(() => Evento)
   evento?: Evento;
 }
-

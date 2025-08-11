@@ -1,5 +1,8 @@
 import { RecurrenciaEvento } from './model';
-import { CreateRecurrenciaEventoDto, UpdateRecurrenciaEventoDto } from './types';
+import {
+  CreateRecurrenciaEventoDto,
+  UpdateRecurrenciaEventoDto,
+} from './types';
 import { errors } from '@/error';
 
 export class RecurrenciaEventoService {
@@ -7,7 +10,7 @@ export class RecurrenciaEventoService {
     try {
       return await RecurrenciaEvento.create(data);
     } catch {
-      throw errors.app.recurrenciaEvento.create_error;
+      throw errors.app.recurrencia_evento.create_error;
     }
   }
 
@@ -17,13 +20,13 @@ export class RecurrenciaEventoService {
       if (eventoId) {
         where.eventoId = eventoId;
       }
-      
+
       return await RecurrenciaEvento.findAll({
         where,
         include: ['evento'],
       });
     } catch {
-      throw errors.app.recurrenciaEvento.find_all_error;
+      throw errors.app.recurrencia_evento.find_all_error;
     }
   }
 
@@ -32,25 +35,28 @@ export class RecurrenciaEventoService {
       const recurrencia = await RecurrenciaEvento.findByPk(id, {
         include: ['evento'],
       });
-      
+
       if (!recurrencia) {
-        throw errors.app.recurrenciaEvento.not_found;
+        throw errors.app.recurrencia_evento.not_found;
       }
-      
+
       return recurrencia;
     } catch (error) {
       if (error instanceof Error && error.message.includes('not_found')) {
         throw error;
       }
-      throw errors.app.recurrenciaEvento.find_by_id_error;
+      throw errors.app.recurrencia_evento.find_by_id_error;
     }
   }
 
-  async update(id: number, data: UpdateRecurrenciaEventoDto): Promise<RecurrenciaEvento | null> {
+  async update(
+    id: number,
+    data: UpdateRecurrenciaEventoDto,
+  ): Promise<RecurrenciaEvento | null> {
     try {
       const recurrencia = await RecurrenciaEvento.findByPk(id);
       if (!recurrencia) {
-        throw errors.app.recurrenciaEvento.not_found;
+        throw errors.app.recurrencia_evento.not_found;
       }
 
       await recurrencia.update(data);
@@ -59,7 +65,7 @@ export class RecurrenciaEventoService {
       if (error instanceof Error && error.message.includes('not_found')) {
         throw error;
       }
-      throw errors.app.recurrenciaEvento.update_error;
+      throw errors.app.recurrencia_evento.update_error;
     }
   }
 
@@ -67,7 +73,7 @@ export class RecurrenciaEventoService {
     try {
       const recurrencia = await RecurrenciaEvento.findByPk(id);
       if (!recurrencia) {
-        throw errors.app.recurrenciaEvento.not_found;
+        throw errors.app.recurrencia_evento.not_found;
       }
 
       await recurrencia.destroy();
@@ -76,19 +82,20 @@ export class RecurrenciaEventoService {
       if (error instanceof Error && error.message.includes('not_found')) {
         throw error;
       }
-      throw errors.app.recurrenciaEvento.delete_error;
+      throw errors.app.recurrencia_evento.delete_error;
     }
   }
 
-  async createMany(recurrencias: CreateRecurrenciaEventoDto[]): Promise<RecurrenciaEvento[]> {
+  async createMany(
+    recurrencias: CreateRecurrenciaEventoDto[],
+  ): Promise<RecurrenciaEvento[]> {
     try {
       return await RecurrenciaEvento.bulkCreate(recurrencias);
     } catch {
-      throw errors.app.recurrenciaEvento.create_many_error;
+      throw errors.app.recurrencia_evento.create_many_error;
     }
   }
 }
 
 export const recurrenciaEventoService = new RecurrenciaEventoService();
 export type IRecurrenciaEventoService = typeof recurrenciaEventoService;
-
