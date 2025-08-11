@@ -6,7 +6,9 @@ import { requirePermissions } from '@/rbac/middleware';
 import { Permissions } from '@/rbac/permissions';
 import logger from '@/logger';
 
-const controller = new EstadoInstanciaEventoController(estadoInstanciaEventoService);
+const controller = new EstadoInstanciaEventoController(
+  estadoInstanciaEventoService,
+);
 const router = Router();
 
 /**
