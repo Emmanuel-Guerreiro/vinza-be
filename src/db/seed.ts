@@ -1,19 +1,20 @@
 import { hashPassword } from '@/auth/auth';
-import { Permissions } from '@/rbac/permissions';
-import { permissionsService, rolesService } from '@/rbac/service';
-import { User } from '@/users/model';
 import { Bodega } from '@/bodega/model';
+import { categoriaEventoService } from '@/categoria-evento/service';
+import config from '@/config';
 import { estadoEventoService } from '@/estado-evento/service';
 import { eventoService } from '@/evento/service';
-import { sucursalService } from '@/sucursal/service';
-import config from '@/config';
-import { categoriaEventoService } from '@/categoria-evento/service';
-import { sequelize } from '.';
-import { Valoracion } from '@/valoracion/model';
 import { maximosDiasAdelanteReservaService } from '@/maximos-dias-adelante-reserva/service';
-import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum';
-import { estadoReservaService } from '@/estado-reserva/service';
-import { EstadoReserva } from '@/estado-reserva/enum';
+import { Permissions } from '@/rbac/permissions';
+import { permissionsService, rolesService } from '@/rbac/service';
+import { DiaSemana, HoraEvento } from '@/recurrencia-evento/model';
+import { sucursalService } from '@/sucursal/service';
+import { User } from '@/users/model';
+import { Valoracion } from '@/valoracion/model';
+import { sequelize } from '.';
+// import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum'; // Comentado temporalmente
+// import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
+// import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
 
 async function seed() {
   try {
@@ -108,24 +109,106 @@ async function seed() {
       }),
     );
 
-   
-
+    // Evento 1: Clases de yoga semanales
     const evento1 = await eventoService.create({
-      nombre: 'evento 1',
-      descripcion: 'descripcion 1',
-      cupo: '10',
+      nombre: 'Clases de Yoga',
+      descripcion: 'Clases de yoga para todos los niveles',
+      cupo: '20',
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEvento1.id,
-      precio: 100,
+      precio: 150,
+      recurrencias: [
+        {
+          dia: DiaSemana.LUNES,
+          hora: HoraEvento.HORA_18_00,
+          fecha_desde: new Date('2024-12-01'),
+          fecha_hasta: new Date('2024-12-31'),
+        },
+        {
+          dia: DiaSemana.MIERCOLES,
+          hora: HoraEvento.HORA_18_00,
+          fecha_desde: new Date('2024-12-01'),
+          fecha_hasta: new Date('2024-12-31'),
+        },
+        {
+          dia: DiaSemana.VIERNES,
+          hora: HoraEvento.HORA_18_00,
+          fecha_desde: new Date('2024-12-01'),
+          fecha_hasta: new Date('2024-12-31'),
+        },
+      ],
     });
 
+    // Evento 2: Taller de cocina mensual
     const evento2 = await eventoService.create({
-      nombre: 'evento 2',
-      descripcion: 'descripcion 2',
-      cupo: '10',
+      nombre: 'Taller de Cocina',
+      descripcion: 'Aprende técnicas de cocina profesional',
+      cupo: '15',
       sucursalId: mainSucursal.id,
       estadoId: inactivoEstadoEvento.id,
+      categoriaId: categoriaEvento2.id,
+      precio: 300,
+      recurrencias: [
+        {
+          dia: DiaSemana.SABADO,
+          hora: HoraEvento.HORA_10_00,
+          fecha_desde: new Date('2024-12-01'),
+          fecha_hasta: new Date('2024-12-31'),
+        },
+        {
+          dia: DiaSemana.DOMINGO,
+          hora: HoraEvento.HORA_10_00,
+          fecha_desde: new Date('2024-12-01'),
+          fecha_hasta: new Date('2024-12-31'),
+        },
+      ],
+    });
+
+    // Evento 3: Charlas de tecnología (múltiples horarios por día)
+    const evento3 = await eventoService.create({
+      nombre: 'Charlas de Tecnología',
+      descripcion: 'Charlas sobre las últimas tendencias en tecnología',
+      cupo: '50',
+      sucursalId: mainSucursal.id,
+      estadoId: activoEstadoEvento.id,
+      categoriaId: categoriaEvento1.id,
+      precio: 200,
+      recurrencias: [
+        {
+          dia: DiaSemana.MARTES,
+          hora: HoraEvento.HORA_19_00,
+          fecha_desde: new Date('2024-12-01'),
+          fecha_hasta: new Date('2024-12-31'),
+        },
+        {
+          dia: DiaSemana.MARTES,
+          hora: HoraEvento.HORA_20_30,
+          fecha_desde: new Date('2024-12-01'),
+          fecha_hasta: new Date('2024-12-31'),
+        },
+        {
+          dia: DiaSemana.JUEVES,
+          hora: HoraEvento.HORA_19_00,
+          fecha_desde: new Date('2024-12-01'),
+          fecha_hasta: new Date('2024-12-31'),
+        },
+        {
+          dia: DiaSemana.JUEVES,
+          hora: HoraEvento.HORA_20_30,
+          fecha_desde: new Date('2024-12-01'),
+          fecha_hasta: new Date('2024-12-31'),
+        },
+      ],
+    });
+
+    // Evento 4: Evento único sin recurrencias
+    const evento4 = await eventoService.create({
+      nombre: 'Conferencia Única',
+      descripcion: 'Conferencia especial sobre innovación',
+      cupo: '100',
+      sucursalId: mainSucursal.id,
+      estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEvento2.id,
       precio: 500,
     });
@@ -136,30 +219,30 @@ async function seed() {
       { valor: 3, comentario: 'Estuvo bien', userId: adminUser.id },
       { valor: 1, comentario: 'No me gustó', userId: adminUser.id },
     ];
-    for (const evento of [evento1, evento2]) {
+    for (const evento of [evento1, evento2, evento3, evento4]) {
       for (const val of valoracionesData) {
         await Valoracion.create({ ...val, eventoId: evento.id });
       }
     }
 
     await maximosDiasAdelanteReservaService.patch({ valor: 30 });
- // Create all estado reserva
- const estadoReserva = await Promise.all(
-  Object.values(EstadoReserva).map(async (nombre) => {
-    return await estadoReservaService.create({
-      nombre,
-    });
-  }),
-);
- 
-// Create all estado instancia evento
-const estadoInstanciaEvento = await Promise.all(
-  Object.values(EstadoInstanciaEvento).map(async (estadoInstanciaEvento) => {
-    return await estadoEventoService.create({
-      nombre: estadoInstanciaEvento,
-    });
-  }),
-);
+    // Create all estado reserva - Comentado temporalmente
+    // const estadoReserva = await Promise.all(
+    //  Object.values(EstadoReserva).map(async (nombre) => {
+    //    return await estadoReservaService.create({
+    //      nombre,
+    //    });
+    //  }),
+    // );
+
+    // Create all estado instancia evento - Comentado temporalmente
+    // const estadoInstanciaEvento = await Promise.all(
+    //   Object.values(EstadoInstanciaEvento).map(async (estadoInstanciaEvento) => {
+    //     return await estadoEventoService.create({
+    //       nombre: estadoInstanciaEvento,
+    //     });
+    //   }),
+    // );
     // eslint-disable-next-line no-console
     console.log('Database seeded successfully');
   } catch (error) {
@@ -169,9 +252,7 @@ const estadoInstanciaEvento = await Promise.all(
   } finally {
     config.IS_AUDIT_DISABLED = false;
   }
-
-
-
+}
 // Run the seed
 seed()
   .then(() => {
@@ -184,4 +265,3 @@ seed()
     console.error('Seed failed:', error);
     process.exit(1);
   });
-}
