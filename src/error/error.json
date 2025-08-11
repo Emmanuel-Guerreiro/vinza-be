@@ -108,20 +108,7 @@
         "status": 404
       }
     },
-    "instanciaEvento": {
-      "not_found": {
-        "key": "app.instanciaEvento.not_found",
-        "message": "Instancia Evento not found",
-        "message_eng": "Instancia Evento not found",
-        "status": 404
-      },
-      "estado_not_found": {
-        "key": "app.instanciaEvento.estado_not_found",
-        "message": "Estado not found",
-        "message_eng": "Estado not found",
-        "status": 404
-      }
-    },
+
     "valoracion": {
       "not_found": {
         "key": "app.valoracion.not_found",
