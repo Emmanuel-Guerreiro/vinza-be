@@ -3,13 +3,20 @@ import { DiaSemana, HoraEvento } from './model';
 
 // Función para convertir string a Date - VERSION NUEVA
 const stringToDate = (val: string): Date => {
-  console.log('Convirtiendo fecha:', val, typeof val);
   const date = new Date(val);
   if (isNaN(date.getTime())) {
     throw new Error('Fecha inválida');
   }
   return date;
 };
+
+// Schema para validar query params en getAll
+export const findAllRecurrenciaEventoParamsSchema = z.object({
+  eventoId: z.coerce.number().positive('El ID del evento debe ser un número positivo').optional(),
+});
+
+// Schema para validar path params (ID)
+export const idParamSchema = z.coerce.number().positive('El ID debe ser un número positivo');
 
 export const createRecurrenciaEventoSchema = z.object({
   dia: z.nativeEnum(DiaSemana, {
@@ -58,5 +65,10 @@ export const updateRecurrenciaEventoSchema = z.object({
 }, {
   message: 'La fecha hasta debe ser posterior a la fecha desde',
   path: ['fecha_hasta'],
+});
+
+// Schema para validar el array de recurrencias en createMany
+export const createManyRecurrenciaEventoSchema = z.object({
+  recurrencias: z.array(createRecurrenciaEventoSchema).min(1, 'Debe haber al menos una recurrencia'),
 });
 

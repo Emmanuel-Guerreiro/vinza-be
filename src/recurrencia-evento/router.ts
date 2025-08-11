@@ -1,13 +1,38 @@
 import { Router } from 'express';
 import { RecurrenciaEventoController } from './controller';
+import { recurrenciaEventoService } from './service';
 
+const controller = new RecurrenciaEventoController(recurrenciaEventoService);
 const router = Router();
-const controller = new RecurrenciaEventoController();
 
-// Wrapper para manejar funciones async en Express
-const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
-  Promise.resolve(fn(req, res, next)).catch(next);
-};
+/**
+ * @openapi
+ * /recurrencia-evento:
+ *   get:
+ *     tags:
+ *       - Recurrencia Evento
+ *     summary: Obtener todas las recurrencias de eventos
+ *     description: Retorna todas las recurrencias de eventos, opcionalmente filtradas por eventoId
+ *     parameters:
+ *       - in: query
+ *         name: eventoId
+ *         schema:
+ *           type: integer
+ *         description: ID del evento para filtrar recurrencias
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Lista de recurrencias obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/RecurrenciaEvento'
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('', controller.getAll);
 
 /**
  * @openapi
@@ -71,7 +96,7 @@ const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
  *                 error:
  *                   type: string
  */
-router.post('/', asyncHandler((req: any, res: any) => controller.create(req, res)));
+router.post('', controller.create);
 
 /**
  * @openapi
@@ -144,36 +169,7 @@ router.post('/', asyncHandler((req: any, res: any) => controller.create(req, res
  *                 error:
  *                   type: string
  */
-router.post('/create-many', asyncHandler((req: any, res: any) => controller.createMany(req, res)));
-
-/**
- * @openapi
- * /recurrencia-evento:
- *   get:
- *     tags:
- *       - Recurrencia Evento
- *     summary: Obtener todas las recurrencias de eventos
- *     description: Retorna todas las recurrencias de eventos, opcionalmente filtradas por eventoId
- *     parameters:
- *       - in: query
- *         name: eventoId
- *         schema:
- *           type: integer
- *         description: ID del evento para filtrar recurrencias
- *         example: 1
- *     responses:
- *       200:
- *         description: Lista de recurrencias obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/RecurrenciaEvento'
- *       500:
- *         description: Error interno del servidor
- */
-router.get('/', asyncHandler((req: any, res: any) => controller.findAll(req, res)));
+router.post('/create-many', controller.createMany);
 
 /**
  * @openapi
@@ -203,7 +199,7 @@ router.get('/', asyncHandler((req: any, res: any) => controller.findAll(req, res
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/:id', asyncHandler((req: any, res: any) => controller.findById(req, res)));
+router.get('/:id', controller.getOne);
 
 /**
  * @openapi
@@ -264,7 +260,7 @@ router.get('/:id', asyncHandler((req: any, res: any) => controller.findById(req,
  *       404:
  *         description: Recurrencia no encontrada
  */
-router.put('/:id', asyncHandler((req: any, res: any) => controller.update(req, res)));
+router.put('/:id', controller.update);
 
 /**
  * @openapi
@@ -290,7 +286,7 @@ router.put('/:id', asyncHandler((req: any, res: any) => controller.update(req, r
  *       500:
  *         description: Error interno del servidor
  */
-router.delete('/:id', asyncHandler((req: any, res: any) => controller.delete(req, res)));
+router.delete('/:id', controller.delete);
 
 export default router;
 

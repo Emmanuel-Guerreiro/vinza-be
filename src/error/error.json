@@ -163,6 +163,12 @@
         "message_eng": "Error creating multiple recurrencia evento",
         "status": 500
       },
+      "validation_error": {
+        "key": "app.recurrenciaEvento.validation_error",
+        "message": "Error de validación en recurrencia evento",
+        "message_eng": "Validation error in recurrencia evento",
+        "status": 400
+      },
       "find_all_error": {
         "key": "app.recurrenciaEvento.find_all_error",
         "message": "Error al obtener recurrencias evento",

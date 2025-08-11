@@ -6,14 +6,14 @@ export class RecurrenciaEventoService {
   async create(data: CreateRecurrenciaEventoDto): Promise<RecurrenciaEvento> {
     try {
       return await RecurrenciaEvento.create(data);
-    } catch (error) {
+    } catch {
       throw errors.app.recurrenciaEvento.create_error;
     }
   }
 
   async findAll(eventoId?: number): Promise<RecurrenciaEvento[]> {
     try {
-      const where: any = {};
+      const where: { eventoId?: number } = {};
       if (eventoId) {
         where.eventoId = eventoId;
       }
@@ -22,17 +22,26 @@ export class RecurrenciaEventoService {
         where,
         include: ['evento'],
       });
-    } catch (error) {
+    } catch {
       throw errors.app.recurrenciaEvento.find_all_error;
     }
   }
 
   async findById(id: number): Promise<RecurrenciaEvento | null> {
     try {
-      return await RecurrenciaEvento.findByPk(id, {
+      const recurrencia = await RecurrenciaEvento.findByPk(id, {
         include: ['evento'],
       });
+      
+      if (!recurrencia) {
+        throw errors.app.recurrenciaEvento.not_found;
+      }
+      
+      return recurrencia;
     } catch (error) {
+      if (error instanceof Error && error.message.includes('not_found')) {
+        throw error;
+      }
       throw errors.app.recurrenciaEvento.find_by_id_error;
     }
   }
@@ -74,9 +83,12 @@ export class RecurrenciaEventoService {
   async createMany(recurrencias: CreateRecurrenciaEventoDto[]): Promise<RecurrenciaEvento[]> {
     try {
       return await RecurrenciaEvento.bulkCreate(recurrencias);
-    } catch (error) {
+    } catch {
       throw errors.app.recurrenciaEvento.create_many_error;
     }
   }
 }
+
+export const recurrenciaEventoService = new RecurrenciaEventoService();
+export type IRecurrenciaEventoService = typeof recurrenciaEventoService;
 
