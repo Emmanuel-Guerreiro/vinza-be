@@ -273,12 +273,12 @@ router.post('', controller.create);
  *                       type: string
  *                       format: date
  *                       description: Fecha desde la cual comienza la recurrencia
- *                       example: "2024-02-01"
+ *                       example: "2027-02-01"
  *                     fecha_hasta:
  *                       type: string
  *                       format: date
  *                       description: Fecha hasta la cual termina la recurrencia
- *                       example: "2024-11-30"
+ *                       example: "2027-11-30"
  *     responses:
  *       200:
  *         description: Evento updated successfully

@@ -69,12 +69,12 @@ router.get('', controller.getAll);
  *                 type: string
  *                 format: date
  *                 description: Fecha desde la cual comienza la recurrencia
- *                 example: "2024-01-01"
+ *                 example: "2026-01-01"
  *               fecha_hasta:
  *                 type: string
  *                 format: date
  *                 description: Fecha hasta la cual termina la recurrencia
- *                 example: "2024-12-31"
+ *                 example: "2026-12-31"
  *               eventoId:
  *                 type: integer
  *                 description: ID del evento al que pertenece la recurrencia
@@ -140,12 +140,12 @@ router.post('', controller.create);
  *                       type: string
  *                       format: date
  *                       description: Fecha desde la cual comienza la recurrencia
- *                       example: "2024-01-01"
+ *                       example: "2026-01-01"
  *                     fecha_hasta:
  *                       type: string
  *                       format: date
  *                       description: Fecha hasta la cual termina la recurrencia
- *                       example: "2024-12-31"
+ *                       example: "2026-12-31"
  *                     eventoId:
  *                       type: integer
  *                       description: ID del evento al que pertenece la recurrencia
@@ -238,12 +238,12 @@ router.get('/:id', controller.getOne);
  *                 type: string
  *                 format: date
  *                 description: Fecha desde la cual comienza la recurrencia
- *                 example: "2024-02-01"
+ *                 example: "2027-02-01"
  *               fecha_hasta:
  *                 type: string
  *                 format: date
  *                 description: Fecha hasta la cual termina la recurrencia
- *                 example: "2024-11-30"
+ *                 example: "2027-11-30"
  *               eventoId:
  *                 type: integer
  *                 description: ID del evento al que pertenece la recurrencia

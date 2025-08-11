@@ -177,17 +177,20 @@ class EventoService {
       // Filtrar campos que no pertenecen al modelo Evento
       const { recurrencias, ...eventoData } = dto;
       
-      const updatedEvento = await evento.update(eventoData, {
-        returning: true,
-        transaction,
-      });
+      // Actualizar el evento usando la transacción
+      await evento.update(eventoData, { transaction });
+      
+      // Recargar el evento para obtener los datos actualizados
+      await evento.reload({ transaction });
+
+      await transaction.commit();
 
       auditEmitter.emitEntry({
         tipoEvento: 'evento:update',
-        valor: updatedEvento.dataValues,
+        valor: evento.dataValues,
       });
 
-      return updatedEvento;
+      return evento;
     } catch (error) {
       await transaction.rollback();
       throw error;
