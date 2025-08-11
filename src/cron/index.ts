@@ -1,9 +1,8 @@
 import logger from '@/logger';
 import { CronJob } from 'cron';
 
-// Tarea diaria de limpieza o mantenimiento
 const dailyMaintenanceJob = new CronJob(
-  '0 2 * * *', // Cada día a las 2:00 AM
+  '0 2 * * *',
   async () => {
     try {
       logger.info('Iniciando tarea de mantenimiento diario');
@@ -27,7 +26,6 @@ export function initializeCronJobs() {
 
   // Iniciar el job
   dailyMaintenanceJob.start();
-
   logger.info('Cron jobs inicializados correctamente');
 }
 

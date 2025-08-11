@@ -21,7 +21,6 @@ import { contextMiddleware } from './context';
 import valoracionRouter from './valoracion/router';
 import maximosDiasAdelanteReservaRouter from './maximos-dias-adelante-reserva/router';
 import recurrenciaEventoRouter from './recurrencia-evento/router';
-import { initializeCronJobs } from './cron';
 
 function initializeRouter() {
   const router = Router();
@@ -70,9 +69,5 @@ export default async function () {
 
   // Global error handler (should be after routes)
   handleErrors(app);
-
-  // Inicializar cron jobs
-  initializeCronJobs();
-
   return app;
 }
