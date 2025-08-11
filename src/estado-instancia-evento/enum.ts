@@ -1,5 +1,5 @@
 export enum EstadoInstanciaEvento {
-    ACTIVA = "ACTIVA",
-    FINALIZADA = "FINALIZADA",
-    SUSPENDIDA = "SUSPENDIDA",
+  ACTIVA = 'ACTIVA',
+  FINALIZADA = 'FINALIZADA',
+  SUSPENDIDA = 'SUSPENDIDA',
 }

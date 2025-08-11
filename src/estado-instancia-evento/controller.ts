@@ -1,6 +1,9 @@
 import { IEstadoInstanciaEventoService } from './service';
 import type { Request, Response } from 'express';
-import { createEstadoInstanciaEventoSchema, updateEstadoInstanciaEventoSchema } from './schema';
+import {
+  createEstadoInstanciaEventoSchema,
+  updateEstadoInstanciaEventoSchema,
+} from './schema';
 
 export class EstadoInstanciaEventoController {
   readonly estadoInstanciaEventoService;
@@ -28,7 +31,9 @@ export class EstadoInstanciaEventoController {
     createEstadoInstanciaEventoSchema
       .parseAsync(req.body)
       .then((dto) =>
-        this.estadoInstanciaEventoService.create(dto).then((data) => res.json(data)),
+        this.estadoInstanciaEventoService
+          .create(dto)
+          .then((data) => res.json(data)),
       );
   }
 
