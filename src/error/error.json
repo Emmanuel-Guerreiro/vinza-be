@@ -149,6 +149,26 @@
         "message_eng": "Error creating the reservation",
         "status": 500
       }
+    },
+    "recorrido": {
+      "not_found": {
+        "key": "app.recorrido.not_found",
+        "message": "Recorrido not found",
+        "message_eng": "Recorrido not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.recorrido.create_error",
+        "message": "Error al crear el recorrido",
+        "message_eng": "Error creating the recorrido",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.recorrido.update_error",
+        "message": "Error al actualizar el recorrido",
+        "message_eng": "Error updating the recorrido",
+        "status": 500
+      }
     }
   }
 }
