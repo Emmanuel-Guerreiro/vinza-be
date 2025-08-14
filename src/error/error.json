@@ -108,20 +108,7 @@
         "status": 404
       }
     },
-    "instanciaEvento": {
-      "not_found": {
-        "key": "app.instanciaEvento.not_found",
-        "message": "Instancia Evento not found",
-        "message_eng": "Instancia Evento not found",
-        "status": 404
-      },
-      "estado_not_found": {
-        "key": "app.instanciaEvento.estado_not_found",
-        "message": "Estado not found",
-        "message_eng": "Estado not found",
-        "status": 404
-      }
-    },
+
     "valoracion": {
       "not_found": {
         "key": "app.valoracion.not_found",
@@ -136,7 +123,7 @@
         "message": "Reserva not found",
         "message_eng": "Reserva not found",
         "status": 404
-      },  
+      },
       "estado_not_found": {
         "key": "app.reserva.estado_not_found",
         "message": "Estado not found",
@@ -167,6 +154,64 @@
         "key": "app.recorrido.update_error",
         "message": "Error al actualizar el recorrido",
         "message_eng": "Error updating the recorrido",
+        "status": 500
+      }
+    },
+    "instancia_evento": {
+      "estado_not_found": {
+        "key": "app.instancia_evento.estado_not_found",
+        "message": "Estado instancia evento not found",
+        "message_eng": "Estado instancia evento not found",
+        "status": 404
+      }
+    },
+    "recurrencia_evento": {
+      "not_found": {
+        "key": "app.recurrencia_evento.not_found",
+        "message": "Recurrencia evento not found",
+        "message_eng": "Recurrencia evento not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.recurrencia_evento.create_error",
+        "message": "Error al crear recurrencia evento",
+        "message_eng": "Error creating recurrencia evento",
+        "status": 500
+      },
+      "create_many_error": {
+        "key": "app.recurrencia_evento.create_many_error",
+        "message": "Error al crear múltiples recurrencias evento",
+        "message_eng": "Error creating multiple recurrencia evento",
+        "status": 500
+      },
+      "validation_error": {
+        "key": "app.recurrencia_evento.validation_error",
+        "message": "Error de validación en recurrencia evento",
+        "message_eng": "Validation error in recurrencia evento",
+        "status": 400
+      },
+      "find_all_error": {
+        "key": "app.recurrencia_evento.find_all_error",
+        "message": "Error al obtener recurrencias evento",
+        "message_eng": "Error finding recurrencia evento",
+        "status": 500
+      },
+      "find_by_id_error": {
+        "key": "app.recurrencia_evento.find_by_id_error",
+        "message": "Error al obtener recurrencia evento por ID",
+        "message_eng": "Error finding recurrencia evento by ID",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.recurrencia_evento.update_error",
+        "message": "Error al actualizar recurrencia evento",
+        "message_eng": "Error updating recurrencia evento",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.recurrencia_evento.delete_error",
+        "message": "Error al eliminar recurrencia evento",
+        "message_eng": "Error deleting recurrencia evento",
         "status": 500
       }
     }

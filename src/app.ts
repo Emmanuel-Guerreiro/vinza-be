@@ -20,6 +20,7 @@ import auditRouter from './audit/router';
 import { contextMiddleware } from './context';
 import valoracionRouter from './valoracion/router';
 import maximosDiasAdelanteReservaRouter from './maximos-dias-adelante-reserva/router';
+import recurrenciaEventoRouter from './recurrencia-evento/router';
 
 function initializeRouter() {
   const router = Router();
@@ -38,6 +39,7 @@ function initializeRouter() {
     '/maximos-dias-adelante-reserva',
     maximosDiasAdelanteReservaRouter,
   );
+  router.use('/recurrencia-evento', recurrenciaEventoRouter);
   return router;
 }
 
@@ -67,6 +69,5 @@ export default async function () {
 
   // Global error handler (should be after routes)
   handleErrors(app);
-
   return app;
 }

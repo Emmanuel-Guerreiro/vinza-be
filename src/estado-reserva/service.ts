@@ -15,7 +15,7 @@ class EstadoReservaService {
 
   public async findOne(id: number, transaction?: Transaction) {
     const estadoReserva = await EstadoReserva.findByPk(id, { transaction });
-        if (!estadoReserva) throw errors.app.reserva.estado_not_found;
+    if (!estadoReserva) throw errors.app.reserva.estado_not_found;
     return estadoReserva;
   }
 
@@ -30,7 +30,7 @@ class EstadoReservaService {
 
   public async delete(id: number) {
     const estadoReserva = await EstadoReserva.findByPk(id);
-        if (!estadoReserva) throw errors.app.reserva.estado_not_found;
+    if (!estadoReserva) throw errors.app.reserva.estado_not_found;
     await estadoReserva.destroy();
     return estadoReserva;
   }

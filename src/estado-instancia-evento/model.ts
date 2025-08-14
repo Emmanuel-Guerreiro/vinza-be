@@ -1,6 +1,4 @@
-import { InstanciaEvento } from '@/InstanciaEvento/model';
 import {
-  BelongsToMany,
   Column,
   CreatedAt,
   DataType,
@@ -20,7 +18,7 @@ export interface EstadoInstanciaEventoAttributes {
 }
 
 export type EstadoInstanciaaEventoCreationAttributes = Omit<
-EstadoInstanciaEventoAttributes,
+  EstadoInstanciaEventoAttributes,
   'id' | 'created_at' | 'updated_at' | 'deleted_at'
 >;
 
@@ -56,9 +54,6 @@ export class EstadoInstanciaEvento extends Model<
   @DeletedAt
   @Column({ type: DataType.DATE })
   deleted_at!: string | null;
-
-  @BelongsToMany(() => InstanciaEvento, () => HEstadoInstanciaEvento)
-  eventos!: InstanciaEvento[];
 }
 
 export interface HEstadoInstanciaEventoAttributes {
@@ -92,7 +87,6 @@ export class HEstadoInstanciaEvento extends Model<
   })
   id!: number;
 
-  @ForeignKey(() => InstanciaEvento)
   @Column({ type: DataType.INTEGER, allowNull: false })
   instanciaeventoId!: number;
 

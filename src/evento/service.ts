@@ -15,21 +15,19 @@ import {
   generatePaginationParams,
   generateOrderConditions,
 } from '@/pagination';
+import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
-    //comentario
     const transaction = await sequelize.transaction();
     try {
-      let evento = await Evento.create(dto, { transaction });
-
+      // Validar que estadoId y categoriaId existan si se proporcionan
       if (dto.estadoId) {
         const estadoEvento = await estadoEventoService.findOne(
           dto.estadoId,
           transaction,
         );
         if (!estadoEvento) throw errors.app.evento.estado_not_found;
-        await evento.$set('estados', [estadoEvento.id], { transaction });
       }
 
       if (dto.categoriaId) {
@@ -37,8 +35,20 @@ class EventoService {
           dto.categoriaId,
           transaction,
         );
+        if (!categoriaEvento)
+          throw errors.app.evento.categoria_evento_not_found;
+      }
 
-        await evento.$set('categorias', [categoriaEvento.id], { transaction });
+      let evento = await Evento.create(dto, { transaction });
+
+      // Crear recurrencias si se proporcionan
+      if (dto.recurrencias && dto.recurrencias.length > 0) {
+        const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
+          ...recurrencia,
+          eventoId: evento.id,
+        }));
+
+        await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
       }
 
       evento = await evento.save({ transaction, returning: true });
@@ -73,7 +83,6 @@ class EventoService {
         limit,
         offset,
         include: [
-          // Where and required will work as a filter when its based on related models
           {
             model: CategoriaEvento,
             where: params.categoriaId ? { id: params.categoriaId } : undefined,
@@ -88,6 +97,9 @@ class EventoService {
             model: Sucursal,
             where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
             required: !!params.bodegaId,
+          },
+          {
+            model: RecurrenciaEvento,
           },
         ],
       }),
@@ -108,6 +120,12 @@ class EventoService {
         {
           model: EstadoEvento,
         },
+        {
+          model: Sucursal,
+        },
+        {
+          model: RecurrenciaEvento,
+        },
       ],
     });
     if (!evento) throw errors.app.evento.not_found;
@@ -121,13 +139,13 @@ class EventoService {
       const evento = await Evento.findByPk(id);
       if (!evento) throw errors.app.evento.not_found;
 
+      // Validar que estadoId y categoriaId existan si se proporcionan
       if (dto.estadoId) {
         const estadoEvento = await estadoEventoService.findOne(
           dto.estadoId,
           transaction,
         );
         if (!estadoEvento) throw errors.app.evento.estado_not_found;
-        await evento.$set('estados', [estadoEvento.id], { transaction });
       }
 
       if (dto.categoriaId) {
@@ -135,21 +153,47 @@ class EventoService {
           dto.categoriaId,
           transaction,
         );
-
-        await evento.$set('categorias', [categoriaEvento.id], { transaction });
+        if (!categoriaEvento)
+          throw errors.app.evento.categoria_evento_not_found;
       }
 
-      const updatedEvento = await evento.update(dto, {
-        returning: true,
-        transaction,
-      });
+      // Manejar recurrencias si se proporcionan
+      if (dto.recurrencias !== undefined) {
+        // Eliminar recurrencias existentes
+        await RecurrenciaEvento.destroy({
+          where: { eventoId: id },
+          transaction,
+        });
+
+        // Crear nuevas recurrencias si se proporcionan
+        if (dto.recurrencias.length > 0) {
+          const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
+            ...recurrencia,
+            eventoId: id,
+          }));
+
+          await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
+        }
+      }
+
+      // Filtrar campos que no pertenecen al modelo Evento
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { recurrencias, ...eventoData } = dto;
+
+      // Actualizar el evento usando la transacción
+      await evento.update(eventoData, { transaction });
+
+      // Recargar el evento para obtener los datos actualizados
+      await evento.reload({ transaction });
+
+      await transaction.commit();
 
       auditEmitter.emitEntry({
         tipoEvento: 'evento:update',
-        valor: updatedEvento.dataValues,
+        valor: evento.dataValues,
       });
 
-      return updatedEvento;
+      return evento;
     } catch (error) {
       await transaction.rollback();
       throw error;

@@ -146,7 +146,7 @@ router.get('/:id', controller.getOne);
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
  *                 type: string
- *                 description: Cupo del evento
+ *                 description: Cupo del evento (debe ser un número válido mayor a 0)
  *                 required: true
  *                 example: "50"
  *               sucursalId:
@@ -154,6 +154,48 @@ router.get('/:id', controller.getOne);
  *                 description: ID de la sucursal a la que pertenece
  *                 required: true
  *                 example: 1
+ *               estadoId:
+ *                 type: number
+ *                 description: ID del estado del evento
+ *                 required: false
+ *                 example: 1
+ *               categoriaId:
+ *                 type: number
+ *                 description: ID de la categoría del evento
+ *                 required: false
+ *                 example: 1
+ *               precio:
+ *                 type: number
+ *                 description: Precio del evento
+ *                 required: true
+ *                 example: 25.50
+ *               recurrencias:
+ *                 type: array
+ *                 description: Array de recurrencias del evento
+ *                 required: false
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     dia:
+ *                       type: string
+ *                       description: Día de la semana (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo)
+ *                       enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+ *                       example: "Lunes"
+ *                     hora:
+ *                       type: string
+ *                       description: Hora del evento (formato HH:MM, desde 08:00 hasta 23:30)
+ *                       enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
+ *                       example: "18:00"
+ *                     fecha_desde:
+ *                       type: string
+ *                       format: date
+ *                       description: Fecha desde la cual comienza la recurrencia
+ *                       example: "2026-01-01"
+ *                     fecha_hasta:
+ *                       type: string
+ *                       format: date
+ *                       description: Fecha hasta la cual termina la recurrencia
+ *                       example: "2026-12-31"
  *     responses:
  *       201:
  *         description: Evento created successfully
@@ -193,12 +235,50 @@ router.post('', controller.create);
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
  *                 type: string
- *                 description: Cupo del evento
+ *                 description: Cupo del evento (debe ser un número válido mayor a 0)
  *                 example: "50"
  *               sucursalId:
  *                 type: number
  *                 description: ID de la sucursal a la que pertenece
  *                 example: 1
+ *               estadoId:
+ *                 type: number
+ *                 description: ID del estado del evento
+ *                 example: 1
+ *               categoriaId:
+ *                 type: number
+ *                 description: ID de la categoría del evento
+ *                 example: 1
+ *               precio:
+ *                 type: number
+ *                 description: Precio del evento
+ *                 example: 25.50
+ *               recurrencias:
+ *                 type: array
+ *                 description: Array de recurrencias del evento
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     dia:
+ *                       type: string
+ *                       description: Día de la semana (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo)
+ *                       enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+ *                       example: "Martes"
+ *                     hora:
+ *                       type: string
+ *                       description: Hora del evento (formato HH:MM, desde 08:00 hasta 23:30)
+ *                       enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
+ *                       example: "19:00"
+ *                     fecha_desde:
+ *                       type: string
+ *                       format: date
+ *                       description: Fecha desde la cual comienza la recurrencia
+ *                       example: "2027-02-01"
+ *                     fecha_hasta:
+ *                       type: string
+ *                       format: date
+ *                       description: Fecha hasta la cual termina la recurrencia
+ *                       example: "2027-11-30"
  *     responses:
  *       200:
  *         description: Evento updated successfully
