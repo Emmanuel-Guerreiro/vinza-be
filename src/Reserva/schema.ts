@@ -4,7 +4,6 @@ import {z} from 'zod';
 export const createReservaSchema = z.object({
     precio: z.number(),
     cantidadGente:z.number(),
-    // optional por ahora hasta que se creen las entidades
     instanciaEventoId: z.number().optional(),
     recorridoId: z.number().optional(),
 });
@@ -12,7 +11,6 @@ export const createReservaSchema = z.object({
 export const updateReservaSchema = z.object({
     precio: z.number().optional(),
     cantidadGente: z.number().optional(),
-    // optional por ahora hasta que se creen las entidades
     instanciaEventoId: z.number().optional(),
     recorridoId: z.number().optional(),
 });

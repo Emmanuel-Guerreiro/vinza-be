@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import {
     createReservaSchema,
-    findAllParamsSchema,
+    //findAllParamsSchema,
    updateReservaSchema,
 }from './schema'
 import { IReservaService } from './service';

@@ -1,25 +1,20 @@
 import {
     Column,
+    CreatedAt,
     DataType,
-    ForeignKey,
-    BelongsTo,
     Model,
-    Table, 
-    BelongsToMany,
+    Table,
+    UpdatedAt,
 }from 'sequelize-typescript';
-//import { InstanciaEvento} from './instancia-evento/model';
-//import {Recorrido} from './recorrido/model';
-
 export interface ReservaAttributes{
     idReserva: string;
     precio: number;
     cantidadGente: number;
-    createdAt: Date;
     instanciaEventoId:number;
     recorridoId:number;
 }
 
-export type ReservaCreationAttributes = Omit<ReservaAttributes, 'idReserva'|'instanciaEventoId'|'RecorridoId'> & {
+export type ReservaCreationAttributes = Omit<ReservaAttributes, 'idReserva'> & {
     precio: number;
     cantidadGente: number;
     instanciaEventoId: number;
@@ -46,11 +41,18 @@ export class Reserva extends Model<ReservaAttributes, ReservaCreationAttributes>
     @Column({ type: DataType.INTEGER, allowNull: false })
     cantidadGente!: number;
 
+    @CreatedAt
     @Column({ type: DataType.DATE, allowNull: false })
     createdAt!: Date;
-    // @Column({ type: DataType.DATE, allowNull: false })
-    // instanciaEventoId!: number;
-    // @Column({ type: DataType.DATE, allowNull: false })
-    // recorridoId!: number;
+
+    @UpdatedAt
+    @Column({ type: DataType.DATE, allowNull: false })
+    updatedAt!: Date;
+
+    @Column({ type: DataType.DATE, allowNull: false })
+     instanciaEventoId!: number;
+
+    @Column({ type: DataType.DATE, allowNull: false })
+     recorridoId!: number;
     
 }
