@@ -32,8 +32,8 @@ export class AuthService {
     // Set user as not validated
     const hashed = await hashPassword(dto.password);
     const user = await usersService.create({
-      nombre: dto.name,
-      apellido: dto.name, // You might want to add a lastname field to your DTO
+      nombre: dto.name ?? dto.email,
+      apellido: dto.name ?? dto.email,
       email: dto.email,
       contrasena: hashed,
       validado: null,

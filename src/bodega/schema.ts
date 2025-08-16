@@ -1,3 +1,4 @@
+import { paginationAndOrderSchema } from '@/pagination/schemas';
 import { z } from 'zod';
 
 export const UpdateBodegaSchema = z.object({
@@ -8,4 +9,19 @@ export const UpdateBodegaSchema = z.object({
 export const createBodegaSchema = z.object({
   nombre: z.string(),
   descripcion: z.string(),
+});
+
+const bodegaOrderByAttributes = [
+  'id',
+  'nombre',
+  'descripcion',
+  'created_at',
+  'updated_at',
+  'deleted_at',
+];
+
+export const findAllParamsSchema = paginationAndOrderSchema(
+  bodegaOrderByAttributes,
+).extend({
+  nombre: z.string().optional(),
 });

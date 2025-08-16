@@ -15,6 +15,7 @@ export class UsersController {
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
     this.getMe = this.getMe.bind(this);
+    this.updateMe = this.updateMe.bind(this);
   }
 
   public getAll(_req: Request, res: Response) {
@@ -47,5 +48,10 @@ export class UsersController {
 
   public getMe(req: Request, res: Response) {
     this.usersService.findOne(+req.user!).then((data) => res.json(data));
+  }
+
+  public updateMe(req: Request, res: Response) {
+    const dto = UpdateUserSchema.parse(req.body);
+    this.usersService.update(+req.user!, dto).then((data) => res.json(data));
   }
 }

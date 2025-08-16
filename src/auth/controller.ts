@@ -20,56 +20,36 @@ export class AuthController {
   }
 
   public register(req: Request, res: Response) {
-    registerSchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.authService.register(dto).then((user) => res.json(user)),
-      );
+    const dto = registerSchema.parse(req.body);
+    this.authService.register(dto).then((user) => res.json(user));
   }
 
   public login(req: Request, res: Response) {
-    loginSchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.authService.login(dto).then((response) => res.json(response)),
-      );
+    const dto = loginSchema.parse(req.body);
+    this.authService.login(dto).then((response) => res.json(response));
   }
 
   public requestPasswordRecovery(req: Request, res: Response) {
-    requestPasswordRecoverySchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.authService
-          .requestPasswordRecovery(dto)
-          .then((result) => res.json(result)),
-      );
+    const dto = requestPasswordRecoverySchema.parse(req.body);
+    this.authService
+      .requestPasswordRecovery(dto)
+      .then((result) => res.json(result));
   }
 
   public resetPassword(req: Request, res: Response) {
-    resetPasswordSchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.authService.resetPassword(dto).then((result) => res.json(result)),
-      );
+    const dto = resetPasswordSchema.parse(req.body);
+    this.authService.resetPassword(dto).then((result) => res.json(result));
   }
 
   public validateAccount(req: Request, res: Response) {
-    validateAccountSchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.authService
-          .validateAccount(dto)
-          .then((result) => res.json(result)),
-      );
+    const dto = validateAccountSchema.parse(req.body);
+    this.authService.validateAccount(dto).then((result) => res.json(result));
   }
 
   public requestValidationCode(req: Request, res: Response) {
-    requestValidationCodeSchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.authService
-          .requestValidationCode(dto)
-          .then((result) => res.json(result)),
-      );
+    const dto = requestValidationCodeSchema.parse(req.body);
+    this.authService
+      .requestValidationCode(dto)
+      .then((result) => res.json(result));
   }
 }

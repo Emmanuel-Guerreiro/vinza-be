@@ -3,7 +3,14 @@ import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { sucursalService } from '@/sucursal/service';
 import { Bodega } from './model';
-import { CreateBodegaDto, UpdateBodegaDto } from './types';
+import { CreateBodegaDto, FindAllParams, UpdateBodegaDto } from './types';
+import logger from '@/logger';
+import { PaginatedResponse } from '@/pagination/types';
+import {
+  generatePaginationParams,
+  generateOrderConditions,
+} from '@/pagination';
+import { Op, WhereOptions } from 'sequelize';
 
 class BodegaService {
   public async create(dto: CreateBodegaDto) {
@@ -34,8 +41,28 @@ class BodegaService {
     }
   }
 
-  public async findAll() {
-    return Bodega.findAll();
+  public async findAll(
+    params: FindAllParams,
+  ): Promise<PaginatedResponse<Bodega>> {
+    logger.debug(`bodega findAll params ${JSON.stringify(params)}`);
+    const where = this.generateWhereConditions(params);
+    const order = generateOrderConditions(params);
+    const { limit, offset } = generatePaginationParams(params);
+
+    const [meta, items] = await Promise.all([
+      this.getCountAndMetadata(params, where, limit),
+      Bodega.findAll({
+        where,
+        order,
+        limit,
+        offset,
+      }),
+    ]);
+
+    return {
+      items,
+      meta,
+    };
   }
 
   public async findOne(id: number) {
@@ -82,6 +109,42 @@ class BodegaService {
       valor: bodega.dataValues,
     });
     return bodega;
+  }
+
+  /**
+   * Generate where conditions for the findAll query based on model specific fields
+   * If the filter is based on a related model, it will be handled in the include with where condition
+   */
+  private generateWhereConditions(params: FindAllParams): WhereOptions {
+    const where: WhereOptions = {};
+
+    if (params.nombre) {
+      where.nombre = {
+        [Op.iLike]: `%${params.nombre}%`,
+      };
+    }
+
+    return where;
+  }
+
+  /**
+   * Get total count of items and generate complete pagination metadata
+   */
+  private async getCountAndMetadata(
+    params: FindAllParams,
+    where: WhereOptions,
+    limit: number,
+  ) {
+    const totalItems = await Bodega.count({
+      where,
+    });
+
+    return {
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: params.page || 1,
+      itemsPerPage: limit,
+    };
   }
 }
 
