@@ -1,43 +1,45 @@
 import { User } from '@/users/model';
-import { Column, DataType, Model, Table} from 'sequelize-typescript';
+import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
-export interface RecorridoAttributes{
-    
-    created_at: Date;
-    deleted_at: Date | null;
-    last_optimization: Date | null;
-    idUser:User['id'];
-    
+export interface RecorridoAttributes {
+  created_at: Date;
+  deleted_at: Date | null;
+  last_optimization: Date | null;
+  idUser: User['id'];
 }
 
-export type RecorridoCreationAttributes = Omit<RecorridoAttributes, 'created_at' | 'deleted_at' | 'last_optimization'>;
+export type RecorridoCreationAttributes = Omit<
+  RecorridoAttributes,
+  'created_at' | 'deleted_at' | 'last_optimization'
+>;
 
 @Table({
-    tableName: 'recorridos',
-    paranoid: true,
-    createdAt: 'created_at',
-    updatedAt: 'updated_at',
-    deletedAt: 'deleted_at',
-   
+  tableName: 'recorridos',
+  paranoid: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at',
 })
-export class Recorrido extends Model<RecorridoAttributes, RecorridoCreationAttributes> {
-    @Column({
-        type: DataType.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-    })
-    id!: number;
+export class Recorrido extends Model<
+  RecorridoAttributes,
+  RecorridoCreationAttributes
+> {
+  @Column({
+    type: DataType.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  })
+  id!: number;
 
-    @Column({type: DataType.DATE, allowNull: false})
-    created_at!: Date;
+  @Column({ type: DataType.DATE, allowNull: false })
+  created_at!: Date;
 
-    @Column({type: DataType.DATE, allowNull: true})
-    deleted_at!: Date | null;
+  @Column({ type: DataType.DATE, allowNull: true })
+  deleted_at!: Date | null;
 
-    @Column({type: DataType.DATE, allowNull: true})
-    last_optimization!: Date | null;
+  @Column({ type: DataType.DATE, allowNull: true })
+  last_optimization!: Date | null;
 
-    @Column({type:DataType.INTEGER, allowNull: false})
-    idUser!: User['id'];
-
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  idUser!: User['id'];
 }

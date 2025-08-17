@@ -5,20 +5,20 @@ import { recorridoService } from './service';
 
 const controller = new RecorridoController(recorridoService);
 const router = Router();
- 
-    /**
-     * @openapi
-     * /recorridos:
-     *  get:
-     *    summary: Get all recorridos
-     *   tags:
-     *      - Recorridos
-     *    responses:
-     *      200:
-     *       description: Success
-     */
+
+/**
+ * @openapi
+ * /recorridos:
+ *  get:
+ *    summary: Get all recorridos
+ *   tags:
+ *      - Recorridos
+ *    responses:
+ *      200:
+ *       description: Success
+ */
 router.get('', controller.getAll);
-/** 
+/**
  * @openapi
  * /recorridos/{id}:
  *  get:

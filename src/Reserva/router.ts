@@ -1,6 +1,6 @@
-import {Router} from 'express';
-import {ReservaController} from './controller';
-import {reservaService} from './service';
+import { Router } from 'express';
+import { ReservaController } from './controller';
+import { reservaService } from './service';
 
 //import logger from '@/logger';
 
@@ -34,7 +34,7 @@ const router = Router();
  *       description: Bad request
  *     500:
  *    description: Internal server error
- * 
+ *
  */
 router.get('', controller.getAll);
 /**
@@ -85,5 +85,3 @@ router.get('/:id', controller.getOne);
  * description: Internal server error
  */
 router.post('', controller.create);
-
-
