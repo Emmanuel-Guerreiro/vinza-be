@@ -27,6 +27,7 @@ export interface UserCreationAttributes
   extends Omit<UserAttributes, 'roles' | 'id' | 'bodega' | 'validado'> {
   roles?: Rol['id'][];
   bodegaId?: number;
+  validado?: Date | null;
 }
 
 @Table({

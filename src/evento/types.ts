@@ -5,6 +5,7 @@ import {
   updateEventoSchema,
 } from './schema';
 import { DiaSemana, HoraEvento } from '@/recurrencia-evento/model';
+import { Evento } from './model';
 
 export type CreateEventoDto = z.infer<typeof createEventoSchema>;
 export type UpdateEventoDto = z.infer<typeof updateEventoSchema>;
@@ -16,6 +17,11 @@ export type RecurrenciaDto = {
   fecha_desde: Date;
   fecha_hasta: Date;
 };
+
+// Extended Evento type that includes the calculated average rating
+export interface EventoWithRating extends Evento {
+  promedioValoracion: number;
+}
 
 export interface FindAllRequest extends Request {
   query: FindAllParams;
