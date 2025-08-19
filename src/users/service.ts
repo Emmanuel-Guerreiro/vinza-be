@@ -33,7 +33,18 @@ class UsersService {
   }
 
   public async findAll() {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      attributes: {
+        exclude: ['contrasena'],
+      },
+      include: [
+        {
+          model: Rol,
+          as: 'roles',
+          include: [{ model: Permiso, as: 'permisos' }],
+        },
+      ],
+    });
     return users;
   }
 
