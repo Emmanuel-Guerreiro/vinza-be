@@ -1,6 +1,10 @@
 import { IBodegaService } from './service';
 import type { Request, Response } from 'express';
-import { createBodegaSchema, UpdateBodegaSchema } from './schema';
+import {
+  createBodegaSchema,
+  findAllParamsSchema,
+  UpdateBodegaSchema,
+} from './schema';
 
 export class BodegaController {
   readonly bodegaService;
@@ -14,8 +18,10 @@ export class BodegaController {
     this.delete = this.delete.bind(this);
   }
 
-  public getAll(_req: Request, res: Response) {
-    this.bodegaService.findAll().then((data) => res.json(data));
+  public getAll(req: Request, res: Response) {
+    findAllParamsSchema.parseAsync(req.query).then((query) => {
+      this.bodegaService.findAll(query).then((data) => res.json(data));
+    });
   }
 
   public getOne(req: Request, res: Response) {

@@ -29,6 +29,7 @@ export type ValoracionCreationAttributes = Omit<
   paranoid: true,
   createdAt: 'created_at',
   deletedAt: 'deleted_at',
+  updatedAt: 'updated_at',
 })
 export class Valoracion extends Model<
   ValoracionAttributes,
@@ -60,10 +61,4 @@ export class Valoracion extends Model<
 
   @BelongsTo(() => Evento)
   evento?: Evento;
-
-  @Column({ type: DataType.DATE, allowNull: false, defaultValue: DataType.NOW })
-  created_at!: string;
-
-  @Column({ type: DataType.DATE, allowNull: true })
-  deleted_at?: string;
 }

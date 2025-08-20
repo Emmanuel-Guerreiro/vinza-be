@@ -11,6 +11,7 @@ import { Sucursal } from '@/sucursal/model';
 import { EstadoEvento } from '@/estado-evento/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
+import { Valoracion } from '@/valoracion/model';
 
 export interface EventoAttributes {
   id: number;
@@ -79,4 +80,7 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
 
   @HasMany(() => RecurrenciaEvento)
   recurrencias?: RecurrenciaEvento[];
+
+  @HasMany(() => Valoracion)
+  valoraciones?: Valoracion[];
 }

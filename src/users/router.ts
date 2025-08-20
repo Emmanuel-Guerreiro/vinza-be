@@ -50,6 +50,51 @@ router.get('/me', authMiddleware, controller.getMe);
 
 /**
  * @openapi
+ * /users/me:
+ *   security:
+ *     - bearerAuth: []
+ *   put:
+ *     summary: Update the current user
+ *     tags:
+ *       - Users
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *                 description: The name of the user
+ *                 example: "John Doe"
+ *               apellido:
+ *                 type: string
+ *                 description: The last name of the user
+ *                 example: "Doe"
+ *               email:
+ *                 type: string
+ *                 description: The email of the user
+ *               fecha_nacimiento:
+ *                 type: string
+ *                 description: The date of birth of the user
+ *                 example: "1990-01-01"
+ *               roles:
+ *                 type: array
+ *                 items:
+ *                   type: number
+ *                 description: The roles of the user
+ *                 example: [1]
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *       400:
+ *         description: Bad request
+ */
+router.put('/me', authMiddleware, controller.updateMe);
+
+/**
+ * @openapi
  * /users/{id}:
  *   security:
  *     - bearerAuth: []
