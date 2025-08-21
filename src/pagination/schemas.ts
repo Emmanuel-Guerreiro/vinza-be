@@ -5,7 +5,7 @@ export const paginationSchema = z.object({
   limit: z.coerce.number().default(10),
 });
 
-export const orderByValidator = (eventoOrderByAttributes: string[]) =>
+export const orderByValidator = (orderByAttributes: string[]) =>
   z
     .string()
     .default('id:asc')
@@ -13,14 +13,13 @@ export const orderByValidator = (eventoOrderByAttributes: string[]) =>
       (value) => {
         const [attribute, direction] = value.split(':');
         return (
-          eventoOrderByAttributes.includes(
-            attribute as (typeof eventoOrderByAttributes)[number],
+          orderByAttributes.includes(
+            attribute as (typeof orderByAttributes)[number],
           ) && ['asc', 'desc'].includes(direction)
         );
       },
       {
-        message:
-          'orderBy must be in format <attribute>:<asc|desc> where attribute is a valid evento field',
+        message: `orderBy must be in format <attribute>:<asc|desc> where attribute is in ${orderByAttributes.join(', ')}`,
       },
     );
 

@@ -21,6 +21,7 @@ import { contextMiddleware } from './context';
 import valoracionRouter from './valoracion/router';
 import maximosDiasAdelanteReservaRouter from './maximos-dias-adelante-reserva/router';
 import recurrenciaEventoRouter from './recurrencia-evento/router';
+import categoriaEventoRouter from './categoria-evento/router';
 
 function initializeRouter() {
   const router = Router();
@@ -30,6 +31,7 @@ function initializeRouter() {
   router.use('/auth', authRouter);
   router.use('/rbac', rolesRouter);
   router.use('/eventos', eventoRouter);
+  router.use('/categoria-eventos', categoriaEventoRouter);
   router.use('/estado-eventos', estadoEventoRouter);
   router.use('/sucursales', sucursalRouter);
   router.use('/bodegas', bodegaRouter);

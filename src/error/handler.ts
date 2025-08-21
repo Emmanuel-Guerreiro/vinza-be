@@ -42,6 +42,7 @@ function handleUnhandledError(
   res: Response,
   next: NextFunction,
 ) {
+  logger.error('Unhandled error:', err);
   if (!err) next();
 
   // If the error is already in the correct format (has key, message, etc)

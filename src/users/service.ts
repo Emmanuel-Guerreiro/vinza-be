@@ -69,9 +69,11 @@ class UsersService {
   }
 
   public async update(id: number, dto: UpdateUserDto) {
+    logger.info('ACA!!!', dto);
     const transaction = await sequelize.transaction();
     try {
       const { roles, ...rest } = dto;
+      logger.info('ACA2!!!', rest);
       // If roles are provided in dto, update the user's roles accordingly
       if (roles && roles.length > 0) {
         // Validate that all provided roles exist
@@ -112,6 +114,7 @@ class UsersService {
         // Remove roles from dto so they are not updated as a field
         delete dto.roles;
       }
+      logger.info('ACA2!!!');
       const [user] = (
         await User.update(rest, {
           where: { id },
@@ -127,6 +130,7 @@ class UsersService {
       });
       return user;
     } catch (error) {
+      logger.error('ESTYOY ACA!!!!', error);
       await transaction.rollback();
       throw error;
     }
