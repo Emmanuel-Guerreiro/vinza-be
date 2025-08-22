@@ -11,6 +11,7 @@ import {
   generateOrderConditions,
 } from '@/pagination';
 import { Op, WhereOptions } from 'sequelize';
+import { Sucursal } from '@/sucursal/model';
 
 class BodegaService {
   public async create(dto: CreateBodegaDto) {
@@ -66,7 +67,14 @@ class BodegaService {
   }
 
   public async findOne(id: number) {
-    const bodega = await Bodega.findByPk(id);
+    const bodega = await Bodega.findByPk(id, {
+      include: [
+        {
+          model: Sucursal,
+          as: 'sucursales',
+        },
+      ],
+    });
     if (!bodega) {
       throw errors.app.bodega.not_found;
     }
