@@ -68,6 +68,7 @@ async function seed() {
       contrasena: adminPassword,
       roles: [adminRole.id],
       bodegaId: zuccardi.id,
+      validado: new Date(),
     });
     await adminUser.$set('roles', [adminRole.id]);
 
@@ -90,6 +91,7 @@ async function seed() {
       email: 'sudo@sudo.com',
       contrasena: sudoPassword,
       roles: [sudoRole.id],
+      validado: new Date(),
     });
     await sudoer.$set('roles', [sudoRole.id]);
 
