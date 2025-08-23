@@ -1,12 +1,10 @@
-version: '3.9'
-
 networks:
   backend-net:
     driver: bridge
 
 services:
   postgres:
-    image: postgres:15.1
+    image: postgres
     container_name: postgres
     restart: always
     environment:
@@ -16,7 +14,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - backend-net
     expose:
@@ -30,3 +28,6 @@ services:
       - backend-net
     expose:
       - '6379' # only visible inside the network
+
+volumes:
+  postgres-data:
