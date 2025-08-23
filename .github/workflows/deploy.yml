@@ -21,8 +21,9 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/vinza-be   # adjust to your repo path
-            git fetch --all
-            git reset --hard origin/develop
+            git switch develop # Will copy the same as the branch that we deployed to
+            git reset --hard
+            git pull
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build --no-cache
             docker compose -f docker-compose.prod.yml up -d

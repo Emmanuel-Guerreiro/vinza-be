@@ -2,7 +2,7 @@ version: '3.9'
 
 networks:
   backend-net:
-    external: true
+    driver: bridge
 
 services:
   main:
