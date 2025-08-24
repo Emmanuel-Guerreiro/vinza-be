@@ -14,8 +14,10 @@ import { HCategoriaEvento } from '@/categoria-evento/model';
 import { Valoracion } from '@/valoracion/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
-// import { EstadoReserva } from '@/estado-reserva/model'; // Comentado temporalmente
-// import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model'; // Comentado temporalmente
+import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
+import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
+import { Recorrido } from '@/recorrido/model';
+import { Reserva } from '@/reserva/model';
 
 export const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -45,8 +47,11 @@ export const sequelize = new Sequelize({
     CodigoRecuperarContra,
     MaximosDiasAdelanteReserva,
     RecurrenciaEvento,
-    // EstadoReserva, // Comentado temporalmente
-    // EstadoInstanciaEvento, // Comentado temporalmente
+    EstadoReserva,
+    HEstadoReserva,
+    EstadoInstanciaEvento,
+    Reserva,
+    Recorrido,
   ], // or [Player, Team],
 });
 

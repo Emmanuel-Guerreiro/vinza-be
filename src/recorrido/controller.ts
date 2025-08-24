@@ -21,8 +21,9 @@ export class RecorridoController {
       .then((data) => res.json(data));
   }
   public create(req: Request, res: Response) {
+    const user = req.user;
     createRecorridoSchema
-      .parseAsync(req.body)
+      .parseAsync({ ...req.body, userId: user })
       .then((dto) =>
         this.recorridoService.create(dto).then((data) => res.json(data)),
       );

@@ -1,11 +1,20 @@
 import { User } from '@/users/model';
-import { Column, DataType, Model, Table } from 'sequelize-typescript';
+import { Reserva } from '@/reserva/model';
+import {
+  BelongsTo,
+  Column,
+  DataType,
+  ForeignKey,
+  HasMany,
+  Model,
+  Table,
+} from 'sequelize-typescript';
 
 export interface RecorridoAttributes {
   created_at: Date;
   deleted_at: Date | null;
   last_optimization: Date | null;
-  idUser: User['id'];
+  userId: number;
 }
 
 export type RecorridoCreationAttributes = Omit<
@@ -40,6 +49,13 @@ export class Recorrido extends Model<
   @Column({ type: DataType.DATE, allowNull: true })
   last_optimization!: Date | null;
 
+  @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER, allowNull: false })
-  idUser!: User['id'];
+  userId!: number;
+
+  @BelongsTo(() => User)
+  user?: User;
+
+  @HasMany(() => Reserva)
+  reservas!: Reserva[];
 }

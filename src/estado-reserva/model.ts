@@ -1,9 +1,12 @@
+import { Reserva } from '@/reserva/model';
 import {
+  BelongsTo,
   Column,
   CreatedAt,
   DataType,
   DeletedAt,
   ForeignKey,
+  HasMany,
   Model,
   Table,
   UpdatedAt,
@@ -55,8 +58,8 @@ export class EstadoReserva extends Model<
   @Column({ type: DataType.DATE })
   deleted_at!: string | null;
 
-  // @BelongsToMany(() => Reserva, () => HEstadoReserva) // Comentado temporalmente
-  // reservas!: Reserva[]; // Comentado temporalmente
+  @HasMany(() => HEstadoReserva)
+  historiales!: HEstadoReserva[];
 }
 
 export interface HEstadoReservaAttributes {
@@ -90,7 +93,7 @@ export class HEstadoReserva extends Model<
   })
   id!: number;
 
-  // @ForeignKey(() => Reserva) // Comentado temporalmente
+  @ForeignKey(() => Reserva)
   @Column({ type: DataType.INTEGER, allowNull: false })
   reservaId!: number;
 
@@ -105,4 +108,7 @@ export class HEstadoReserva extends Model<
   @DeletedAt
   @Column({ type: DataType.DATE })
   deleted_at!: Date | null;
+
+  @BelongsTo(() => EstadoReserva)
+  estado = EstadoReserva;
 }

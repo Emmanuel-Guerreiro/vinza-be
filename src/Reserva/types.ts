@@ -1,8 +1,7 @@
 import { z } from 'zod';
-import { ReservaCreationAttributes } from './model';
-import { findAllParamsSchema } from './schema';
+import { createReservaSchema, findAllParamsSchema } from './schema';
 
-export type CreateReservaDto = ReservaCreationAttributes;
+export type CreateReservaDto = z.infer<typeof createReservaSchema>;
 export type UpdateReservaDto = Partial<CreateReservaDto>;
 export type FindAllParams = z.infer<typeof findAllParamsSchema>;
 

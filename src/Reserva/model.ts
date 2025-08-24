@@ -1,11 +1,16 @@
 import {
+  BelongsTo,
   Column,
   CreatedAt,
   DataType,
+  ForeignKey,
+  HasMany,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { Recorrido } from '@/recorrido/model';
+import { HEstadoEvento } from '@/estado-evento/model';
 export interface ReservaAttributes {
   idReserva: string;
   precio: number;
@@ -54,7 +59,13 @@ export class Reserva extends Model<
 
   @Column({ type: DataType.DATE, allowNull: false })
   instanciaEventoId!: number;
-
+  //FK
+  @ForeignKey(() => Recorrido)
   @Column({ type: DataType.DATE, allowNull: false })
   recorridoId!: number;
+  @BelongsTo(() => Recorrido)
+  recorrido!: number;
+
+  @HasMany(() => HEstadoEvento)
+  historicoEstado!: HEstadoEvento[];
 }

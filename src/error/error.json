@@ -130,11 +130,23 @@
         "message_eng": "Estado not found",
         "status": 404
       },
-      "create_error":{
+      "create_error": {
         "key": "app.reserva.create_error",
         "message": "Error al crear la reserva",
         "message_eng": "Error creating the reservation",
         "status": 500
+      },
+      "evento_not_found": {
+        "key": "app.evento.not_found",
+        "message": "Evento not found",
+        "message_eng": "evento Reserva not found",
+        "status": 404
+      },
+      "cupos_not_found": {
+        "key": "app.reserva.cupos_not_found",
+        "message": "No hay cupos suficientes",
+        "message_eng": "No tickets enought?",
+        "status": 404
       }
     },
     "recorrido": {

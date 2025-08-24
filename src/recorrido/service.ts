@@ -10,10 +10,10 @@ class RecorridoService {
   public async create(dto: CreateRecorridoDto) {
     const transaction = await sequelize.transaction();
     try {
-      const user = await User.findByPk(dto.idUser);
+      const user = await User.findByPk(dto.userId);
       if (!user) throw errors.app.user.not_found;
 
-      const recorrido = await Recorrido.create({ ...dto }, { transaction });
+      const recorrido = await Recorrido.create(dto, { transaction });
 
       auditEmitter.emitEntry({
         tipoEvento: 'recorrido:create',
