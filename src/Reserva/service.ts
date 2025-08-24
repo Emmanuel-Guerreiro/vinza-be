@@ -93,24 +93,15 @@ class ReservaService {
   }
 
   public async delete(id: number) {
-    //en proceso
     return sequelize.transaction(async (transaction) => {
       const reserva = await reservaService.findOne(id);
       if (!reserva) throw errors.app.reserva.not_found;
-      // const evento = await reservaService.findOne(´
-      //   where:{idReserva: id},
-      //   include:[],
-      // )
-      // await eventoService.update(
-      //   { cupo: Number(evento.cupo) + reserva.cantidadGente) },
-      //   { transaction },
-      // );
 
       await reserva.destroy({ transaction });
 
       auditEmitter.emit('delete', {
         entity: 'reserva',
-        //id: reserva.idReserva,
+        id: reserva.idReserva,
       });
 
       return reserva;
