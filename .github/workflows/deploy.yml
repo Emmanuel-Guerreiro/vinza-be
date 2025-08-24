@@ -21,7 +21,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/vinza-be   # adjust to your repo path
-            git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/YOUR_ORG/YOUR_REPO.git
+            git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/Emmanuel-Guerreiro/vinza-be.git
             git switch develop || git checkout -b develop
             git reset --hard
             git pull origin developze
