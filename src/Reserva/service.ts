@@ -8,6 +8,7 @@ import { Recorrido } from '@/recorrido/model';
 import { recorridoService } from '@/recorrido/service';
 import { estadoReservaService } from '@/estado-reserva/service';
 import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
+import { FindOptions } from 'sequelize';
 //import { FindOptions } from 'sequelize';
 //import { estadoInstanciaEventoService } from '@/estado-instancia-evento/service';
 //import { Op } from "sequelize";
@@ -15,12 +16,22 @@ import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
 class ReservaService {
   public async create(dto: CreateReservaDto) {
     //validacion de cupos, falta instancia evento para continuar
-    // const cuposMax = await estadoInstanciaEventoService.findAll({
-    //   where: {
-
-    //   },
-    //   attributes:['cupos']
-    // })
+    //     const reserva = await Reserva.findOne({
+    //   where: { idReserva: id }, // o el filtro que necesites
+    //   include: [
+    //     {
+    //       model: InstanciaEvento,
+    //       as: 'instanciaEvento',
+    //       include: [
+    //         {
+    //           model: Evento,
+    //           as: 'evento',
+    //           attributes: ['cupos'],
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // });
     const transaction = await sequelize.transaction();
     try {
       let recorridoId = dto.recorridoId;
@@ -50,7 +61,7 @@ class ReservaService {
   public async update(id: number, dto: CreateReservaDto) {
     const transaction = await sequelize.transaction();
     try {
-      const reserva = await Reserva.findOne({
+      const reserva = await reservaService.findOne({
         where: { idReserva: id },
         include: [
           {
@@ -70,7 +81,6 @@ class ReservaService {
       });
       if (!reserva) throw errors.app.reserva.not_found;
       reserva.cantidadGente = dto.cantidadGente;
-      await reserva.save({ transaction });
 
       await reservaService.update(id, dto);
 
@@ -111,12 +121,17 @@ class ReservaService {
     return Reserva.findAll();
   }
 
-  public async findOne(id: number) {
-    const reserva = await Reserva.findByPk(id);
+  public async findOne(id: number | FindOptions) {
+    let reserva;
+    if (typeof id === 'number') {
+      reserva = await Reserva.findByPk(id);
+    } else {
+      reserva = await Reserva.findOne(id);
+    }
     if (!reserva) {
       throw errors.app.bodega.not_found;
     }
-    return Reserva;
+    return reserva;
   }
   public async findAllByEventoId(eventoId: number) {
     return Reserva.findAll({
