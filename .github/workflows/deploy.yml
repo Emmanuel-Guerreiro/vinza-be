@@ -21,9 +21,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd ~/vinza-be   # adjust to your repo path
-            git switch develop # Will copy the same as the branch that we deployed to
+            git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/YOUR_ORG/YOUR_REPO.git
+            git switch develop || git checkout -b develop
             git reset --hard
-            git pull
+            git pull origin developze
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build --no-cache
             docker compose -f docker-compose.prod.yml up -d
