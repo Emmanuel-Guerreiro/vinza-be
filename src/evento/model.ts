@@ -12,6 +12,7 @@ import { EstadoEvento } from '@/estado-evento/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 import { Valoracion } from '@/valoracion/model';
+import { InstanciaEvento } from '@/instancia-evento/model';
 
 export interface EventoAttributes {
   id: number;
@@ -23,6 +24,7 @@ export interface EventoAttributes {
   estadoId?: number;
   categoriaId?: number;
   recurrencias?: RecurrenciaEvento[];
+  instancias?: InstanciaEvento[];
 }
 
 export type EventoCreationAttributes = Omit<
@@ -83,4 +85,7 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
 
   @HasMany(() => Valoracion)
   valoraciones?: Valoracion[];
+
+  @HasMany(() => InstanciaEvento)
+  instancias?: InstanciaEvento[];
 }

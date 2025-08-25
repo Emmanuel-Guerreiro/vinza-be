@@ -22,6 +22,7 @@ import {
 } from '@/pagination';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 import { Bodega } from '@/bodega/model';
+import { instanciaEventoService } from '@/instancia-evento';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
@@ -45,17 +46,20 @@ class EventoService {
           throw errors.app.evento.categoria_evento_not_found;
       }
 
+      // Validar que se proporcionen recurrencias (ahora son obligatorias)
+      if (!dto.recurrencias || dto.recurrencias.length === 0) {
+        throw errors.app.evento.recurrencias_required;
+      }
+
       let evento = await Evento.create(dto, { transaction });
 
-      // Crear recurrencias si se proporcionan
-      if (dto.recurrencias && dto.recurrencias.length > 0) {
-        const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
-          ...recurrencia,
-          eventoId: evento.id,
-        }));
+      // Crear las recurrencias obligatorias
+      const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
+        ...recurrencia,
+        eventoId: evento.id,
+      }));
 
-        await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
-      }
+      await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
 
       evento = await evento.save({ transaction, returning: true });
 
@@ -388,6 +392,94 @@ class EventoService {
       currentPage: params.page || 1,
       itemsPerPage: limit,
     };
+  }
+
+  /**
+   * Obtiene todas las instancias de un evento específico
+   */
+  public async getInstanciasEvento(eventoId: number) {
+    const evento = await this.findOne(eventoId);
+    if (!evento) throw errors.app.evento.not_found;
+
+    return await instanciaEventoService.findAll({
+      eventoId,
+      page: 1,
+      limit: 1000, // Límite alto para obtener todas las instancias
+      orderBy: 'id:asc',
+    });
+  }
+
+  /**
+   * Fuerza la generación de instancias para un evento específico
+   */
+  public async generarInstanciasEvento(eventoId: number): Promise<
+    | { totalInstanciasCreadas: number }
+    | {
+        mensaje: string;
+        mensaje_eng: string;
+        eventoId: number;
+        nombreEvento: string;
+        tipo: 'evento_unico';
+        instanciasGeneradas: number;
+        recomendacion: string;
+      }
+    | undefined
+  > {
+    const evento = await this.findOne(eventoId);
+    if (!evento) throw errors.app.evento.not_found;
+
+    // Verificar que el evento tenga recurrencias
+    if (!evento.recurrencias || evento.recurrencias.length === 0) {
+      // En lugar de fallar, retornar una respuesta coherente
+      return {
+        mensaje: 'Este evento no tiene recurrencias configuradas',
+        mensaje_eng: 'This event has no recurrences configured',
+        eventoId: evento.id,
+        nombreEvento: evento.nombre,
+        tipo: 'evento_unico',
+        instanciasGeneradas: 0,
+        recomendacion: 'Para generar instancias, el evento debe tener recurrencias configuradas'
+      };
+    }
+
+    // Llamar al servicio de instancia-evento para generar instancias
+    return await instanciaEventoService.generarInstanciasAutomaticamente();
+  }
+
+  /**
+   * Suspende una instancia específica de un evento
+   */
+  public async suspenderInstanciaEvento(eventoId: number, instanciaId: number) {
+    const evento = await this.findOne(eventoId);
+    if (!evento) throw errors.app.evento.not_found;
+
+    // Verificar que la instancia pertenezca al evento
+    const instancia = await instanciaEventoService.findOne(instanciaId);
+    if (!instancia) throw errors.app.instancia_evento.not_found;
+    
+    if (instancia.eventoId !== eventoId) {
+      throw errors.app.evento.instancia_not_belongs_to_evento;
+    }
+
+    return await instanciaEventoService.suspenderInstancia(instanciaId);
+  }
+
+  /**
+   * Reactiva una instancia específica de un evento
+   */
+  public async reactivarInstanciaEvento(eventoId: number, instanciaId: number) {
+    const evento = await this.findOne(eventoId);
+    if (!evento) throw errors.app.evento.not_found;
+
+    // Verificar que la instancia pertenezca al evento
+    const instancia = await instanciaEventoService.findOne(instanciaId);
+    if (!instancia) throw errors.app.instancia_evento.not_found;
+    
+    if (instancia.eventoId !== eventoId) {
+      throw errors.app.evento.instancia_not_belongs_to_evento;
+    }
+
+    return await instanciaEventoService.reactivarInstancia(instanciaId);
   }
 }
 

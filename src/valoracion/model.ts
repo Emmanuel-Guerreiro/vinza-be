@@ -5,6 +5,9 @@ import {
   BelongsTo,
   Model,
   Table,
+  CreatedAt,
+  UpdatedAt,
+  DeletedAt,
 } from 'sequelize-typescript';
 import { User } from '@/users/model';
 import { Evento } from '@/evento/model';
@@ -14,6 +17,7 @@ export interface ValoracionAttributes {
   valor: number;
   comentario: string;
   created_at: string;
+  updated_at: string;
   deleted_at?: string;
   userId: number;
   eventoId: number;
@@ -21,15 +25,15 @@ export interface ValoracionAttributes {
 
 export type ValoracionCreationAttributes = Omit<
   ValoracionAttributes,
-  'id' | 'created_at' | 'deleted_at'
+  'id' | 'created_at' | 'updated_at' | 'deleted_at'
 >;
 
 @Table({
   tableName: 'valoraciones',
   paranoid: true,
   createdAt: 'created_at',
-  deletedAt: 'deleted_at',
   updatedAt: 'updated_at',
+  deletedAt: 'deleted_at',
 })
 export class Valoracion extends Model<
   ValoracionAttributes,
@@ -47,6 +51,18 @@ export class Valoracion extends Model<
 
   @Column({ type: DataType.STRING, allowNull: false })
   comentario!: string;
+
+  @CreatedAt
+  @Column({ type: DataType.DATE })
+  created_at!: string;
+
+  @UpdatedAt
+  @Column({ type: DataType.DATE })
+  updated_at!: string;
+
+  @DeletedAt
+  @Column({ type: DataType.DATE })
+  deleted_at?: string;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER, allowNull: false })
