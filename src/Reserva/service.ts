@@ -15,6 +15,7 @@ import { FindOptions } from 'sequelize';
 
 class ReservaService {
   public async create(dto: CreateReservaDto) {
+    //esperando al nono
     //validacion de cupos, falta instancia evento para continuar
     //     const reserva = await Reserva.findOne({
     //   where: { idReserva: id }, // o el filtro que necesites
@@ -96,12 +97,32 @@ class ReservaService {
     return sequelize.transaction(async (transaction) => {
       const reserva = await reservaService.findOne(id);
       if (!reserva) throw errors.app.reserva.not_found;
-
+      const historicoReserva = await HEstadoReserva.findOne({
+        where: { reservaId: reserva.idReserva, deleted_at: null },
+        include: [
+          {
+            model: EstadoReserva,
+            required: true,
+            where: { nombreEstado: 'Pendiente' },
+            attributes: ['id', 'nombre'],
+          },
+        ],
+      });
+      if (!historicoReserva) throw errors.app.reserva.evento_not_found;
+      const estadoReserva = await estadoReservaService.findByName('Cancelado');
+      if (!estadoReserva) throw errors.app.estadoReserva.estado_not_found;
       await reserva.destroy({ transaction });
 
-      auditEmitter.emit('delete', {
-        entity: 'reserva',
-        id: reserva.idReserva,
+      const nuevoHistorico = await HEstadoReserva.create(
+        {
+          reservaId: reserva.id,
+          estadoReservaId: estadoReserva.id,
+        },
+        { transaction },
+      );
+      auditEmitter.emitEntry({
+        tipoEvento: 'reserva:delete',
+        valor: { reserva, nuevoHistorico },
       });
 
       return reserva;

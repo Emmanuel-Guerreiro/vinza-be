@@ -2,15 +2,14 @@ import { auditEmitter } from '@/audit/event';
 import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { Recorrido } from './model';
-import { User } from '@/users/model';
 import { CreateRecorridoDto, UpdateRecorridoDto } from './types';
-//import { CreatedAt, UpdatedAt } from "sequelize-typescript";
+import { usersService } from '@/users/service';
 
 class RecorridoService {
   public async create(dto: CreateRecorridoDto) {
     const transaction = await sequelize.transaction();
     try {
-      const user = await User.findByPk(dto.userId);
+      const user = await usersService.findOne(dto.userId);
       if (!user) throw errors.app.user.not_found;
 
       const recorrido = await Recorrido.create(dto, { transaction });
@@ -26,12 +25,12 @@ class RecorridoService {
       throw error;
     }
   }
-
+  //tiene un update? sobre la optimizacion? o eso es aparte?
   public async update(id: number, dto: UpdateRecorridoDto) {
     const transaction = await sequelize.transaction();
     try {
       const recorrido = await Recorrido.findByPk(id);
-      if (!recorrido) throw errors.app.recorrido.not_found;
+      if (!recorrido) throw errors.app.recorrido.recorrido_not_found;
 
       const updatedRecorrido = await recorrido.update(dto, {
         returning: true,
@@ -69,7 +68,7 @@ class RecorridoService {
     const transaction = await sequelize.transaction();
     try {
       const recorrido = await Recorrido.findByPk(id, { transaction });
-      if (!recorrido) throw errors.app.recorrido.not_found;
+      if (!recorrido) throw errors.app.recorrido.recorrido_not_found;
       return recorrido;
     } catch (error) {
       await transaction.rollback();
@@ -79,8 +78,9 @@ class RecorridoService {
   public async delete(id: number) {
     const transaction = await sequelize.transaction();
     try {
-      const recorrido = await Recorrido.findByPk(id, { transaction });
-      if (!recorrido) throw errors.app.recorrido.not_found;
+      const recorrido = await recorridoService.findById(id);
+      if (!recorrido) throw errors.app.recorrido.recorrido_not_found;
+
       await recorrido.destroy({ transaction });
 
       auditEmitter.emitEntry({

@@ -150,7 +150,7 @@
       }
     },
     "recorrido": {
-      "not_found": {
+      "recorrido_not_found": {
         "key": "app.recorrido.not_found",
         "message": "Recorrido not found",
         "message_eng": "Recorrido not found",
@@ -166,6 +166,58 @@
         "key": "app.recorrido.update_error",
         "message": "Error al actualizar el recorrido",
         "message_eng": "Error updating the recorrido",
+        "status": 500
+      }
+    },
+    "estadoReserva": {
+      "estado_not_found": {
+        "key": "app.EstadoReserva.estado_not_found",
+        "message": "Estado reserva not found",
+        "message_eng": "Estado reserva not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.EstadoReserva.create_error",
+        "message": "Error al crear estado reserva",
+        "message_eng": "Error creating estado reserva",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.EstadoReserva.update_error",
+        "message": "Error al actualizar estado reserva",
+        "message_eng": "Error updating estado reserva",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.EstadoReserva.delete_error",
+        "message": "Error al eliminar estado reserva",
+        "message_eng": "Error deleting estado reserva",
+        "status": 500
+      }
+    },
+    "hEstadoReserva": {
+      "H_estado_not_found": {
+        "key": "app.HEstadoReserva.estado_not_found",
+        "message": "Estado reserva not found",
+        "message_eng": "Estado reserva not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.HEstadoReserva.create_error",
+        "message": "Error al crear estado reserva",
+        "message_eng": "Error creating estado reserva",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.HEstadoReserva.update_error",
+        "message": "Error al actualizar estado reserva",
+        "message_eng": "Error updating estado reserva",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.HEstadoReserva.delete_error",
+        "message": "Error al eliminar estado reserva",
+        "message_eng": "Error deleting estado reserva",
         "status": 500
       }
     },
