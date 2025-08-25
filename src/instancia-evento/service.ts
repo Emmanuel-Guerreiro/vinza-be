@@ -194,6 +194,7 @@ class InstanciaEventoService {
     // Buscar el estado ACTIVA por nombre
     const estadoActiva = await EstadoInstanciaEvento.findOne({
       where: { nombre: 'ACTIVA' },
+      transaction,
     });
 
     if (!estadoActiva) {
