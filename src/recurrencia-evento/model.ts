@@ -5,8 +5,10 @@ import {
   BelongsTo,
   Model,
   Table,
+  HasMany,
 } from 'sequelize-typescript';
 import { Evento } from '@/evento/model';
+import { InstanciaEvento } from '@/instancia-evento/model';
 
 export enum DiaSemana {
   LUNES = 'Lunes',
@@ -60,6 +62,7 @@ export interface RecurrenciaEventoAttributes {
   fecha_desde: Date;
   fecha_hasta: Date;
   eventoId: number;
+  instancias?: InstanciaEvento[];
 }
 
 export type RecurrenciaEventoCreationAttributes = Omit<
@@ -109,4 +112,7 @@ export class RecurrenciaEvento extends Model<
 
   @BelongsTo(() => Evento)
   evento?: Evento;
+
+  @HasMany(() => InstanciaEvento)
+  instancias?: InstanciaEvento[];
 }

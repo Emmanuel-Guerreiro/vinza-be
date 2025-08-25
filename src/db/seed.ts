@@ -12,7 +12,8 @@ import { sucursalService } from '@/sucursal/service';
 import { User } from '@/users/model';
 import { Valoracion } from '@/valoracion/model';
 import { sequelize } from '.';
-// import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum'; // Comentado temporalmente
+import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum';
+import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
 
@@ -124,20 +125,20 @@ async function seed() {
         {
           dia: DiaSemana.LUNES,
           hora: HoraEvento.HORA_18_00,
-          fecha_desde: new Date('2024-12-01'),
-          fecha_hasta: new Date('2024-12-31'),
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
         },
         {
           dia: DiaSemana.MIERCOLES,
           hora: HoraEvento.HORA_18_00,
-          fecha_desde: new Date('2024-12-01'),
-          fecha_hasta: new Date('2024-12-31'),
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
         },
         {
           dia: DiaSemana.VIERNES,
           hora: HoraEvento.HORA_18_00,
-          fecha_desde: new Date('2024-12-01'),
-          fecha_hasta: new Date('2024-12-31'),
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
         },
       ],
     });
@@ -155,14 +156,14 @@ async function seed() {
         {
           dia: DiaSemana.SABADO,
           hora: HoraEvento.HORA_10_00,
-          fecha_desde: new Date('2024-12-01'),
-          fecha_hasta: new Date('2024-12-31'),
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
         },
         {
           dia: DiaSemana.DOMINGO,
           hora: HoraEvento.HORA_10_00,
-          fecha_desde: new Date('2024-12-01'),
-          fecha_hasta: new Date('2024-12-31'),
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
         },
       ],
     });
@@ -180,31 +181,31 @@ async function seed() {
         {
           dia: DiaSemana.MARTES,
           hora: HoraEvento.HORA_19_00,
-          fecha_desde: new Date('2024-12-01'),
-          fecha_hasta: new Date('2024-12-31'),
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
         },
         {
           dia: DiaSemana.MARTES,
           hora: HoraEvento.HORA_20_30,
-          fecha_desde: new Date('2024-12-01'),
-          fecha_hasta: new Date('2024-12-31'),
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
         },
         {
           dia: DiaSemana.JUEVES,
           hora: HoraEvento.HORA_19_00,
-          fecha_desde: new Date('2024-12-01'),
-          fecha_hasta: new Date('2024-12-31'),
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
         },
         {
           dia: DiaSemana.JUEVES,
           hora: HoraEvento.HORA_20_30,
-          fecha_desde: new Date('2024-12-01'),
-          fecha_hasta: new Date('2024-12-31'),
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
         },
       ],
     });
 
-    // Evento 4: Evento único sin recurrencias
+    // Evento 4: Evento único con fecha específica
     const evento4 = await eventoService.create({
       nombre: 'Conferencia Única',
       descripcion: 'Conferencia especial sobre innovación',
@@ -213,6 +214,14 @@ async function seed() {
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEvento2.id,
       precio: 500,
+      recurrencias: [
+        {
+          dia: DiaSemana.VIERNES,
+          hora: HoraEvento.HORA_18_00,
+          fecha_desde: new Date('2025-09-15'),
+          fecha_hasta: new Date('2025-09-15'),
+        },
+      ],
     });
 
     // Create 3 valoraciones for each event
@@ -237,14 +246,14 @@ async function seed() {
     //  }),
     // );
 
-    // Create all estado instancia evento - Comentado temporalmente
-    // const estadoInstanciaEvento = await Promise.all(
-    //   Object.values(EstadoInstanciaEvento).map(async (estadoInstanciaEvento) => {
-    //     return await estadoEventoService.create({
-    //       nombre: estadoInstanciaEvento,
-    //     });
-    //   }),
-    // );
+    // Create all estado instancia evento
+    await Promise.all(
+      Object.values(EstadoInstanciaEvento).map(async (nombre) => {
+        return await EstadoInstanciaEventoModel.create({
+          nombre,
+        });
+      }),
+    );
     // eslint-disable-next-line no-console
     console.log('Database seeded successfully');
   } catch (error) {
