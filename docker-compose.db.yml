@@ -1,0 +1,33 @@
+networks:
+  backend-net:
+    driver: bridge
+
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    env_file:
+      - .env
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - backend-net
+    expose:
+      - '5432' # only visible inside the network, not published to host
+
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: redis
+    restart: always
+    networks:
+      - backend-net
+    expose:
+      - '6379' # only visible inside the network
+
+volumes:
+  postgres-data:
