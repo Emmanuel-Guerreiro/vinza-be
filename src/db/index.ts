@@ -29,7 +29,7 @@ export const sequelize = new Sequelize({
   host: config.DB_HOST,
   port: Number(config.DB_PORT),
   ssl: false,
-  sync: { alter: false },
+  sync: { alter: true },
   logging: false,
   models: [
     User,
