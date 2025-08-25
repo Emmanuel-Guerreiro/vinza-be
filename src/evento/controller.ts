@@ -55,18 +55,21 @@ export class EventoController {
   }
 
   public getInstanciasEvento(req: Request, res: Response) {
-    this.eventoService.getInstanciasEvento(+req.params.id).then((data) => res.json(data));
+    this.eventoService
+      .getInstanciasEvento(+req.params.id)
+      .then((data) => res.json(data));
   }
 
   public generarInstanciasEvento(req: Request, res: Response) {
-    this.eventoService.generarInstanciasEvento(+req.params.id)
+    this.eventoService
+      .generarInstanciasEvento(+req.params.id)
       .then((data) => {
         if (!data) {
           // Si no hay datos, responder con error
           res.status(500).json({ error: 'No se pudo generar instancias' });
           return;
         }
-        
+
         // Si es un evento único, responder con 200 pero con mensaje informativo
         if ('tipo' in data && data.tipo === 'evento_unico') {
           res.status(200).json(data);
@@ -81,8 +84,9 @@ export class EventoController {
   public suspenderInstanciaEvento(req: Request, res: Response) {
     const eventoId = +req.params.eventoId;
     const instanciaId = +req.params.instanciaId;
-    
-    this.eventoService.suspenderInstanciaEvento(eventoId, instanciaId)
+
+    this.eventoService
+      .suspenderInstanciaEvento(eventoId, instanciaId)
       .then((data) => res.json(data))
       .catch((err) => res.status(err.status || 500).json(err));
   }
@@ -90,8 +94,9 @@ export class EventoController {
   public reactivarInstanciaEvento(req: Request, res: Response) {
     const eventoId = +req.params.eventoId;
     const instanciaId = +req.params.instanciaId;
-    
-    this.eventoService.reactivarInstanciaEvento(eventoId, instanciaId)
+
+    this.eventoService
+      .reactivarInstanciaEvento(eventoId, instanciaId)
       .then((data) => res.json(data))
       .catch((err) => res.status(err.status || 500).json(err));
   }

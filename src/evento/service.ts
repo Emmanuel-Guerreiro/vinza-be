@@ -438,7 +438,8 @@ class EventoService {
         nombreEvento: evento.nombre,
         tipo: 'evento_unico',
         instanciasGeneradas: 0,
-        recomendacion: 'Para generar instancias, el evento debe tener recurrencias configuradas'
+        recomendacion:
+          'Para generar instancias, el evento debe tener recurrencias configuradas',
       };
     }
 
@@ -456,7 +457,7 @@ class EventoService {
     // Verificar que la instancia pertenezca al evento
     const instancia = await instanciaEventoService.findOne(instanciaId);
     if (!instancia) throw errors.app.instancia_evento.not_found;
-    
+
     if (instancia.eventoId !== eventoId) {
       throw errors.app.evento.instancia_not_belongs_to_evento;
     }
@@ -474,7 +475,7 @@ class EventoService {
     // Verificar que la instancia pertenezca al evento
     const instancia = await instanciaEventoService.findOne(instanciaId);
     if (!instancia) throw errors.app.instancia_evento.not_found;
-    
+
     if (instancia.eventoId !== eventoId) {
       throw errors.app.evento.instancia_not_belongs_to_evento;
     }

@@ -8,7 +8,10 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 import { Evento } from '@/evento/model';
-import { EstadoInstanciaEvento, HEstadoInstanciaEvento } from '@/estado-instancia-evento/model';
+import {
+  EstadoInstanciaEvento,
+  HEstadoInstanciaEvento,
+} from '@/estado-instancia-evento/model';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 
 export interface InstanciaEventoAttributes {

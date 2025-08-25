@@ -21,11 +21,14 @@ const generarInstanciasEventoJob = new CronJob(
   '0 1 * * *', // Ejecutar todos los días a la 1:00 AM
   async () => {
     logger.info('Iniciando generación automática de instancias de eventos');
-    
-    const resultado = await instanciaEventoService.generarInstanciasAutomaticamente();
-    
+
+    const resultado =
+      await instanciaEventoService.generarInstanciasAutomaticamente();
+
     if (resultado) {
-      logger.info(`Generación completada. Total de instancias creadas: ${resultado.totalInstanciasCreadas}`);
+      logger.info(
+        `Generación completada. Total de instancias creadas: ${resultado.totalInstanciasCreadas}`,
+      );
     } else {
       logger.info('No se generaron nuevas instancias');
     }

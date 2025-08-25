@@ -16,7 +16,10 @@ import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/mode
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
 // import { EstadoReserva } from '@/estado-reserva/model'; // Comentado temporalmente
-import { EstadoInstanciaEvento, HEstadoInstanciaEvento } from '@/estado-instancia-evento/model';
+import {
+  EstadoInstanciaEvento,
+  HEstadoInstanciaEvento,
+} from '@/estado-instancia-evento/model';
 
 export const sequelize = new Sequelize({
   dialect: 'postgres',

@@ -47,7 +47,9 @@ export const createEventoSchema = z.object({
   estadoId: z.number().optional(),
   categoriaId: z.number().optional(),
   precio: z.number().min(0, 'El precio debe ser un número mayor o igual a 0'),
-  recurrencias: z.array(recurrenciaSchema).min(1, 'Debe proporcionar al menos una recurrencia para el evento'),
+  recurrencias: z
+    .array(recurrenciaSchema)
+    .min(1, 'Debe proporcionar al menos una recurrencia para el evento'),
 });
 
 export const updateEventoSchema = z.object({
@@ -66,7 +68,10 @@ export const updateEventoSchema = z.object({
     .number()
     .min(0, 'El precio debe ser un número mayor o igual a 0')
     .optional(),
-  recurrencias: z.array(recurrenciaSchema).min(1, 'Debe proporcionar al menos una recurrencia para el evento').optional(),
+  recurrencias: z
+    .array(recurrenciaSchema)
+    .min(1, 'Debe proporcionar al menos una recurrencia para el evento')
+    .optional(),
 });
 
 // Valid attributes from the Evento model for ordering

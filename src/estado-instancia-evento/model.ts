@@ -70,7 +70,11 @@ export interface HEstadoInstanciaEventoAttributes {
 
 export type HEstadoInstanciaEventoCreationAttributes = Omit<
   HEstadoInstanciaEventoAttributes,
-  'id' | 'created_at' | 'deleted_at' | 'instanciaEvento' | 'estadoInstanciaEvento'
+  | 'id'
+  | 'created_at'
+  | 'deleted_at'
+  | 'instanciaEvento'
+  | 'estadoInstanciaEvento'
 >;
 
 @Table({

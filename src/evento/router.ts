@@ -419,7 +419,10 @@ router.post('/:id/generar-instancias', controller.generarInstanciasEvento);
  *       500:
  *         description: Internal server error
  */
-router.put('/:eventoId/instancias/:instanciaId/suspender', controller.suspenderInstanciaEvento);
+router.put(
+  '/:eventoId/instancias/:instanciaId/suspender',
+  controller.suspenderInstanciaEvento,
+);
 
 /**
  * @openapi
@@ -455,7 +458,10 @@ router.put('/:eventoId/instancias/:instanciaId/suspender', controller.suspenderI
  *       500:
  *         description: Internal server error
  */
-router.put('/:eventoId/instancias/:instanciaId/reactivar', controller.reactivarInstanciaEvento);
+router.put(
+  '/:eventoId/instancias/:instanciaId/reactivar',
+  controller.reactivarInstanciaEvento,
+);
 
 logger.debug('Evento router initialized');
 

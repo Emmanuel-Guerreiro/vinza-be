@@ -247,7 +247,7 @@ async function seed() {
     // );
 
     // Create all estado instancia evento
-    const estadoInstanciaEvento = await Promise.all(
+    await Promise.all(
       Object.values(EstadoInstanciaEvento).map(async (nombre) => {
         return await EstadoInstanciaEventoModel.create({
           nombre,

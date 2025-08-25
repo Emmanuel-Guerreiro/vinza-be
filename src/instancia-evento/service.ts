@@ -4,9 +4,14 @@ import { Evento } from '@/evento/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
-import { Op, WhereOptions, FindOptions } from 'sequelize';
+import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { InstanciaEvento } from './model';
-import { FindAllParams, InstanciaEventoWithRelations, CreateInstanciaEventoDto, UpdateInstanciaEventoDto } from './types';
+import {
+  FindAllParams,
+  InstanciaEventoWithRelations,
+  CreateInstanciaEventoDto,
+  UpdateInstanciaEventoDto,
+} from './types';
 import logger from '@/logger';
 import { PaginatedResponse } from '@/pagination/types';
 import {
@@ -51,8 +56,6 @@ class InstanciaEventoService {
     const { count, rows } = await InstanciaEvento.findAndCountAll(queryOptions);
 
     const totalPages = Math.ceil(count / limit);
-    const hasNextPage = offset + limit < count;
-    const hasPreviousPage = offset > 0;
 
     return {
       items: rows,
@@ -65,7 +68,10 @@ class InstanciaEventoService {
     };
   }
 
-  public async findOne(id: number, transaction?: any): Promise<InstanciaEvento | null> {
+  public async findOne(
+    id: number,
+    transaction?: Transaction,
+  ): Promise<InstanciaEvento | null> {
     return await InstanciaEvento.findByPk(id, {
       transaction,
       include: [
@@ -89,93 +95,115 @@ class InstanciaEventoService {
     });
   }
 
-  public async create(dto: CreateInstanciaEventoDto, transaction?: any) {
+  public async create(
+    dto: CreateInstanciaEventoDto,
+    transaction?: Transaction,
+  ) {
     // Si no se proporciona estadoId, asignar estado ACTIVA por defecto
     if (!dto.estadoId) {
       const estadoActiva = await EstadoInstanciaEvento.findOne({
-        where: { nombre: 'ACTIVA' }
+        where: { nombre: 'ACTIVA' },
       });
-      
+
       if (estadoActiva) {
         dto.estadoId = estadoActiva.id;
       } else {
-        logger.warn('No se encontró el estado ACTIVA, creando instancia sin estado');
+        logger.warn(
+          'No se encontró el estado ACTIVA, creando instancia sin estado',
+        );
       }
     }
 
     return await InstanciaEvento.create(dto, { transaction });
   }
 
-  public async bulkCreate(instancias: any[], transaction?: any) {
+  public async bulkCreate(
+    instancias: CreateInstanciaEventoDto[],
+    transaction?: Transaction,
+  ) {
     // Si no se proporciona estadoId, asignar estado ACTIVA por defecto
     const estadoActiva = await EstadoInstanciaEvento.findOne({
-      where: { nombre: 'ACTIVA' }
+      where: { nombre: 'ACTIVA' },
     });
-    
+
     if (estadoActiva) {
       // Asignar estado ACTIVA a todas las instancias que no tengan estado
-      const instanciasConEstado = instancias.map(instancia => ({
+      const instanciasConEstado = instancias.map((instancia) => ({
         ...instancia,
         estadoId: instancia.estadoId || estadoActiva.id,
       }));
-      
-      return await InstanciaEvento.bulkCreate(instanciasConEstado, { transaction });
+
+      return await InstanciaEvento.bulkCreate(instanciasConEstado, {
+        transaction,
+      });
     } else {
-      logger.warn('No se encontró el estado ACTIVA, creando instancias sin estado');
+      logger.warn(
+        'No se encontró el estado ACTIVA, creando instancias sin estado',
+      );
       return await InstanciaEvento.bulkCreate(instancias, { transaction });
     }
   }
 
-  public async update(id: number, dto: UpdateInstanciaEventoDto, transaction?: any) {
+  public async update(
+    id: number,
+    dto: UpdateInstanciaEventoDto,
+    transaction?: Transaction,
+  ) {
     const instancia = await this.findOne(id, transaction);
     if (!instancia) throw errors.app.instancia_evento.not_found;
-    
+
     return await instancia.update(dto, { transaction });
   }
 
-  public async delete(id: number, transaction?: any) {
+  public async delete(id: number, transaction?: Transaction) {
     const instancia = await this.findOne(id, transaction);
     if (!instancia) throw errors.app.instancia_evento.not_found;
-    
+
     return await instancia.destroy({ transaction });
   }
 
   /**
    * Suspende una instancia de evento cambiando su estado a SUSPENDIDA
    */
-  public async suspenderInstancia(id: number, transaction?: any) {
+  public async suspenderInstancia(id: number, transaction?: Transaction) {
     const instancia = await this.findOne(id, transaction);
     if (!instancia) throw errors.app.instancia_evento.not_found;
-    
+
     // Buscar el estado SUSPENDIDA por nombre
     const estadoSuspendida = await EstadoInstanciaEvento.findOne({
-      where: { nombre: 'SUSPENDIDA' }
+      where: { nombre: 'SUSPENDIDA' },
     });
-    
+
     if (!estadoSuspendida) {
       throw errors.app.instancia_evento.estado_not_found;
     }
-    
-    return await instancia.update({ estadoId: estadoSuspendida.id }, { transaction });
+
+    return await instancia.update(
+      { estadoId: estadoSuspendida.id },
+      { transaction },
+    );
   }
 
   /**
    * Reactiva una instancia de evento cambiando su estado a ACTIVA
    */
-  public async reactivarInstancia(id: number, transaction?: any) {
+  public async reactivarInstancia(id: number, transaction?: Transaction) {
     const instancia = await this.findOne(id, transaction);
     if (!instancia) throw errors.app.instancia_evento.not_found;
-    
+
     // Buscar el estado ACTIVA por nombre
     const estadoActiva = await EstadoInstanciaEvento.findOne({
-      where: { nombre: 'ACTIVA' }
+      where: { nombre: 'ACTIVA' },
     });
-    
+
     if (!estadoActiva) {
       throw errors.app.instancia_evento.estado_not_found;
     }
-    
-    return await instancia.update({ estadoId: estadoActiva.id }, { transaction });
+
+    return await instancia.update(
+      { estadoId: estadoActiva.id },
+      { transaction },
+    );
   }
 
   /**
@@ -216,7 +244,9 @@ class InstanciaEventoService {
         ],
       });
 
-      logger.info(`Encontrados ${eventosConRecurrencias.length} eventos con recurrencias activas`);
+      logger.info(
+        `Encontrados ${eventosConRecurrencias.length} eventos con recurrencias activas`,
+      );
 
       let totalInstanciasCreadas = 0;
 
@@ -229,7 +259,9 @@ class InstanciaEventoService {
 
         // Verificar si es un evento único (fecha_desde = fecha_hasta) o recurrente
         const esEventoUnico = evento.recurrencias.every(
-          recurrencia => recurrencia.fecha_desde.getTime() === recurrencia.fecha_hasta.getTime()
+          (recurrencia) =>
+            recurrencia.fecha_desde.getTime() ===
+            recurrencia.fecha_hasta.getTime(),
         );
 
         if (esEventoUnico) {
@@ -239,26 +271,29 @@ class InstanciaEventoService {
               evento,
               recurrencia,
               diasMaximos,
-              transaction
+              transaction,
             );
             if (instanciaUnica) totalInstanciasCreadas++;
           }
         } else {
           // Evento recurrente - generar múltiples instancias según el patrón
           for (const recurrencia of evento.recurrencias) {
-            const instanciasGeneradas = await this.generarInstanciasParaRecurrencia(
-              evento,
-              recurrencia,
-              diasMaximos,
-              transaction
-            );
+            const instanciasGeneradas =
+              await this.generarInstanciasParaRecurrencia(
+                evento,
+                recurrencia,
+                diasMaximos,
+                transaction,
+              );
             totalInstanciasCreadas += instanciasGeneradas;
           }
         }
       }
 
       await transaction.commit();
-      logger.info(`Generación completada. Total de instancias creadas: ${totalInstanciasCreadas}`);
+      logger.info(
+        `Generación completada. Total de instancias creadas: ${totalInstanciasCreadas}`,
+      );
 
       return { totalInstanciasCreadas };
     } catch (error) {
@@ -276,7 +311,7 @@ class InstanciaEventoService {
     evento: Evento,
     recurrencia: RecurrenciaEvento,
     diasMaximos: number,
-    transaction: any
+    transaction: Transaction,
   ): Promise<boolean> {
     try {
       // Verificar que la recurrencia sea válida
@@ -284,15 +319,22 @@ class InstanciaEventoService {
         logger.debug(`Evento ${evento.nombre} no tiene recurrencia válida`);
         return false;
       }
-      
+
       // Crear la fecha del evento combinando fecha_desde con la hora
       const fechaEvento = new Date(recurrencia.fecha_desde);
-      fechaEvento.setHours(parseInt(recurrencia.hora.split(':')[0]), parseInt(recurrencia.hora.split(':')[1]), 0, 0);
+      fechaEvento.setHours(
+        parseInt(recurrencia.hora.split(':')[0]),
+        parseInt(recurrencia.hora.split(':')[1]),
+        0,
+        0,
+      );
 
       // Verificar que la fecha del evento esté en el futuro
       const fechaActual = new Date();
       if (fechaEvento <= fechaActual) {
-        logger.debug(`Evento único ${evento.nombre} ya pasó (${fechaEvento.toISOString()})`);
+        logger.debug(
+          `Evento único ${evento.nombre} ya pasó (${fechaEvento.toISOString()})`,
+        );
         return false;
       }
 
@@ -301,7 +343,9 @@ class InstanciaEventoService {
       fechaLimite.setDate(fechaLimite.getDate() + diasMaximos);
 
       if (fechaEvento > fechaLimite) {
-        logger.debug(`Evento único ${evento.nombre} está fuera del rango de días máximos`);
+        logger.debug(
+          `Evento único ${evento.nombre} está fuera del rango de días máximos`,
+        );
         return false;
       }
 
@@ -315,31 +359,43 @@ class InstanciaEventoService {
       });
 
       if (instanciaExistente) {
-        logger.debug(`Instancia única ya existe para evento ${evento.nombre} en ${fechaEvento.toISOString()}`);
+        logger.debug(
+          `Instancia única ya existe para evento ${evento.nombre} en ${fechaEvento.toISOString()}`,
+        );
         return false;
       }
 
       // Buscar el estado ACTIVA por nombre
       const estadoActiva = await EstadoInstanciaEvento.findOne({
-        where: { nombre: 'ACTIVA' }
+        where: { nombre: 'ACTIVA' },
       });
-      
+
       if (!estadoActiva) {
-        logger.warn('No se encontró el estado ACTIVA, creando instancia sin estado');
+        logger.warn(
+          'No se encontró el estado ACTIVA, creando instancia sin estado',
+        );
       }
 
       // Crear la instancia única
-      await InstanciaEvento.create({
-        fecha: fechaEvento,
-        eventoId: evento.id,
-        recurrenciaEventoId: recurrencia.id,
-        estadoId: estadoActiva?.id,
-      }, { transaction });
+      await InstanciaEvento.create(
+        {
+          fecha: fechaEvento,
+          eventoId: evento.id,
+          recurrenciaEventoId: recurrencia.id,
+          estadoId: estadoActiva?.id,
+        },
+        { transaction },
+      );
 
-      logger.debug(`Instancia única creada para evento ${evento.nombre} en ${fechaEvento.toISOString()}`);
+      logger.debug(
+        `Instancia única creada para evento ${evento.nombre} en ${fechaEvento.toISOString()}`,
+      );
       return true;
     } catch (error) {
-      logger.error(`Error generando instancia única para evento ${evento.nombre}:`, error);
+      logger.error(
+        `Error generando instancia única para evento ${evento.nombre}:`,
+        error,
+      );
       return false;
     }
   }
@@ -351,7 +407,7 @@ class InstanciaEventoService {
     evento: Evento,
     recurrencia: RecurrenciaEvento,
     diasMaximos: number,
-    transaction: any
+    transaction: Transaction,
   ): Promise<number> {
     const fechaActual = new Date();
     const fechaLimite = new Date();
@@ -359,13 +415,13 @@ class InstanciaEventoService {
 
     // Convertir el día de la semana a número (0 = Domingo, 1 = Lunes, etc.)
     const diaSemanaMap: { [key: string]: number } = {
-      'Domingo': 0,
-      'Lunes': 1,
-      'Martes': 2,
-      'Miércoles': 3,
-      'Jueves': 4,
-      'Viernes': 5,
-      'Sábado': 6,
+      Domingo: 0,
+      Lunes: 1,
+      Martes: 2,
+      Miércoles: 3,
+      Jueves: 4,
+      Viernes: 5,
+      Sábado: 6,
     };
 
     const diaSemana = diaSemanaMap[recurrencia.dia];
@@ -376,29 +432,35 @@ class InstanciaEventoService {
 
     // Extraer hora y minutos de la hora del evento
     const [hora, minutos] = recurrencia.hora.split(':').map(Number);
-    
+
     // Iniciar desde la fecha más reciente entre: fecha actual o fecha_desde de la recurrencia
-    let fechaInicio = new Date(Math.max(fechaActual.getTime(), recurrencia.fecha_desde.getTime()));
+    let fechaInicio = new Date(
+      Math.max(fechaActual.getTime(), recurrencia.fecha_desde.getTime()),
+    );
     let instanciasCreadas = 0;
 
     // Buscar el próximo día de la semana que coincida
     while (fechaInicio.getDay() !== diaSemana) {
-      fechaInicio.setDate(fechaInicio.getDate() + 1);
+      fechaInicio = new Date(fechaInicio.getTime() + 24 * 60 * 60 * 1000);
     }
 
     // Ajustar la hora
+    fechaInicio = new Date(fechaInicio);
     fechaInicio.setHours(hora, minutos, 0, 0);
 
     // Si la fecha ya pasó hoy, ir al próximo día de la semana
     if (fechaInicio <= fechaActual) {
-      fechaInicio.setDate(fechaInicio.getDate() + 7);
+      fechaInicio = new Date(fechaInicio.getTime() + 7 * 24 * 60 * 60 * 1000);
     }
 
     // Generar instancias hasta alcanzar el límite de días
-    while (fechaInicio <= fechaLimite && fechaInicio <= new Date(recurrencia.fecha_hasta)) {
+    while (
+      fechaInicio <= fechaLimite &&
+      fechaInicio <= new Date(recurrencia.fecha_hasta)
+    ) {
       // Verificar que la fecha esté en el futuro
       if (fechaInicio <= fechaActual) {
-        fechaInicio.setDate(fechaInicio.getDate() + 7);
+        fechaInicio = new Date(fechaInicio.getTime() + 7 * 24 * 60 * 60 * 1000);
         continue;
       }
 
@@ -415,27 +477,34 @@ class InstanciaEventoService {
       if (!instanciaExistente) {
         // Buscar el estado ACTIVA por nombre
         const estadoActiva = await EstadoInstanciaEvento.findOne({
-          where: { nombre: 'ACTIVA' }
+          where: { nombre: 'ACTIVA' },
         });
-        
+
         if (!estadoActiva) {
-          logger.warn('No se encontró el estado ACTIVA, creando instancia sin estado');
+          logger.warn(
+            'No se encontró el estado ACTIVA, creando instancia sin estado',
+          );
         }
 
         // Crear nueva instancia
-        await InstanciaEvento.create({
-          fecha: fechaInicio,
-          eventoId: evento.id,
-          recurrenciaEventoId: recurrencia.id,
-          estadoId: estadoActiva?.id,
-        }, { transaction });
+        await InstanciaEvento.create(
+          {
+            fecha: fechaInicio,
+            eventoId: evento.id,
+            recurrenciaEventoId: recurrencia.id,
+            estadoId: estadoActiva?.id,
+          },
+          { transaction },
+        );
 
         instanciasCreadas++;
-        logger.debug(`Instancia creada para evento ${evento.nombre} en ${fechaInicio.toISOString()}`);
+        logger.debug(
+          `Instancia creada para evento ${evento.nombre} en ${fechaInicio.toISOString()}`,
+        );
       }
 
       // Ir al próximo día de la semana
-      fechaInicio.setDate(fechaInicio.getDate() + 7);
+      fechaInicio = new Date(fechaInicio.getTime() + 7 * 24 * 60 * 60 * 1000);
     }
 
     return instanciasCreadas;
@@ -458,11 +527,11 @@ class InstanciaEventoService {
 
     if (params.fechaDesde || params.fechaHasta) {
       where.fecha = {};
-      
+
       if (params.fechaDesde) {
         where.fecha[Op.gte] = params.fechaDesde;
       }
-      
+
       if (params.fechaHasta) {
         where.fecha[Op.lte] = params.fechaHasta;
       }
@@ -473,4 +542,3 @@ class InstanciaEventoService {
 }
 
 export const instanciaEventoService = new InstanciaEventoService();
-
