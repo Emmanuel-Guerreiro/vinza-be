@@ -171,8 +171,9 @@ router.get('/:id', controller.getOne);
  *                 example: 25.50
  *               recurrencias:
  *                 type: array
- *                 description: Array de recurrencias del evento
- *                 required: false
+ *                 description: Array de recurrencias del evento (mínimo 1 recurrencia)
+ *                 required: true
+ *                 minItems: 1
  *                 items:
  *                   type: object
  *                   properties:
@@ -255,7 +256,8 @@ router.post('', controller.create);
  *                 example: 25.50
  *               recurrencias:
  *                 type: array
- *                 description: Array de recurrencias del evento
+ *                 description: Array de recurrencias del evento (mínimo 1 recurrencia)
+ *                 minItems: 1
  *                 items:
  *                   type: object
  *                   properties:
@@ -310,6 +312,156 @@ router.put('/:id', controller.update);
  *         description: Internal server error
  */
 router.delete('/:id', controller.delete);
+
+/**
+ * @openapi
+ * /eventos/{id}/instancias:
+ *   get:
+ *     summary: Get all instances of a specific event
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the evento
+ *     responses:
+ *       200:
+ *         description: List of event instances retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/InstanciaEvento'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: number
+ *                     currentPage:
+ *                       type: number
+ *                     itemsPerPage:
+ *                       type: number
+ *                     totalPages:
+ *                       type: number
+ *       404:
+ *         description: Event not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/:id/instancias', controller.getInstanciasEvento);
+
+/**
+ * @openapi
+ * /eventos/{id}/generar-instancias:
+ *   post:
+ *     summary: Force generation of instances for a specific event
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the evento
+ *     responses:
+ *       200:
+ *         description: Event instances generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalInstanciasCreadas:
+ *                   type: number
+ *                   description: Total number of instances created
+ *       404:
+ *         description: Event not found or event has no recurrences
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/:id/generar-instancias', controller.generarInstanciasEvento);
+
+/**
+ * @openapi
+ * /eventos/{eventoId}/instancias/{instanciaId}/suspender:
+ *   put:
+ *     summary: Suspend a specific instance of an event
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: eventoId
+ *         in: path
+ *         required: true
+ *         description: The id of the evento
+ *         schema:
+ *           type: number
+ *       - name: instanciaId
+ *         in: path
+ *         required: true
+ *         description: The id of the instance to suspend
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Instance suspended successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InstanciaEvento'
+ *       400:
+ *         description: Bad request - Instance does not belong to the specified event
+ *       404:
+ *         description: Event or instance not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put(
+  '/:eventoId/instancias/:instanciaId/suspender',
+  controller.suspenderInstanciaEvento,
+);
+
+/**
+ * @openapi
+ * /eventos/{eventoId}/instancias/{instanciaId}/reactivar:
+ *   put:
+ *     summary: Reactivate a specific instance of an event
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: eventoId
+ *         in: path
+ *         required: true
+ *         description: The id of the evento
+ *         schema:
+ *           type: number
+ *       - name: instanciaId
+ *         in: path
+ *         required: true
+ *         description: The id of the instance to reactivate
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Instance reactivated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/InstanciaEvento'
+ *       400:
+ *         description: Bad request - Instance does not belong to the specified event
+ *       404:
+ *         description: Event or instance not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put(
+  '/:eventoId/instancias/:instanciaId/reactivar',
+  controller.reactivarInstanciaEvento,
+);
 
 logger.debug('Evento router initialized');
 
