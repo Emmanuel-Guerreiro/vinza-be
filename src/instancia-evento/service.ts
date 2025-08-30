@@ -4,6 +4,7 @@ import { Evento } from '@/evento/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
+import { EstadoInstanciaEvento as EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
 import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { InstanciaEvento } from './model';
 import {
@@ -102,7 +103,7 @@ class InstanciaEventoService {
     // Si no se proporciona estadoId, asignar estado ACTIVA por defecto
     if (!dto.estadoId) {
       const estadoActiva = await EstadoInstanciaEvento.findOne({
-        where: { nombre: 'ACTIVA' },
+        where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
       });
 
       if (estadoActiva) {
@@ -123,7 +124,7 @@ class InstanciaEventoService {
   ) {
     // Si no se proporciona estadoId, asignar estado ACTIVA por defecto
     const estadoActiva = await EstadoInstanciaEvento.findOne({
-      where: { nombre: 'ACTIVA' },
+      where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
     });
 
     if (estadoActiva) {
@@ -171,7 +172,7 @@ class InstanciaEventoService {
 
     // Buscar el estado SUSPENDIDA por nombre
     const estadoSuspendida = await EstadoInstanciaEvento.findOne({
-      where: { nombre: 'SUSPENDIDA' },
+      where: { nombre: EstadoInstanciaEventoEnum.SUSPENDIDA },
     });
 
     if (!estadoSuspendida) {
@@ -193,7 +194,7 @@ class InstanciaEventoService {
 
     // Buscar el estado ACTIVA por nombre
     const estadoActiva = await EstadoInstanciaEvento.findOne({
-      where: { nombre: 'ACTIVA' },
+      where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
       transaction,
     });
 
@@ -211,7 +212,7 @@ class InstanciaEventoService {
    * Método principal para generar instancias de eventos automáticamente
    * basado en las recurrencias y la configuración de días máximos
    */
-  public async generarInstanciasAutomaticamente() {
+  public async generarInstanciasAutomaticamente(): Promise<{ totalInstanciasCreadas: number }> {
     const transaction = await sequelize.transaction();
     try {
       logger.info('Iniciando generación automática de instancias de eventos');
@@ -223,9 +224,9 @@ class InstanciaEventoService {
       });
 
       if (!configuracionDias) {
-        logger.warn('No se encontró configuración de días máximos adelante');
+        logger.error('No se encontró configuración de días máximos adelante');
         await transaction.rollback();
-        return;
+        throw errors.app.general.validation_error;
       }
 
       const diasMaximos = configuracionDias.valor;
@@ -253,41 +254,16 @@ class InstanciaEventoService {
 
       // 3. Para cada evento, generar instancias según sus recurrencias
       for (const evento of eventosConRecurrencias) {
-        if (!evento.recurrencias || evento.recurrencias.length === 0) {
-          logger.warn(`Evento ${evento.nombre} no tiene recurrencias`);
-          continue;
-        }
-
-        // Verificar si es un evento único (fecha_desde = fecha_hasta) o recurrente
-        const esEventoUnico = evento.recurrencias.every(
-          (recurrencia) =>
-            recurrencia.fecha_desde.getTime() ===
-            recurrencia.fecha_hasta.getTime(),
-        );
-
-        if (esEventoUnico) {
-          // Evento único - crear una sola instancia por recurrencia
-          for (const recurrencia of evento.recurrencias) {
-            const instanciaUnica = await this.generarInstanciaUnica(
-              evento,
-              recurrencia,
-              diasMaximos,
-              transaction,
-            );
-            if (instanciaUnica) totalInstanciasCreadas++;
-          }
-        } else {
-          // Evento recurrente - generar múltiples instancias según el patrón
-          for (const recurrencia of evento.recurrencias) {
-            const instanciasGeneradas =
-              await this.generarInstanciasParaRecurrencia(
-                evento,
-                recurrencia,
-                diasMaximos,
-                transaction,
-              );
-            totalInstanciasCreadas += instanciasGeneradas;
-          }
+        try {
+          const instanciasGeneradas = await this.generarInstanciasParaEvento(
+            evento.id,
+            diasMaximos,
+            transaction,
+          );
+          totalInstanciasCreadas += instanciasGeneradas.totalInstanciasCreadas;
+        } catch (error) {
+          logger.error(`Error generando instancias para evento ${evento.id}:`, error);
+          // Continuar con el siguiente evento en caso de error
         }
       }
 
@@ -368,7 +344,7 @@ class InstanciaEventoService {
 
       // Buscar el estado ACTIVA por nombre
       const estadoActiva = await EstadoInstanciaEvento.findOne({
-        where: { nombre: 'ACTIVA' },
+        where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
       });
 
       if (!estadoActiva) {
@@ -478,7 +454,7 @@ class InstanciaEventoService {
       if (!instanciaExistente) {
         // Buscar el estado ACTIVA por nombre
         const estadoActiva = await EstadoInstanciaEvento.findOne({
-          where: { nombre: 'ACTIVA' },
+          where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
         });
 
         if (!estadoActiva) {
@@ -509,6 +485,99 @@ class InstanciaEventoService {
     }
 
     return instanciasCreadas;
+  }
+
+  /**
+   * Genera instancias para un evento específico basado en sus recurrencias
+   * Método unificado que maneja tanto eventos únicos como recurrentes
+   */
+  public async generarInstanciasParaEvento(
+    eventoId: number,
+    diasMaximos?: number,
+    transaction?: Transaction,
+  ): Promise<{ totalInstanciasCreadas: number }> {
+    // Si no se proporciona transacción, crear una nueva
+    const useTransaction = transaction || await sequelize.transaction();
+    const shouldCommit = !transaction;
+
+    try {
+      // Si no se proporcionan días máximos, obtener la configuración
+      if (!diasMaximos) {
+        const configuracionDias = await MaximosDiasAdelanteReserva.findOne({
+          where: { deleted_at: null },
+          order: [['created_at', 'DESC']],
+        });
+
+        if (!configuracionDias) {
+          throw errors.app.general.validation_error;
+        }
+
+        diasMaximos = configuracionDias.valor;
+      }
+
+      // Obtener el evento con sus recurrencias
+      const evento = await Evento.findByPk(eventoId, {
+        include: [
+          {
+            model: RecurrenciaEvento,
+            as: 'recurrencias',
+            where: {
+              fecha_hasta: { [Op.gt]: new Date() },
+            },
+            required: true,
+          },
+        ],
+        transaction: useTransaction,
+      });
+
+      if (!evento) {
+        throw errors.app.evento.not_found;
+      }
+
+      if (!evento.recurrencias || evento.recurrencias.length === 0) {
+        throw errors.app.evento.recurrencias_required;
+      }
+
+      let instanciasCreadas = 0;
+
+      for (const recurrencia of evento.recurrencias) {
+        // Verificar si es un evento único (fecha_desde = fecha_hasta)
+        const esEventoUnico =
+          recurrencia.fecha_desde.getTime() ===
+          recurrencia.fecha_hasta.getTime();
+
+        if (esEventoUnico) {
+          // Evento único - crear una sola instancia
+          const instanciaCreada = await this.generarInstanciaUnica(
+            evento,
+            recurrencia,
+            diasMaximos,
+            useTransaction,
+          );
+          if (instanciaCreada) instanciasCreadas++;
+        } else {
+          // Evento recurrente - generar múltiples instancias según el patrón
+          const instanciasGeneradas = await this.generarInstanciasParaRecurrencia(
+            evento,
+            recurrencia,
+            diasMaximos,
+            useTransaction,
+          );
+          instanciasCreadas += instanciasGeneradas;
+        }
+      }
+
+      if (shouldCommit) {
+        await useTransaction.commit();
+      }
+
+      return { totalInstanciasCreadas: instanciasCreadas };
+    } catch (error) {
+      if (shouldCommit) {
+        await useTransaction.rollback();
+      }
+      throw error;
+    }
   }
 
   private generateWhereConditions(params: FindAllParams): WhereOptions {

@@ -412,39 +412,17 @@ class EventoService {
   /**
    * Fuerza la generación de instancias para un evento específico
    */
-  public async generarInstanciasEvento(eventoId: number): Promise<
-    | { totalInstanciasCreadas: number }
-    | {
-        mensaje: string;
-        mensaje_eng: string;
-        eventoId: number;
-        nombreEvento: string;
-        tipo: 'evento_unico';
-        instanciasGeneradas: number;
-        recomendacion: string;
-      }
-    | undefined
-  > {
+  public async generarInstanciasEvento(eventoId: number): Promise<{ totalInstanciasCreadas: number }> {
     const evento = await this.findOne(eventoId);
     if (!evento) throw errors.app.evento.not_found;
 
     // Verificar que el evento tenga recurrencias
     if (!evento.recurrencias || evento.recurrencias.length === 0) {
-      // En lugar de fallar, retornar una respuesta coherente
-      return {
-        mensaje: 'Este evento no tiene recurrencias configuradas',
-        mensaje_eng: 'This event has no recurrences configured',
-        eventoId: evento.id,
-        nombreEvento: evento.nombre,
-        tipo: 'evento_unico',
-        instanciasGeneradas: 0,
-        recomendacion:
-          'Para generar instancias, el evento debe tener recurrencias configuradas',
-      };
+      throw errors.app.evento.recurrencias_required;
     }
 
-    // Llamar al servicio de instancia-evento para generar instancias
-    return await instanciaEventoService.generarInstanciasAutomaticamente();
+    // Llamar al servicio de instancia-evento para generar instancias del evento específico
+    return await instanciaEventoService.generarInstanciasParaEvento(eventoId);
   }
 
   /**
