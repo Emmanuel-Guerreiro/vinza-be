@@ -12,11 +12,9 @@ const router = Router();
 /**
  * @openapi
  * /eventos:
- *   security:
- *     - bearerAuth: []
  *   get:
- *     summary: Get all eventos [EVENTOS_READ]
- *     description: Get all eventos with optional filtering . Requires EVENTOS_READ permission.
+ *     summary: Get all eventos
+ *     description: Get all eventos with optional filtering
  *     tags:
  *       - Eventos
  *     parameters:
@@ -97,10 +95,26 @@ const router = Router();
  *     responses:
  *       200:
  *         description: List of eventos retrieved successfully
- *       401:
- *         description: Unauthorized - Invalid or missing token
- *       403:
- *         description: Forbidden - Insufficient permissions . EVENTOS_READ required.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Evento'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: number
+ *                     currentPage:
+ *                       type: number
+ *                     itemsPerPage:
+ *                       type: number
+ *                     totalPages:
+ *                       type: number
  *       400:
  *         description: Bad request - Invalid filter parameters
  *       500:
@@ -108,8 +122,6 @@ const router = Router();
  */
 router.get(
   '',
-  authMiddleware,
-  requirePermissions([Permissions.EVENTOS_READ]),
   controller.getAll
 );
 
