@@ -1,18 +1,17 @@
-import { Reserva } from '@/reserva/model';
+import { Recorrido } from '../recorrido/model';
 import {
-  BelongsTo,
+  BelongsToMany,
   Column,
   CreatedAt,
   DataType,
   DeletedAt,
   ForeignKey,
-  HasMany,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
 
-export interface EstadoReservaAttributes {
+export interface EstadoRecorridoAttributes {
   id: number;
   nombre: string;
   created_at: string;
@@ -20,21 +19,20 @@ export interface EstadoReservaAttributes {
   deleted_at?: string;
 }
 
-export type EstadoReservaCreationAttributes = Omit<
-  EstadoReservaAttributes,
+export type EstadoRecorridoCreationAttributes = Omit<
+  EstadoRecorridoAttributes,
   'id' | 'created_at' | 'updated_at' | 'deleted_at'
 >;
-
 @Table({
-  tableName: 'estado_reservas',
+  tableName: 'estado_recorridos',
   paranoid: true,
   createdAt: 'created_at',
   updatedAt: 'updated_at',
   deletedAt: 'deleted_at',
 })
-export class EstadoReserva extends Model<
-  EstadoReservaAttributes,
-  EstadoReservaCreationAttributes
+export class EstadoRecorrido extends Model<
+  EstadoRecorridoAttributes,
+  EstadoRecorridoCreationAttributes
 > {
   @Column({
     type: DataType.INTEGER,
@@ -42,7 +40,6 @@ export class EstadoReserva extends Model<
     autoIncrement: true,
   })
   id!: number;
-
   @Column({ type: DataType.STRING, allowNull: false })
   nombre!: string;
 
@@ -58,33 +55,31 @@ export class EstadoReserva extends Model<
   @Column({ type: DataType.DATE })
   deleted_at!: string | null;
 
-  @HasMany(() => HEstadoReserva)
-  historiales!: HEstadoReserva[];
+  @BelongsToMany(() => Recorrido, () => HEstadoRecorrido)
+  recorridos!: Recorrido[];
 }
 
-export interface HEstadoReservaAttributes {
+export interface HEstadoRecorridoAttributes {
   id: number;
-  reservaId: number;
-  estadoReservaId: number;
+  recorridoId: number;
+  estadoRecorridoId: number;
   created_at: Date;
   deleted_at: Date | null;
 }
-
-export type HEstadoReservaCreationAttributes = Omit<
-  HEstadoReservaAttributes,
+export type HEstadoRecorridoCreationAttributes = Omit<
+  HEstadoRecorridoAttributes,
   'id' | 'created_at' | 'deleted_at'
 >;
-
 @Table({
   paranoid: true,
   createdAt: 'created_at',
   deletedAt: 'deleted_at',
   updatedAt: false,
-  tableName: 'h_estado_reservas',
+  tableName: 'h_estado_recorridos',
 })
-export class HEstadoReserva extends Model<
-  HEstadoReservaAttributes,
-  HEstadoReservaCreationAttributes
+export class HEstadoRecorrido extends Model<
+  HEstadoRecorridoAttributes,
+  HEstadoRecorridoCreationAttributes
 > {
   @Column({
     type: DataType.INTEGER,
@@ -92,14 +87,13 @@ export class HEstadoReserva extends Model<
     autoIncrement: true,
   })
   id!: number;
-
-  @ForeignKey(() => Reserva)
+  @ForeignKey(() => Recorrido)
   @Column({ type: DataType.INTEGER, allowNull: false })
-  reservaId!: number;
+  recorridoId!: number;
 
-  @ForeignKey(() => EstadoReserva)
+  @ForeignKey(() => EstadoRecorrido)
   @Column({ type: DataType.INTEGER, allowNull: false })
-  estadoReservaId!: number;
+  estadoRecorridoId!: number;
 
   @CreatedAt
   @Column({ type: DataType.DATE })
@@ -108,7 +102,4 @@ export class HEstadoReserva extends Model<
   @DeletedAt
   @Column({ type: DataType.DATE })
   deleted_at!: Date | null;
-
-  @BelongsTo(() => EstadoReserva)
-  estado!: EstadoReserva;
 }

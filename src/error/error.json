@@ -160,7 +160,7 @@
         "message_eng": "evento Reserva not found",
         "status": 404
       },
-      "cupos_not_found": {
+      "cupos_not_enough": {
         "key": "app.reserva.cupos_not_found",
         "message": "No hay cupos suficientes",
         "message_eng": "No tickets enought?",
@@ -184,6 +184,58 @@
         "key": "app.recorrido.update_error",
         "message": "Error al actualizar el recorrido",
         "message_eng": "Error updating the recorrido",
+        "status": 500
+      }
+    },
+    "hEstadoRecorrido": {
+      "H_estado_not_found": {
+        "key": "app.HEstadoRecorrido.estado_not_found",
+        "message": "Estado recorrido not found",
+        "message_eng": "Estado recorrido not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.HEstadoRecorrido.create_error",
+        "message": "Error al crear estado recorrido",
+        "message_eng": "Error creating estado recorrido",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.HEstadoRecorrido.update_error",
+        "message": "Error al actualizar estado recorrido",
+        "message_eng": "Error updating estado recorrido",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.HEstadoRecorrido.delete_error",
+        "message": "Error al eliminar estado recorrido",
+        "message_eng": "Error deleting estado recorrido",
+        "status": 500
+      }
+    },
+    "estadoRecorrido": {
+      "estado_not_found": {
+        "key": "app.EstadoRecorrido.estado_not_found",
+        "message": "Estado recorrido not found",
+        "message_eng": "Estado recorrido not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.EstadoRecorrido.create_error",
+        "message": "Error al crear estado recorrido",
+        "message_eng": "Error creating estado recorrido",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.EstadoRecorrido.update_error",
+        "message": "Error al actualizar estado recorrido",
+        "message_eng": "Error updating estado recorrido",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.EstadoRecorrido.delete_error",
+        "message": "Error al eliminar estado recorrido",
+        "message_eng": "Error deleting estado recorrido",
         "status": 500
       }
     },

@@ -9,32 +9,27 @@ import { recorridoService } from '@/recorrido/service';
 import { estadoReservaService } from '@/estado-reserva/service';
 import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
 import { FindOptions } from 'sequelize';
+import { eventoService } from '@/evento/service';
+import { InstanciaEvento } from '@/instancia-evento';
 //import { FindOptions } from 'sequelize';
 //import { estadoInstanciaEventoService } from '@/estado-instancia-evento/service';
 //import { Op } from "sequelize";
 
 class ReservaService {
   public async create(dto: CreateReservaDto) {
-    //esperando al nono
-    //validacion de cupos, falta instancia evento para continuar
-    //     const reserva = await Reserva.findOne({
-    //   where: { idReserva: id }, // o el filtro que necesites
-    //   include: [
-    //     {
-    //       model: InstanciaEvento,
-    //       as: 'instanciaEvento',
-    //       include: [
-    //         {
-    //           model: Evento,
-    //           as: 'evento',
-    //           attributes: ['cupos'],
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // });
     const transaction = await sequelize.transaction();
     try {
+      const Evento = await eventoService.findByInstanciaEvento(
+        dto.instanciaEventoId,
+      );
+      if (!Evento) throw errors.app.evento.not_found;
+      const cupos = Evento.cupo;
+      const reservasConfirmadas =
+        await reservaService.countConfirmadasByInstancia(dto.instanciaEventoId);
+      const reservasRestantes = cupos - reservasConfirmadas;
+      if (dto.cantidadGente > reservasRestantes) {
+        throw errors.app.reserva.cupos_not_enough;
+      }
       let recorridoId = dto.recorridoId;
       if (!recorridoId) {
         recorridoId = (await recorridoService.create({ userId: dto.userId }))
@@ -201,6 +196,35 @@ class ReservaService {
     } catch {
       await transaction.rollback();
     }
+  }
+  public async countConfirmadasByInstancia(instanciaEventoId: number) {
+    return Reserva.count({
+      include: [
+        {
+          model: InstanciaEvento,
+          as: 'instancia',
+          where: { id: instanciaEventoId },
+          attributes: [],
+        },
+        {
+          model: HEstadoReserva,
+          as: 'historicoEstado',
+          required: true,
+          where: { deleted_at: null },
+          include: [
+            {
+              model: EstadoReserva,
+              as: 'estado',
+              required: true,
+              where: { nombre: 'Confirmado' },
+              attributes: [],
+            },
+          ],
+          attributes: [],
+        },
+      ],
+      distinct: true,
+    });
   }
 }
 

@@ -22,7 +22,7 @@ import {
 } from '@/pagination';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 import { Bodega } from '@/bodega/model';
-import { instanciaEventoService } from '@/instancia-evento';
+import { InstanciaEvento, instanciaEventoService } from '@/instancia-evento';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
@@ -406,6 +406,17 @@ class EventoService {
       page: 1,
       limit: 1000, // Límite alto para obtener todas las instancias
       orderBy: 'id:asc',
+    });
+  }
+  async findByInstanciaEvento(instanciaEventoId: number) {
+    return Evento.findOne({
+      include: [
+        {
+          model: InstanciaEvento,
+          as: 'instancias',
+          where: { id: instanciaEventoId },
+        },
+      ],
     });
   }
 

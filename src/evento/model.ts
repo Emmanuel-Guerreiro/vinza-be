@@ -54,7 +54,7 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
   descripcion!: string;
 
   @Column({ type: DataType.STRING, allowNull: false })
-  cupo!: string;
+  cupo!: number;
 
   @Column({ type: DataType.DECIMAL(10, 2), allowNull: false })
   precio!: number;

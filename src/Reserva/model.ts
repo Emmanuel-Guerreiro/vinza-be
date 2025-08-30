@@ -10,7 +10,7 @@ import {
   UpdatedAt,
 } from 'sequelize-typescript';
 import { Recorrido } from '@/recorrido/model';
-import { HEstadoEvento } from '@/estado-evento/model';
+import { HEstadoReserva } from '@/estado-reserva/model';
 export interface ReservaAttributes {
   idReserva: string;
   precio: number;
@@ -37,11 +37,11 @@ export class Reserva extends Model<
   ReservaCreationAttributes
 > {
   @Column({
-    type: DataType.STRING,
+    type: DataType.INTEGER,
     primaryKey: true,
     autoIncrement: false,
   })
-  idReserva!: string;
+  idReserva!: number;
 
   @Column({ type: DataType.INTEGER, allowNull: false })
   precio!: number;
@@ -66,6 +66,6 @@ export class Reserva extends Model<
   @BelongsTo(() => Recorrido)
   recorrido!: number;
 
-  @HasMany(() => HEstadoEvento)
-  historicoEstado!: HEstadoEvento[];
+  @HasMany(() => HEstadoReserva)
+  historicoEstado!: HEstadoReserva[];
 }

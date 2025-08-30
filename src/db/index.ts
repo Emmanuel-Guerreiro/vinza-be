@@ -51,8 +51,13 @@ export const sequelize = new Sequelize({
     CodigoRecuperarContra,
     MaximosDiasAdelanteReserva,
     RecurrenciaEvento,
-    // EstadoReserva, // Comentado temporalmente
-    // EstadoInstanciaEvento, // Comentado temporalmente
+    InstanciaEvento,
+    EstadoInstanciaEvento,
+    HEstadoInstanciaEvento,
+    EstadoReserva,
+    HEstadoReserva,
+    Reserva,
+    Recorrido,
   ], // or [Player, Team],
 });
 

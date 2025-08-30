@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { RecorridoController } from './controller';
 import { recorridoService } from './service';
-//import {logger } from '@logger';
+import logger from '@/logger';
+import { authMiddleware } from '@/auth/middleware';
+import { Permissions } from '@/rbac/permissions';
+import { requirePermissions } from '@/rbac/middleware';
 
 const controller = new RecorridoController(recorridoService);
 const router = Router();
@@ -38,4 +41,12 @@ router.get('', controller.getAll);
  *       500:
  *         description: Internal server error
  */
-router.post('', controller.create);
+router.post(
+  '',
+  authMiddleware,
+  requirePermissions([Permissions.RECORRIDO_READ]),
+  controller.create,
+);
+
+logger.debug('Recorridos router initialized');
+export default router;
