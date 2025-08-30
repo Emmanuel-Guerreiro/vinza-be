@@ -28,7 +28,7 @@ export const sequelize = new Sequelize({
   database: config.DB_NAME,
   host: config.DB_HOST,
   port: Number(config.DB_PORT),
-  ssl: false,
+  ssl: false,  
   sync: { alter: true },
   logging: false,
   models: [

@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { EventoController } from './controller';
 import { eventoService } from './service';
+import { requirePermissions } from '@/rbac/middleware';
+import { Permissions } from '@/rbac/permissions';
+import { authMiddleware } from '@/auth/middleware';
 import logger from '@/logger';
 
 const controller = new EventoController(eventoService);
@@ -9,8 +12,11 @@ const router = Router();
 /**
  * @openapi
  * /eventos:
+ *   security:
+ *     - bearerAuth: []
  *   get:
- *     summary: Get all eventos
+ *     summary: Get all eventos [EVENTOS_READ]
+ *     description: Get all eventos with optional filtering (Requires: EVENTOS_READ permission)
  *     tags:
  *       - Eventos
  *     parameters:
@@ -91,18 +97,30 @@ const router = Router();
  *     responses:
  *       200:
  *         description: List of eventos retrieved successfully
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_READ required)
  *       400:
  *         description: Bad request - Invalid filter parameters
  *       500:
  *         description: Internal server error
  */
-router.get('', controller.getAll);
+router.get(
+  '',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_READ]),
+  controller.getAll
+);
 
 /**
  * @openapi
  * /eventos/{id}:
+ *   security:
+ *     - bearerAuth: []
  *   get:
- *     summary: Get an evento by id
+ *     summary: Get an evento by id [EVENTOS_READ]
+ *     description: Get a specific evento by its ID (Requires: EVENTOS_READ permission)
  *     tags:
  *       - Eventos
  *     parameters:
@@ -113,18 +131,30 @@ router.get('', controller.getAll);
  *     responses:
  *       200:
  *         description: Evento found successfully
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_READ required)
  *       400:
  *         description: Bad request
  *       500:
  *         description: Internal server error
  */
-router.get('/:id', controller.getOne);
+router.get(
+  '/:id',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_READ]),
+  controller.getOne
+);
 
 /**
  * @openapi
  * /eventos:
+ *   security:
+ *     - bearerAuth: []
  *   post:
- *     summary: Create an evento
+ *     summary: Create an evento [EVENTOS_MANAGE]
+ *     description: Create a new evento with recurrences (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Eventos
  *     requestBody:
@@ -200,18 +230,30 @@ router.get('/:id', controller.getOne);
  *     responses:
  *       201:
  *         description: Evento created successfully
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       400:
  *         description: Bad request
  *       500:
  *         description: Internal server error
  */
-router.post('', controller.create);
+router.post(
+  '',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  controller.create
+);
 
 /**
  * @openapi
  * /eventos/{id}:
+ *   security:
+ *     - bearerAuth: []
  *   put:
- *     summary: Update an evento
+ *     summary: Update an evento [EVENTOS_MANAGE]
+ *     description: Update an existing evento (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Eventos
  *     parameters:
@@ -284,18 +326,30 @@ router.post('', controller.create);
  *     responses:
  *       200:
  *         description: Evento updated successfully
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       400:
  *         description: Bad request
  *       500:
  *         description: Internal server error
  */
-router.put('/:id', controller.update);
+router.put(
+  '/:id',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  controller.update
+);
 
 /**
  * @openapi
  * /eventos/{id}:
+ *   security:
+ *     - bearerAuth: []
  *   delete:
- *     summary: Delete an evento
+ *     summary: Delete an evento [EVENTOS_MANAGE]
+ *     description: Delete an existing evento (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Eventos
  *     parameters:
@@ -306,18 +360,28 @@ router.put('/:id', controller.update);
  *     responses:
  *       200:
  *         description: Evento deleted successfully
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       400:
  *         description: Bad request
  *       500:
  *         description: Internal server error
  */
-router.delete('/:id', controller.delete);
+router.delete(
+  '/:id',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  controller.delete
+);
 
 /**
  * @openapi
  * /eventos/{id}/instancias:
  *   get:
  *     summary: Get all instances of a specific event
+ *     description: Get all instances of a specific event
  *     tags:
  *       - Eventos
  *     parameters:
@@ -358,8 +422,11 @@ router.get('/:id/instancias', controller.getInstanciasEvento);
 /**
  * @openapi
  * /eventos/{id}/generar-instancias:
+ *   security:
+ *     - bearerAuth: []
  *   post:
- *     summary: Force generation of instances for a specific event
+ *     summary: Force generation of instances for a specific event [EVENTOS_MANAGE]
+ *     description: Force generation of instances for a specific event (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Eventos
  *     parameters:
@@ -378,18 +445,30 @@ router.get('/:id/instancias', controller.getInstanciasEvento);
  *                 totalInstanciasCreadas:
  *                   type: number
  *                   description: Total number of instances created
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       404:
  *         description: Event not found or event has no recurrences
  *       500:
  *         description: Internal server error
  */
-router.post('/:id/generar-instancias', controller.generarInstanciasEvento);
+router.post(
+  '/:id/generar-instancias',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  controller.generarInstanciasEvento
+);
 
 /**
  * @openapi
  * /eventos/{eventoId}/instancias/{instanciaId}/suspender:
+ *   security:
+ *     - bearerAuth: []
  *   put:
- *     summary: Suspend a specific instance of an event
+ *     summary: Suspend a specific instance of an event [EVENTOS_MANAGE]
+ *     description: Suspend a specific instance of an event (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Eventos
  *     parameters:
@@ -412,6 +491,10 @@ router.post('/:id/generar-instancias', controller.generarInstanciasEvento);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/InstanciaEvento'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       400:
  *         description: Bad request - Instance does not belong to the specified event
  *       404:
@@ -421,14 +504,19 @@ router.post('/:id/generar-instancias', controller.generarInstanciasEvento);
  */
 router.put(
   '/:eventoId/instancias/:instanciaId/suspender',
+  authMiddleware, 
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
   controller.suspenderInstanciaEvento,
 );
 
 /**
  * @openapi
  * /eventos/{eventoId}/instancias/{instanciaId}/reactivar:
+ *   security:
+ *     - bearerAuth: []
  *   put:
- *     summary: Reactivate a specific instance of an event
+ *     summary: Reactivate a specific instance of an event [EVENTOS_MANAGE]
+ *     description: Reactivate a specific instance of an event (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Eventos
  *     parameters:
@@ -451,6 +539,10 @@ router.put(
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/InstanciaEvento'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       400:
  *         description: Bad request - Instance does not belong to the specified event
  *       404:
@@ -460,6 +552,8 @@ router.put(
  */
 router.put(
   '/:eventoId/instancias/:instanciaId/reactivar',
+  authMiddleware, 
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
   controller.reactivarInstanciaEvento,
 );
 

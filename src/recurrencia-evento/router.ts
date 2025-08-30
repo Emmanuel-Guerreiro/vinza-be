@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { RecurrenciaEventoController } from './controller';
 import { recurrenciaEventoService } from './service';
+import { requirePermissions } from '@/rbac/middleware';
+import { Permissions } from '@/rbac/permissions';
+import { authMiddleware } from '@/auth/middleware';
 
 const controller = new RecurrenciaEventoController(recurrenciaEventoService);
 const router = Router();
@@ -8,11 +11,13 @@ const router = Router();
 /**
  * @openapi
  * /recurrencia-evento:
+ *   security:
+ *     - bearerAuth: []
  *   get:
+ *     summary: Obtener todas las recurrencias de eventos [EVENTOS_MANAGE]
+ *     description: Retorna todas las recurrencias de eventos, opcionalmente filtradas por eventoId (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Recurrencia Evento
- *     summary: Obtener todas las recurrencias de eventos
- *     description: Retorna todas las recurrencias de eventos, opcionalmente filtradas por eventoId
  *     parameters:
  *       - in: query
  *         name: eventoId
@@ -29,19 +34,30 @@ const router = Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/RecurrenciaEvento'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       500:
  *         description: Error interno del servidor
  */
-router.get('', controller.getAll);
+router.get(
+    '',
+    authMiddleware,
+    requirePermissions([Permissions.EVENTOS_MANAGE]),
+    controller.getAll
+);
 
 /**
  * @openapi
  * /recurrencia-evento:
+ *   security:
+ *     - bearerAuth: []
  *   post:
+ *     summary: Crear una nueva recurrencia de evento [EVENTOS_MANAGE]
+ *     description: Crea una nueva recurrencia de evento con los datos proporcionados (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Recurrencia Evento
- *     summary: Crear una nueva recurrencia de evento
- *     description: Crea una nueva recurrencia de evento con los datos proporcionados
  *     requestBody:
  *       required: true
  *       content:
@@ -86,6 +102,10 @@ router.get('', controller.getAll);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/RecurrenciaEvento'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       400:
  *         description: Error de validación
  *         content:
@@ -96,16 +116,23 @@ router.get('', controller.getAll);
  *                 error:
  *                   type: string
  */
-router.post('', controller.create);
+router.post(
+    '',
+    authMiddleware,
+    requirePermissions([Permissions.EVENTOS_MANAGE]),
+    controller.create
+);
 
 /**
  * @openapi
  * /recurrencia-evento/create-many:
+ *   security:
+ *     - bearerAuth: []
  *   post:
+ *     summary: Crear múltiples recurrencias de evento [EVENTOS_MANAGE]
+ *     description: Crea múltiples recurrencias de evento con los datos proporcionados (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Recurrencia Evento
- *     summary: Crear múltiples recurrencias de evento
- *     description: Crea múltiples recurrencias de evento con los datos proporcionados
  *     requestBody:
  *       required: true
  *       content:
@@ -159,6 +186,10 @@ router.post('', controller.create);
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/RecurrenciaEvento'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       400:
  *         description: Error de validación
  *         content:
@@ -169,16 +200,23 @@ router.post('', controller.create);
  *                 error:
  *                   type: string
  */
-router.post('/create-many', controller.createMany);
+router.post(
+    '/create-many',
+    authMiddleware,
+    requirePermissions([Permissions.EVENTOS_MANAGE]),
+    controller.createMany
+);
 
 /**
  * @openapi
  * /recurrencia-evento/{id}:
+ *   security:
+ *     - bearerAuth: []
  *   get:
+ *     summary: Obtener una recurrencia de evento por ID [EVENTOS_MANAGE]
+ *     description: Retorna una recurrencia de evento específica por su ID (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Recurrencia Evento
- *     summary: Obtener una recurrencia de evento por ID
- *     description: Retorna una recurrencia de evento específica por su ID
  *     parameters:
  *       - in: path
  *         name: id
@@ -194,21 +232,32 @@ router.post('/create-many', controller.createMany);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/RecurrenciaEvento'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       404:
  *         description: Recurrencia no encontrada
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/:id', controller.getOne);
+router.get(
+    '/:id',
+    authMiddleware,
+    requirePermissions([Permissions.EVENTOS_MANAGE]),
+    controller.getOne
+);
 
 /**
  * @openapi
  * /recurrencia-evento/{id}:
+ *   security:
+ *     - bearerAuth: []
  *   put:
+ *     summary: Actualizar una recurrencia de evento [EVENTOS_MANAGE]
+ *     description: Actualiza una recurrencia de evento existente (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Recurrencia Evento
- *     summary: Actualizar una recurrencia de evento
- *     description: Actualiza una recurrencia de evento existente
  *     parameters:
  *       - in: path
  *         name: id
@@ -255,21 +304,32 @@ router.get('/:id', controller.getOne);
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/RecurrenciaEvento'
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       400:
  *         description: Error de validación
  *       404:
  *         description: Recurrencia no encontrada
  */
-router.put('/:id', controller.update);
+router.put(
+    '/:id',
+    authMiddleware,
+    requirePermissions([Permissions.EVENTOS_MANAGE]),
+    controller.update
+);
 
 /**
  * @openapi
  * /recurrencia-evento/{id}:
+ *   security:
+ *     - bearerAuth: []
  *   delete:
+ *     summary: Eliminar una recurrencia de evento [EVENTOS_MANAGE]
+ *     description: Elimina una recurrencia de evento por su ID (Requires: EVENTOS_MANAGE permission)
  *     tags:
  *       - Recurrencia Evento
- *     summary: Eliminar una recurrencia de evento
- *     description: Elimina una recurrencia de evento por su ID
  *     parameters:
  *       - in: path
  *         name: id
@@ -281,11 +341,20 @@ router.put('/:id', controller.update);
  *     responses:
  *       204:
  *         description: Recurrencia eliminada exitosamente
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
  *       404:
  *         description: Recurrencia no encontrada
  *       500:
  *         description: Error interno del servidor
  */
-router.delete('/:id', controller.delete);
+router.delete(
+    '/:id',
+    authMiddleware,
+    requirePermissions([Permissions.EVENTOS_MANAGE]),
+    controller.delete
+);
 
 export default router;
