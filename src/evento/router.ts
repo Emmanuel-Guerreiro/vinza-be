@@ -16,7 +16,7 @@ const router = Router();
  *     - bearerAuth: []
  *   get:
  *     summary: Get all eventos [EVENTOS_READ]
- *     description: Get all eventos with optional filtering (Requires: EVENTOS_READ permission)
+ *     description: Get all eventos with optional filtering . Requires EVENTOS_READ permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -52,20 +52,20 @@ const router = Router();
  *           type: number
  *       - name: bodegaId
  *         in: query
- *         description: Filter by specific bodega ID (through sucursal relationship)
+ *         description: Filter by specific bodega ID through sucursal relationship
  *         required: false
  *         schema:
  *           type: string
  *       - name: fechaDesde
  *         in: query
- *         description: Filter events created from this date (ISO format)
+ *         description: Filter events created from this date in ISO format
  *         required: false
  *         schema:
  *           type: string
  *           format: date-time
  *       - name: fechaHasta
  *         in: query
- *         description: Filter events created until this date (ISO format)
+ *         description: Filter events created until this date in ISO format
  *         required: false
  *         schema:
  *           type: string
@@ -78,19 +78,19 @@ const router = Router();
  *           type: number
  *       - name: puntuacionMinima
  *         in: query
- *         description: Filter events with minimum rating (0-5 scale)
+ *         description: Filter events with minimum rating on 0-5 scale
  *         required: false
  *         schema:
  *           type: number
  *       - name: nombre
  *         in: query
- *         description: Filter events by name (case-insensitive search)
+ *         description: Filter events by name using case-insensitive search
  *         required: false
  *         schema:
  *           type: string
  *       - name: orderBy
  *         in: query
- *         description: "Order results by field and direction (format: field:direction)"
+ *         description: Order results by field and direction. Format field:direction
  *         required: false
  *         schema:
  *           type: string
@@ -100,7 +100,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions (EVENTOS_READ required)
+ *         description: Forbidden - Insufficient permissions . EVENTOS_READ required.
  *       400:
  *         description: Bad request - Invalid filter parameters
  *       500:
@@ -120,7 +120,7 @@ router.get(
  *     - bearerAuth: []
  *   get:
  *     summary: Get an evento by id [EVENTOS_READ]
- *     description: Get a specific evento by its ID (Requires: EVENTOS_READ permission)
+ *     description: Get a specific evento by its ID . Requires EVENTOS_READ permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -134,7 +134,7 @@ router.get(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions (EVENTOS_READ required)
+ *         description: Forbidden - Insufficient permissions . EVENTOS_READ required.
  *       400:
  *         description: Bad request
  *       500:
@@ -154,7 +154,7 @@ router.get(
  *     - bearerAuth: []
  *   post:
  *     summary: Create an evento [EVENTOS_MANAGE]
- *     description: Create a new evento with recurrences (Requires: EVENTOS_MANAGE permission)
+ *     description: Create a new evento with recurrences. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     requestBody:
@@ -176,7 +176,7 @@ router.get(
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
  *                 type: string
- *                 description: Cupo del evento (debe ser un número válido mayor a 0)
+ *                 description: Cupo del evento debe ser un número válido mayor a 0
  *                 required: true
  *                 example: "50"
  *               sucursalId:
@@ -201,7 +201,7 @@ router.get(
  *                 example: 25.50
  *               recurrencias:
  *                 type: array
- *                 description: Array de recurrencias del evento (mínimo 1 recurrencia)
+ *                 description: Array de recurrencias del evento mínimo 1 recurrencia
  *                 required: true
  *                 minItems: 1
  *                 items:
@@ -209,12 +209,12 @@ router.get(
  *                   properties:
  *                     dia:
  *                       type: string
- *                       description: Día de la semana (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo)
+ *                       description: Día de la semana Lunes Martes Miércoles Jueves Viernes Sábado Domingo
  *                       enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
  *                       example: "Lunes"
  *                     hora:
  *                       type: string
- *                       description: Hora del evento (formato HH:MM, desde 08:00 hasta 23:30)
+ *                       description: Hora del evento formato HH:MM desde 08:00 hasta 23:30
  *                       enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
  *                       example: "18:00"
  *                     fecha_desde:
@@ -233,7 +233,7 @@ router.get(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
+ *         description: Forbidden - Insufficient permissions. EVENTOS_MANAGE required.
  *       400:
  *         description: Bad request
  *       500:
@@ -253,7 +253,7 @@ router.post(
  *     - bearerAuth: []
  *   put:
  *     summary: Update an evento [EVENTOS_MANAGE]
- *     description: Update an existing evento (Requires: EVENTOS_MANAGE permission)
+ *     description: Update an existing evento . Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -278,7 +278,7 @@ router.post(
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
  *                 type: string
- *                 description: Cupo del evento (debe ser un número válido mayor a 0)
+ *                 description: Cupo del evento debe ser un número válido mayor a 0
  *                 example: "50"
  *               sucursalId:
  *                 type: number
@@ -298,19 +298,19 @@ router.post(
  *                 example: 25.50
  *               recurrencias:
  *                 type: array
- *                 description: Array de recurrencias del evento (mínimo 1 recurrencia)
+ *                 description: Array de recurrencias del evento mínimo 1 recurrencia
  *                 minItems: 1
  *                 items:
  *                   type: object
  *                   properties:
  *                     dia:
  *                       type: string
- *                       description: Día de la semana (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo)
+ *                       description: Día de la semana Lunes Martes Miércoles Jueves Viernes Sábado Domingo
  *                       enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
  *                       example: "Martes"
  *                     hora:
  *                       type: string
- *                       description: Hora del evento (formato HH:MM, desde 08:00 hasta 23:30)
+ *                       description: Hora del evento formato HH:MM desde 08:00 hasta 23:30
  *                       enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
  *                       example: "19:00"
  *                     fecha_desde:
@@ -329,7 +329,7 @@ router.post(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       400:
  *         description: Bad request
  *       500:
@@ -349,7 +349,7 @@ router.put(
  *     - bearerAuth: []
  *   delete:
  *     summary: Delete an evento [EVENTOS_MANAGE]
- *     description: Delete an existing evento (Requires: EVENTOS_MANAGE permission)
+ *     description: Delete an existing evento . Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -363,7 +363,7 @@ router.put(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       400:
  *         description: Bad request
  *       500:
@@ -426,7 +426,7 @@ router.get('/:id/instancias', controller.getInstanciasEvento);
  *     - bearerAuth: []
  *   post:
  *     summary: Force generation of instances for a specific event [EVENTOS_MANAGE]
- *     description: Force generation of instances for a specific event (Requires: EVENTOS_MANAGE permission)
+ *     description: Force generation of instances for a specific event . Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -448,7 +448,7 @@ router.get('/:id/instancias', controller.getInstanciasEvento);
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       404:
  *         description: Event not found or event has no recurrences
  *       500:
@@ -468,7 +468,7 @@ router.post(
  *     - bearerAuth: []
  *   put:
  *     summary: Suspend a specific instance of an event [EVENTOS_MANAGE]
- *     description: Suspend a specific instance of an event (Requires: EVENTOS_MANAGE permission)
+ *     description: Suspend a specific instance of an event . Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -494,7 +494,7 @@ router.post(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       400:
  *         description: Bad request - Instance does not belong to the specified event
  *       404:
@@ -516,7 +516,7 @@ router.put(
  *     - bearerAuth: []
  *   put:
  *     summary: Reactivate a specific instance of an event [EVENTOS_MANAGE]
- *     description: Reactivate a specific instance of an event (Requires: EVENTOS_MANAGE permission)
+ *     description: Reactivate a specific instance of an event . Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -542,7 +542,7 @@ router.put(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       400:
  *         description: Bad request - Instance does not belong to the specified event
  *       404:

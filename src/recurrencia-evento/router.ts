@@ -15,7 +15,7 @@ const router = Router();
  *     - bearerAuth: []
  *   get:
  *     summary: Obtener todas las recurrencias de eventos [EVENTOS_MANAGE]
- *     description: Retorna todas las recurrencias de eventos, opcionalmente filtradas por eventoId (Requires: EVENTOS_MANAGE permission)
+ *     description: Retorna todas las recurrencias de eventos, opcionalmente filtradas por eventoId. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Recurrencia Evento
  *     parameters:
@@ -37,7 +37,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions (EVENTOS_MANAGE required)
+ *         description: Forbidden - Insufficient permissions. EVENTOS_MANAGE required.
  *       500:
  *         description: Error interno del servidor
  */
@@ -55,7 +55,7 @@ router.get(
  *     - bearerAuth: []
  *   post:
  *     summary: Crear una nueva recurrencia de evento [EVENTOS_MANAGE]
- *     description: Crea una nueva recurrencia de evento con los datos proporcionados (Requires: EVENTOS_MANAGE permission)
+ *     description: Crea una nueva recurrencia de evento con los datos proporcionados. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Recurrencia Evento
  *     requestBody:
@@ -73,12 +73,12 @@ router.get(
  *             properties:
  *               dia:
  *                 type: string
- *                 description: Día de la semana para la recurrencia (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo)
+ *                 description: Día de la semana para la recurrencia Lunes Martes Miércoles Jueves Viernes Sábado Domingo
  *                 enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
  *                 example: "Lunes"
  *               hora:
  *                 type: string
- *                 description: Hora de la recurrencia (formato HH:MM, desde 08:00 hasta 23:30)
+ *                 description: Hora de la recurrencia formato HH:MM desde 08:00 hasta 23:30
  *                 enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
  *                 example: "18:00"
  *               fecha_desde:
@@ -130,7 +130,7 @@ router.post(
  *     - bearerAuth: []
  *   post:
  *     summary: Crear múltiples recurrencias de evento [EVENTOS_MANAGE]
- *     description: Crea múltiples recurrencias de evento con los datos proporcionados (Requires: EVENTOS_MANAGE permission)
+ *     description: Crea múltiples recurrencias de evento con los datos proporcionados. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Recurrencia Evento
  *     requestBody:
@@ -160,7 +160,7 @@ router.post(
  *                       example: "Lunes"
  *                     hora:
  *                       type: string
- *                       description: Hora de la recurrencia (formato HH:MM)
+ *                       description: Hora de la recurrencia formato HH:MM
  *                       enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
  *                       example: "18:00"
  *                     fecha_desde:
@@ -214,7 +214,7 @@ router.post(
  *     - bearerAuth: []
  *   get:
  *     summary: Obtener una recurrencia de evento por ID [EVENTOS_MANAGE]
- *     description: Retorna una recurrencia de evento específica por su ID (Requires: EVENTOS_MANAGE permission)
+ *     description: Retorna una recurrencia de evento específica por su ID. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Recurrencia Evento
  *     parameters:
@@ -255,7 +255,7 @@ router.get(
  *     - bearerAuth: []
  *   put:
  *     summary: Actualizar una recurrencia de evento [EVENTOS_MANAGE]
- *     description: Actualiza una recurrencia de evento existente (Requires: EVENTOS_MANAGE permission)
+ *     description: Actualiza una recurrencia de evento existente. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Recurrencia Evento
  *     parameters:
@@ -275,12 +275,12 @@ router.get(
  *             properties:
  *               dia:
  *                 type: string
- *                 description: Día de la semana para la recurrencia (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo)
+ *                 description: Día de la semana para la recurrencia Lunes Martes Miércoles Jueves Viernes Sábado Domingo
  *                 enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
  *                 example: "Martes"
  *               hora:
  *                 type: string
- *                 description: Hora de la recurrencia (formato HH:MM, desde 08:00 hasta 23:30)
+ *                 description: Hora de la recurrencia formato HH:MM desde 08:00 hasta 23:30
  *                 enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
  *                 example: "19:00"
  *               fecha_desde:
@@ -327,7 +327,7 @@ router.put(
  *     - bearerAuth: []
  *   delete:
  *     summary: Eliminar una recurrencia de evento [EVENTOS_MANAGE]
- *     description: Elimina una recurrencia de evento por su ID (Requires: EVENTOS_MANAGE permission)
+ *     description: Elimina una recurrencia de evento por su ID. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Recurrencia Evento
  *     parameters:
