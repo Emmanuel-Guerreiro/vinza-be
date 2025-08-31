@@ -11,35 +11,37 @@ const router = Router();
  * @openapi
  * /estado-recorridos:
  *   get:
- *    summary: Get all estado recorridos
- *   tags:
- *   - EstadoRecorridos
- *  responses:
- *    200:
- *    description: Success
+ *     summary: Get all estado recorridos
+ *     tags:
+ *       - EstadoRecorridos
+ *     responses:
+ *       200:
+ *         description: Success
  */
-router.get('', authMiddleware, controller.getAll);
+router.get('/', authMiddleware, controller.getAll);
+
 /**
  * @openapi
  * /estado-recorridos/{id}:
- *  get:
- *   summary: Get an estado recorrido by id
- *  tags:
- * - EstadoRecorridos
- *  parameters:
- *  - name: id
- *   in: path
- *  required: true
- * description: The id of the estado recorrido
- * responses:
- *  200:
- *  description: EstadoRecorrido found successfully
- *  400:
- * description: Bad request
- * 500:
- * description: Internal server error
+ *   get:
+ *     summary: Get an estado recorrido by id
+ *     tags:
+ *       - EstadoRecorridos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the estado recorrido
+ *     responses:
+ *       200:
+ *         description: EstadoRecorrido found successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
  */
 router.get('/:id', authMiddleware, controller.getOne);
+
 /**
  * @openapi
  * /estado-recorridos:
@@ -68,7 +70,8 @@ router.get('/:id', authMiddleware, controller.getOne);
  *       500:
  *         description: Internal server error
  */
-router.post('', authMiddleware, controller.create);
+router.post('/', authMiddleware, controller.create);
+
 /**
  * @openapi
  * /estado-recorridos/{id}:
@@ -90,20 +93,21 @@ router.post('', authMiddleware, controller.create);
  *             properties:
  *               nombre:
  *                 type: string
- *               descripcion: Nombre del estado recorrido
- *                example: "En Proceso"
+ *               descripcion:
+ *                 type: string
+ *                 example: "En Proceso"
  *               created_at:
  *                 type: string
- *                description: Fecha de creación del estado recorrido
- *                example: "2023-10-01T12:00:00Z"
- *              updated_at:
- *                type: string
- *               description: Fecha de última actualización del estado recorrido
- *               example: "2023-10-05T15:30:00Z"
- *              deleted_at:
- *                type: string
- *              description: Fecha de eliminación del estado recorrido
- *              example: null
+ *                 description: Fecha de creación del estado recorrido
+ *                 example: "2023-10-01T12:00:00Z"
+ *               updated_at:
+ *                 type: string
+ *                 description: Fecha de última actualización del estado recorrido
+ *                 example: "2023-10-05T15:30:00Z"
+ *               deleted_at:
+ *                 type: string
+ *                 description: Fecha de eliminación del estado recorrido
+ *                 example: null
  *     responses:
  *       200:
  *         description: EstadoRecorrido updated successfully
@@ -118,21 +122,21 @@ router.put('/:id', authMiddleware, controller.update);
  * @openapi
  * /estado-recorridos/{id}:
  *   delete:
- *   summary: Delete an estado recorrido by id
- *  tags:
- *  - EstadoRecorridos
- * parameters:
- *  - name: id
- *   in: path
- * required: true
- * description: The id of the estado recorrido to delete
- * responses:
- *  200:
- * description: EstadoRecorrido deleted successfully
- * 400:
- * description: Bad request
- * 500:
- * description: Internal server error
+ *     summary: Delete an estado recorrido by id
+ *     tags:
+ *       - EstadoRecorridos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the estado recorrido to delete
+ *     responses:
+ *       200:
+ *         description: EstadoRecorrido deleted successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
  */
 router.delete('/:id', authMiddleware, controller.delete);
 

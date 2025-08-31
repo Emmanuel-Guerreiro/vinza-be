@@ -61,7 +61,7 @@ export class Reserva extends Model<
   instanciaEventoId!: number;
   //FK
   @ForeignKey(() => Recorrido)
-  @Column({ type: DataType.DATE, allowNull: false })
+  @Column({ type: DataType.INTEGER, allowNull: false })
   recorridoId!: number;
   @BelongsTo(() => Recorrido)
   recorrido!: number;

@@ -12,30 +12,67 @@ const router = Router();
 /**
  * @openapi
  * /recorridos:
- *  get:
- *    summary: Get all recorridos
- *   tags:
- *      - Recorridos
- *    responses:
- *      200:
- *       description: Success
+ *   get:
+ *     summary: Get all recorridos
+ *     tags:
+ *       - Recorridos
+ *     responses:
+ *       200:
+ *         description: Recorridos retrieved successfully
+ *       500:
+ *         description: Internal server error
  */
 router.get('', controller.getAll);
+
 /**
  * @openapi
  * /recorridos/{id}:
- *  get:
- *   summary: Get a recorrido by id
- * *   tags:
- *      - Recorridos
- * *   parameters:
- * *     - name: id
- * *       in: path
- * *       required: true
- * *       description: The id of the recorrido
+ *   get:
+ *     summary: Get a recorrido by id
+ *     tags:
+ *       - Recorridos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the recorrido
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: Sucursal created successfully
+ *         description: Recorrido retrieved successfully
+ *       404:
+ *         description: Recorrido not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/:id',
+  authMiddleware,
+  requirePermissions([Permissions.RECORRIDO_READ]),
+  controller.getOne,
+);
+
+/**
+ * @openapi
+ * /recorridos:
+ *   post:
+ *     summary: Create a new recorrido
+ *     tags:
+ *       - Recorridos
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 example: "123"
+ *     responses:
+ *       201:
+ *         description: Recorrido created successfully
  *       400:
  *         description: Bad request
  *       500:
@@ -44,8 +81,81 @@ router.get('', controller.getAll);
 router.post(
   '',
   authMiddleware,
-  requirePermissions([Permissions.RECORRIDO_READ]),
+  requirePermissions([Permissions.RECORRIDO_MANAGE]),
   controller.create,
+);
+
+/**
+ * @openapi
+ * /recorridos/{id}:
+ *   put:
+ *     summary: Update a recorrido by id
+ *     tags:
+ *       - Recorridos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the recorrido to update
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 example: "123"
+ *               name:
+ *                 type: string
+ *                 description: Nombre del recorrido
+ *     responses:
+ *       200:
+ *         description: Recorrido updated successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Recorrido not found
+ *       500:
+ *         description: Internal server error
+ */
+router.put(
+  '/:id',
+  authMiddleware,
+  requirePermissions([Permissions.RECORRIDO_MANAGE]),
+  controller.update,
+);
+
+/**
+ * @openapi
+ * /recorridos/{id}:
+ *   delete:
+ *     summary: Delete a recorrido by id
+ *     tags:
+ *       - Recorridos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the recorrido to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Recorrido deleted successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.delete(
+  '/:id',
+  authMiddleware,
+  requirePermissions([Permissions.RECORRIDO_MANAGE]),
+  controller.delete,
 );
 
 logger.debug('Recorridos router initialized');

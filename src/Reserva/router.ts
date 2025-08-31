@@ -16,27 +16,13 @@ const router = Router();
  *     summary: Get all reservas
  *     tags:
  *       - Reservas
- *      parameters:
- *       - name: page
- *         in: query
- *         description: Page number for pagination
- *         required: false
- *         schema:
- *           type: number
- *       - name: limit
- *         in: query
- *         description: Number of items per page
- *         required: false
- *         schema:
- *           type: number
- *      responses:
- *        200:
- *        description: Reserva created successfully
- *        400:
- *        description: Bad request
- *        500:
- *        description: Internal server error
- *
+ *     responses:
+ *       200:
+ *         description: Reservas retrieved successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
  */
 router.get(
   '',
@@ -44,6 +30,7 @@ router.get(
   requirePermissions([Permissions.RESERVAS_READ]),
   controller.getAll,
 );
+
 /**
  * @openapi
  * /reservas/{id}:
@@ -63,6 +50,8 @@ router.get(
  *         description: Reserva retrieved successfully
  *       404:
  *         description: Reserva not found
+ *       500:
+ *         description: Internal server error
  */
 router.get(
   '/:id',
@@ -75,27 +64,28 @@ router.get(
  * @openapi
  * /reservas:
  *   post:
- * summary: Create a new reserva
- * tags:
- *   - Reservas
- * parameters:
- * - name: reserva
- *   in: body
- * description: Reserva object to create
- * required: true
- * schema:
- *   type: object
- * properties:
- * id:
- * required: true
- * response:
- * 200:
- * description: Reserva created successfully
- * 400:
- * description: Bad request
- * 500:
- * description: Internal server error
+ *     summary: Create a new reserva
+ *     tags:
+ *       - Reservas
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 example: "123"
+ *     responses:
+ *       201:
+ *         description: Reserva created successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
  */
+
 router.post(
   '',
   authMiddleware,
@@ -115,17 +105,22 @@ router.post(
  *         in: path
  *         required: true
  *         description: ID of the reserva to update
- *        schema:
- *           type: object
- *           properties:
- *             id:
- *               type: string
- *               description: The reserva ID
- *               required: true
- *             otherProperty:
- *               type: string
- *               description: Another property of the reserva
- *               required: false
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 description: The reserva ID
+ *                 example: "123"
+ *               otherProperty:
+ *                 type: string
+ *                 description: Another property of the reserva
  *     responses:
  *       200:
  *         description: Reserva updated successfully
@@ -146,22 +141,24 @@ router.put(
 /**
  * @openapi
  * /reservas/{id}:
- *  delete:
+ *   delete:
  *     summary: Delete a reserva by ID
- *    tags:
- *    - Reservas
- *  parameters:
- *    - name: id
- *      in: path
- *    required: true
- *    description: ID of the reserva to delete
- *  responses:
- *  200:
- *     description: Reserva deleted successfully
- *  400:
- *    description: Bad request
- *  500:
- *   description: Internal server error
+ *     tags:
+ *       - Reservas
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID of the reserva to delete
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Reserva deleted successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
  */
 router.delete(
   '/:id',
