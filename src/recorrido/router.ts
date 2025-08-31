@@ -11,7 +11,7 @@ const router = Router();
 
 /**
  * @openapi
- * /recorridos:
+ * /recorrido:
  *   get:
  *     summary: Get all recorridos
  *     tags:
@@ -26,7 +26,7 @@ router.get('', controller.getAll);
 
 /**
  * @openapi
- * /recorridos/{id}:
+ * /recorrido/{id}:
  *   get:
  *     summary: Get a recorrido by id
  *     tags:
@@ -55,7 +55,7 @@ router.get(
 
 /**
  * @openapi
- * /recorridos:
+ * /recorrido:
  *   post:
  *     summary: Create a new recorrido
  *     tags:
@@ -87,7 +87,7 @@ router.post(
 
 /**
  * @openapi
- * /recorridos/{id}:
+ * /recorrido/{id}:
  *   put:
  *     summary: Update a recorrido by id
  *     tags:
@@ -131,7 +131,7 @@ router.put(
 
 /**
  * @openapi
- * /recorridos/{id}:
+ * /recorrido/{id}:
  *   delete:
  *     summary: Delete a recorrido by id
  *     tags:

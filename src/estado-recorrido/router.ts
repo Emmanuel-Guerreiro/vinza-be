@@ -9,7 +9,7 @@ const router = Router();
 
 /**
  * @openapi
- * /estado-recorridos:
+ * /estado-recorrido:
  *   get:
  *     summary: Get all estado recorridos
  *     tags:
@@ -22,7 +22,7 @@ router.get('/', authMiddleware, controller.getAll);
 
 /**
  * @openapi
- * /estado-recorridos/{id}:
+ * /estado-recorrido/{id}:
  *   get:
  *     summary: Get an estado recorrido by id
  *     tags:
@@ -44,7 +44,7 @@ router.get('/:id', authMiddleware, controller.getOne);
 
 /**
  * @openapi
- * /estado-recorridos:
+ * /estado-recorrido:
  *   post:
  *     summary: Create a new estado recorrido
  *     tags:
@@ -74,7 +74,7 @@ router.post('/', authMiddleware, controller.create);
 
 /**
  * @openapi
- * /estado-recorridos/{id}:
+ * /estado-recorrido/{id}:
  *   put:
  *     summary: Update an existing estado recorrido
  *     tags:
@@ -120,7 +120,7 @@ router.put('/:id', authMiddleware, controller.update);
 
 /**
  * @openapi
- * /estado-recorridos/{id}:
+ * /estado-recorrido/{id}:
  *   delete:
  *     summary: Delete an estado recorrido by id
  *     tags:

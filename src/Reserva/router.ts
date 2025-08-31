@@ -11,7 +11,7 @@ const router = Router();
 
 /**
  * @openapi
- * /reservas:
+ * /reserva:
  *   get:
  *     summary: Get all reservas
  *     tags:
@@ -33,7 +33,7 @@ router.get(
 
 /**
  * @openapi
- * /reservas/{id}:
+ * /reserva/{id}:
  *   get:
  *     summary: Get a reserva by ID
  *     tags:
@@ -62,7 +62,7 @@ router.get(
 
 /**
  * @openapi
- * /reservas:
+ * /reserva:
  *   post:
  *     summary: Create a new reserva
  *     tags:
@@ -95,7 +95,7 @@ router.post(
 
 /**
  * @openapi
- * /reservas/{id}:
+ * /reserva/{id}:
  *   put:
  *     summary: Update a reserva by ID
  *     tags:
@@ -140,7 +140,7 @@ router.put(
 
 /**
  * @openapi
- * /reservas/{id}:
+ * /reserva/{id}:
  *   delete:
  *     summary: Delete a reserva by ID
  *     tags:

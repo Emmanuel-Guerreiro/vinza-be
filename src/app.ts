@@ -49,7 +49,7 @@ function initializeRouter() {
   router.use('/reserva', reservaRouter);
   router.use('/estado-reserva', estadoReserva);
   router.use('/recorrido', recorrido);
-  router.use('/estado-recorridos', estadoRecorridoRouter);
+  router.use('/estado-recorrido', estadoRecorridoRouter);
   return router;
 }
 
