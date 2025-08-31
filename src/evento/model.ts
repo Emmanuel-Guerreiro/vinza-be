@@ -12,6 +12,7 @@ import { EstadoEvento } from '@/estado-evento/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
 import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 import { Valoracion } from '@/valoracion/model';
+import { MultimediaEventos } from '@/multimedia/model';
 
 export interface EventoAttributes {
   id: number;
@@ -83,4 +84,7 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
 
   @HasMany(() => Valoracion)
   valoraciones?: Valoracion[];
+
+  @HasMany(() => MultimediaEventos)
+  multimedia?: MultimediaEventos[];
 }

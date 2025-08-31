@@ -1,5 +1,13 @@
 {
   "app": {
+    "multimedia": {
+      "file_required": {
+        "key": "app.multimedia.file_required",
+        "message": "File is required",
+        "message_eng": "File is required",
+        "status": 400
+      }
+    },
     "general": {
       "general_error": {
         "key": "app.general.general_error",

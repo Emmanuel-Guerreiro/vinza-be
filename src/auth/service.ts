@@ -94,7 +94,7 @@ export class AuthService {
   private generateAuthToken(dto: UserAttributes) {
     const payload: JwtAuthPayload = { user: dto.id, role: dto.roles[0].id };
     const token = jwt.sign(payload, config.JWT_SECRET, {
-      expiresIn: '24h',
+      expiresIn: '45d',
     });
     return token;
   }
