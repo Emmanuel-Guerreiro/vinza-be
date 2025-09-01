@@ -6,7 +6,7 @@ import {
 } from './schema';
 import { InstanciaEvento } from './model';
 import { Evento } from '@/evento/model';
-import { RecurrenciaEvento } from '@/recurrencia-evento/model';
+import { RecurrenciaEvento } from '@/evento/model';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
 
 export type CreateInstanciaEventoDto = z.infer<

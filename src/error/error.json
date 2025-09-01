@@ -124,6 +124,24 @@
         "message": "Debe proporcionar al menos una recurrencia para el evento",
         "message_eng": "You must provide at least one recurrence for the event",
         "status": 400
+      },
+      "nombre_duplicate": {
+        "key": "app.evento.nombre_duplicate",
+        "message": "Ya existe un evento con este nombre en la misma bodega",
+        "message_eng": "An event with this name already exists in the same bodega",
+        "status": 400
+      },
+      "forbidden": {
+        "key": "app.evento.forbidden",
+        "message": "No tienes permisos para acceder a este evento",
+        "message_eng": "You don't have permission to access this event",
+        "status": 403
+      },
+      "sucursal_forbidden": {
+        "key": "app.evento.sucursal_forbidden",
+        "message": "No tienes permisos para crear eventos en esta sucursal",
+        "message_eng": "You don't have permission to create events in this branch",
+        "status": 403
       }
     },
 

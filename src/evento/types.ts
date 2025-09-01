@@ -4,7 +4,7 @@ import {
   createEventoSchema,
   updateEventoSchema,
 } from './schema';
-import { DiaSemana, HoraEvento } from '@/recurrencia-evento/model';
+import { DiaSemana, HoraEvento } from './model';
 import { Evento } from './model';
 
 export type CreateEventoDto = z.infer<typeof createEventoSchema>;

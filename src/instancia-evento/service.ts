@@ -2,7 +2,7 @@ import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { Evento } from '@/evento/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
-import { RecurrenciaEvento } from '@/recurrencia-evento/model';
+import { RecurrenciaEvento } from '@/evento/model';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
 import { EstadoInstanciaEvento as EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
 import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
@@ -74,6 +74,34 @@ class InstanciaEventoService {
     transaction?: Transaction,
   ): Promise<InstanciaEvento | null> {
     return await InstanciaEvento.findByPk(id, {
+      transaction,
+      include: [
+        {
+          model: Evento,
+          as: 'evento',
+          attributes: ['id', 'nombre', 'descripcion', 'precio', 'cupo'],
+        },
+        {
+          model: RecurrenciaEvento,
+          as: 'recurrenciaEvento',
+          attributes: ['id', 'dia', 'hora', 'fecha_desde', 'fecha_hasta'],
+        },
+        {
+          model: EstadoInstanciaEvento,
+          as: 'estado',
+          attributes: ['id', 'nombre'],
+          required: false, // LEFT JOIN para incluir instancias sin estado
+        },
+      ],
+    });
+  }
+
+  public async findAllByEventoId(
+    eventoId: number,
+    transaction?: Transaction,
+  ): Promise<InstanciaEvento[]> {
+    return await InstanciaEvento.findAll({
+      where: { eventoId },
       transaction,
       include: [
         {
@@ -179,10 +207,13 @@ class InstanciaEventoService {
       throw errors.app.instancia_evento.estado_not_found;
     }
 
-    return await instancia.update(
+    await instancia.update(
       { estadoId: estadoSuspendida.id },
       { transaction },
     );
+
+    // Retornar la instancia actualizada con todas las relaciones
+    return await this.findOne(id, transaction);
   }
 
   /**
@@ -202,10 +233,13 @@ class InstanciaEventoService {
       throw errors.app.instancia_evento.estado_not_found;
     }
 
-    return await instancia.update(
+    await instancia.update(
       { estadoId: estadoActiva.id },
       { transaction },
     );
+
+    // Retornar la instancia actualizada con todas las relaciones
+    return await this.findOne(id, transaction);
   }
 
   /**
@@ -297,8 +331,16 @@ class InstanciaEventoService {
         return false;
       }
 
+      // Usar fecha actual si fecha_desde está vacía o es anterior
+      let fechaDesde = recurrencia.fecha_desde || new Date();
+      const fechaActual = new Date();
+      
+      if (fechaDesde < fechaActual) {
+        fechaDesde = fechaActual;
+      }
+
       // Crear la fecha del evento combinando fecha_desde con la hora
-      const fechaEvento = new Date(recurrencia.fecha_desde);
+      const fechaEvento = new Date(fechaDesde);
       fechaEvento.setHours(
         parseInt(recurrencia.hora.split(':')[0]),
         parseInt(recurrencia.hora.split(':')[1]),
@@ -307,7 +349,6 @@ class InstanciaEventoService {
       );
 
       // Verificar que la fecha del evento esté en el futuro
-      const fechaActual = new Date();
       if (fechaEvento <= fechaActual) {
         logger.debug(
           `Evento único ${evento.nombre} ya pasó (${fechaEvento.toISOString()})`,
@@ -410,9 +451,19 @@ class InstanciaEventoService {
     // Extraer hora y minutos de la hora del evento
     const [hora, minutos] = recurrencia.hora.split(':').map(Number);
 
+    // Usar fecha actual si fecha_desde está vacía o es anterior
+    let fechaDesde = recurrencia.fecha_desde || new Date();
+    if (fechaDesde < fechaActual) {
+      fechaDesde = fechaActual;
+    }
+
+    // Para fecha_hasta, si es null significa tiempo ilimitado
+    // Solo usamos el límite de días máximos
+    const fechaHasta = recurrencia.fecha_hasta;
+
     // Iniciar desde la fecha más reciente entre: fecha actual o fecha_desde de la recurrencia
     let fechaInicio = new Date(
-      Math.max(fechaActual.getTime(), recurrencia.fecha_desde.getTime()),
+      Math.max(fechaActual.getTime(), fechaDesde.getTime()),
     );
     let instanciasCreadas = 0;
 
@@ -430,11 +481,14 @@ class InstanciaEventoService {
       fechaInicio = new Date(fechaInicio.getTime() + 7 * 24 * 60 * 60 * 1000);
     }
 
-    // Generar instancias hasta alcanzar el límite de días
-    while (
-      fechaInicio <= fechaLimite &&
-      fechaInicio <= new Date(recurrencia.fecha_hasta)
-    ) {
+    // Generar instancias hasta alcanzar el límite de días máximos
+    // Si fecha_hasta es null, solo usar fechaLimite
+    // Si fecha_hasta tiene valor, usar el mínimo entre fechaLimite y fecha_hasta
+    const fechaFinal = fechaHasta 
+      ? new Date(Math.min(fechaLimite.getTime(), fechaHasta.getTime()))
+      : fechaLimite;
+
+    while (fechaInicio <= fechaFinal) {
       // Verificar que la fecha esté en el futuro
       if (fechaInicio <= fechaActual) {
         fechaInicio = new Date(fechaInicio.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -522,7 +576,12 @@ class InstanciaEventoService {
             model: RecurrenciaEvento,
             as: 'recurrencias',
             where: {
-              fecha_hasta: { [Op.gt]: new Date() },
+              [Op.or]: [
+                // Recurrencias con fecha_hasta en el futuro
+                { fecha_hasta: { [Op.gt]: new Date() } },
+                // Recurrencias sin fecha_hasta (tiempo ilimitado)
+                { fecha_hasta: null }
+              ]
             },
             required: true,
           },
@@ -540,11 +599,12 @@ class InstanciaEventoService {
 
       let instanciasCreadas = 0;
 
-      for (const recurrencia of evento.recurrencias) {
-        // Verificar si es un evento único (fecha_desde = fecha_hasta)
-        const esEventoUnico =
-          recurrencia.fecha_desde.getTime() ===
-          recurrencia.fecha_hasta.getTime();
+             for (const recurrencia of evento.recurrencias) {
+         // Verificar si es un evento único (fecha_desde = fecha_hasta y ambas no son null)
+         const esEventoUnico =
+           recurrencia.fecha_desde !== null && 
+           recurrencia.fecha_hasta !== null && 
+           recurrencia.fecha_desde.getTime() === recurrencia.fecha_hasta.getTime();
 
         if (esEventoUnico) {
           // Evento único - crear una sola instancia

@@ -6,6 +6,7 @@ import { errors } from '@/error';
 import { EstadoEvento } from '@/estado-evento/model';
 import { estadoEventoService } from '@/estado-evento/service';
 import { Sucursal } from '@/sucursal/model';
+import { sucursalService } from '@/sucursal/service';
 import { Op, WhereOptions, FindOptions } from 'sequelize';
 import { Evento } from './model';
 import {
@@ -20,31 +21,16 @@ import {
   generatePaginationParams,
   generateOrderConditions,
 } from '@/pagination';
-import { RecurrenciaEvento } from '@/recurrencia-evento/model';
+import { RecurrenciaEvento } from './model';
 import { Bodega } from '@/bodega/model';
-import { instanciaEventoService } from '@/instancia-evento';
+import { instanciaEventoService } from '@/instancia-evento/service';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
     const transaction = await sequelize.transaction();
     try {
-      // Validar que estadoId y categoriaId existan si se proporcionan
-      if (dto.estadoId) {
-        const estadoEvento = await estadoEventoService.findOne(
-          dto.estadoId,
-          transaction,
-        );
-        if (!estadoEvento) throw errors.app.evento.estado_not_found;
-      }
-
-      if (dto.categoriaId) {
-        const categoriaEvento = await categoriaEventoService.findOne(
-          dto.categoriaId,
-          transaction,
-        );
-        if (!categoriaEvento)
-          throw errors.app.evento.categoria_evento_not_found;
-      }
+      // Validar datos del evento
+      await this.validateEventoData(dto, transaction);
 
       // Validar que se proporcionen recurrencias (ahora son obligatorias)
       if (!dto.recurrencias || dto.recurrencias.length === 0) {
@@ -64,6 +50,15 @@ class EventoService {
       evento = await evento.save({ transaction, returning: true });
 
       await transaction.commit();
+
+      // Generar instancias automáticamente después de crear el evento
+      try {
+        await instanciaEventoService.generarInstanciasParaEvento(evento.id);
+        logger.info(`Instancias generadas automáticamente para evento ${evento.id}`);
+      } catch (error) {
+        logger.error(`Error generando instancias automáticamente para evento ${evento.id}:`, error);
+        // No fallar la creación del evento si falla la generación de instancias
+      }
 
       auditEmitter.emitEntry({
         tipoEvento: 'evento:create',
@@ -200,23 +195,8 @@ class EventoService {
       const evento = await Evento.findByPk(id);
       if (!evento) throw errors.app.evento.not_found;
 
-      // Validar que estadoId y categoriaId existan si se proporcionan
-      if (dto.estadoId) {
-        const estadoEvento = await estadoEventoService.findOne(
-          dto.estadoId,
-          transaction,
-        );
-        if (!estadoEvento) throw errors.app.evento.estado_not_found;
-      }
-
-      if (dto.categoriaId) {
-        const categoriaEvento = await categoriaEventoService.findOne(
-          dto.categoriaId,
-          transaction,
-        );
-        if (!categoriaEvento)
-          throw errors.app.evento.categoria_evento_not_found;
-      }
+      // Validar datos del evento
+      await this.validateEventoData(dto, transaction);
 
       // Manejar recurrencias si se proporcionan
       if (dto.recurrencias !== undefined) {
@@ -428,17 +408,10 @@ class EventoService {
   /**
    * Suspende una instancia específica de un evento
    */
-  public async suspenderInstanciaEvento(eventoId: number, instanciaId: number) {
-    const evento = await this.findOne(eventoId);
-    if (!evento) throw errors.app.evento.not_found;
-
-    // Verificar que la instancia pertenezca al evento
+  public async suspenderInstanciaEvento(instanciaId: number) {
+    // Verificar que la instancia existe
     const instancia = await instanciaEventoService.findOne(instanciaId);
     if (!instancia) throw errors.app.instancia_evento.not_found;
-
-    if (instancia.eventoId !== eventoId) {
-      throw errors.app.evento.instancia_not_belongs_to_evento;
-    }
 
     return await instanciaEventoService.suspenderInstancia(instanciaId);
   }
@@ -446,19 +419,70 @@ class EventoService {
   /**
    * Reactiva una instancia específica de un evento
    */
-  public async reactivarInstanciaEvento(eventoId: number, instanciaId: number) {
-    const evento = await this.findOne(eventoId);
-    if (!evento) throw errors.app.evento.not_found;
-
-    // Verificar que la instancia pertenezca al evento
+  public async reactivarInstanciaEvento(instanciaId: number) {
+    // Verificar que la instancia existe
     const instancia = await instanciaEventoService.findOne(instanciaId);
     if (!instancia) throw errors.app.instancia_evento.not_found;
 
-    if (instancia.eventoId !== eventoId) {
-      throw errors.app.evento.instancia_not_belongs_to_evento;
+    return await instanciaEventoService.reactivarInstancia(instanciaId);
+  }
+
+  /**
+   * Valida los datos del evento (estadoId, categoriaId, sucursalId, nombre duplicado)
+   */
+  private async validateEventoData(
+    dto: CreateEventoDto | UpdateEventoDto,
+    transaction?: any,
+  ) {
+    // Validar que estadoId exista si se proporciona
+    if (dto.estadoId) {
+      const estadoEvento = await estadoEventoService.findOne(
+        dto.estadoId,
+        transaction,
+      );
+      if (!estadoEvento) throw errors.app.evento.estado_not_found;
     }
 
-    return await instanciaEventoService.reactivarInstancia(instanciaId);
+    // Validar que categoriaId exista si se proporciona
+    if (dto.categoriaId) {
+      const categoriaEvento = await categoriaEventoService.findOne(
+        dto.categoriaId,
+        transaction,
+      );
+      if (!categoriaEvento)
+        throw errors.app.evento.categoria_evento_not_found;
+    }
+
+    // Validar que sucursalId exista si se proporciona
+    if (dto.sucursalId) {
+      const sucursal = await sucursalService.findOne(dto.sucursalId);
+      if (!sucursal) throw errors.app.sucursal.not_found;
+    }
+
+    // Validar que el nombre no esté duplicado en la misma bodega (solo para create)
+    if ('nombre' in dto && dto.nombre && 'sucursalId' in dto && dto.sucursalId) {
+      const existingEvento = await Evento.findOne({
+        where: {
+          nombre: dto.nombre,
+          sucursalId: dto.sucursalId,
+        },
+        include: [
+          {
+            model: Sucursal,
+            include: [
+              {
+                model: Bodega,
+              },
+            ],
+          },
+        ],
+        transaction,
+      });
+
+      if (existingEvento) {
+        throw errors.app.evento.nombre_duplicate;
+      }
+    }
   }
 }
 

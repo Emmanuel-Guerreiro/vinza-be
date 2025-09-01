@@ -4,6 +4,7 @@ import { eventoService } from './service';
 import { requirePermissions } from '@/rbac/middleware';
 import { Permissions } from '@/rbac/permissions';
 import { authMiddleware } from '@/auth/middleware';
+import { eventoAuthMiddleware, sucursalAuthMiddleware, instanciaEventoAuthMiddleware } from './middleware';
 import logger from '@/logger';
 
 const controller = new EventoController(eventoService);
@@ -53,7 +54,7 @@ const router = Router();
  *         description: Filter by specific bodega ID through sucursal relationship
  *         required: false
  *         schema:
- *           type: string
+ *           type: number
  *       - name: fechaDesde
  *         in: query
  *         description: Filter events created from this date in ISO format
@@ -103,7 +104,24 @@ const router = Router();
  *                 items:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Evento'
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: number
+ *                       nombre:
+ *                         type: string
+ *                       descripcion:
+ *                         type: string
+ *                       cupo:
+ *                         type: number
+ *                       precio:
+ *                         type: number
+ *                       sucursalId:
+ *                         type: number
+ *                       estadoId:
+ *                         type: number
+ *                       categoriaId:
+ *                         type: number
  *                 meta:
  *                   type: object
  *                   properties:
@@ -143,6 +161,33 @@ router.get(
  *     responses:
  *       200:
  *         description: Evento found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: number
+ *                 nombre:
+ *                   type: string
+ *                 descripcion:
+ *                   type: string
+ *                 cupo:
+ *                   type: number
+ *                 precio:
+ *                   type: number
+ *                 sucursalId:
+ *                   type: number
+ *                 estadoId:
+ *                   type: number
+ *                 categoriaId:
+ *                   type: number
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
@@ -187,10 +232,10 @@ router.get(
  *                 required: true
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
- *                 type: string
- *                 description: Cupo del evento debe ser un número válido mayor a 0
+ *                 type: number
+ *                 description: Cupo del evento debe ser un número mayor a 0
  *                 required: true
- *                 example: "50"
+ *                 example: 50
  *               sucursalId:
  *                 type: number
  *                 description: ID de la sucursal a la que pertenece
@@ -242,6 +287,30 @@ router.get(
  *     responses:
  *       201:
  *         description: Evento created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: number
+ *                 nombre:
+ *                   type: string
+ *                 descripcion:
+ *                   type: string
+ *                 cupo:
+ *                   type: number
+ *                 precio:
+ *                   type: number
+ *                 sucursalId:
+ *                   type: number
+ *                 estadoId:
+ *                   type: number
+ *                 categoriaId:
+ *                   type: number
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
@@ -255,6 +324,7 @@ router.post(
   '',
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
+  sucursalAuthMiddleware,
   controller.create
 );
 
@@ -289,9 +359,9 @@ router.post(
  *                 description: Descripción del evento
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
- *                 type: string
- *                 description: Cupo del evento debe ser un número válido mayor a 0
- *                 example: "50"
+ *                 type: number
+ *                 description: Cupo del evento debe ser un número mayor a 0
+ *                 example: 50
  *               sucursalId:
  *                 type: number
  *                 description: ID de la sucursal a la que pertenece
@@ -338,6 +408,30 @@ router.post(
  *     responses:
  *       200:
  *         description: Evento updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: number
+ *                 nombre:
+ *                   type: string
+ *                 descripcion:
+ *                   type: string
+ *                 cupo:
+ *                   type: number
+ *                 precio:
+ *                   type: number
+ *                 sucursalId:
+ *                   type: number
+ *                 estadoId:
+ *                   type: number
+ *                 categoriaId:
+ *                   type: number
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
@@ -351,6 +445,7 @@ router.put(
   '/:id',
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
+  eventoAuthMiddleware,
   controller.update
 );
 
@@ -372,6 +467,16 @@ router.put(
  *     responses:
  *       200:
  *         description: Evento deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Evento eliminado exitosamente"
+ *                 id:
+ *                   type: number
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
@@ -385,6 +490,7 @@ router.delete(
   '/:id',
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
+  eventoAuthMiddleware,
   controller.delete
 );
 
@@ -412,7 +518,21 @@ router.delete(
  *                 items:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/InstanciaEvento'
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: number
+ *                       eventoId:
+ *                         type: number
+ *                       fecha:
+ *                         type: string
+ *                         format: date
+ *                       hora:
+ *                         type: string
+ *                       estado:
+ *                         type: string
+ *                       cupoDisponible:
+ *                         type: number
  *                 meta:
  *                   type: object
  *                   properties:
@@ -470,26 +590,21 @@ router.post(
   '/:id/generar-instancias',
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
+  eventoAuthMiddleware,
   controller.generarInstanciasEvento
 );
 
 /**
  * @openapi
- * /eventos/{eventoId}/instancias/{instanciaId}/suspender:
+ * /eventos/instancias/{instanciaId}/suspender:
  *   security:
  *     - bearerAuth: []
  *   put:
  *     summary: Suspend a specific instance of an event [EVENTOS_MANAGE]
- *     description: Suspend a specific instance of an event . Requires EVENTOS_MANAGE permission.
+ *     description: Suspend a specific instance of an event. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
- *       - name: eventoId
- *         in: path
- *         required: true
- *         description: The id of the evento
- *         schema:
- *           type: number
  *       - name: instanciaId
  *         in: path
  *         required: true
@@ -502,42 +617,44 @@ router.post(
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/InstanciaEvento'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Instancia suspendida exitosamente"
+ *                 instanciaId:
+ *                   type: number
+ *                 estado:
+ *                   type: string
+ *                   example: "SUSPENDIDA"
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
  *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
- *       400:
- *         description: Bad request - Instance does not belong to the specified event
  *       404:
- *         description: Event or instance not found
+ *         description: Instance not found
  *       500:
  *         description: Internal server error
  */
 router.put(
-  '/:eventoId/instancias/:instanciaId/suspender',
-  authMiddleware, 
+  '/instancias/:instanciaId/suspender',
+  authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
+  instanciaEventoAuthMiddleware,
   controller.suspenderInstanciaEvento,
 );
 
 /**
  * @openapi
- * /eventos/{eventoId}/instancias/{instanciaId}/reactivar:
+ * /eventos/instancias/{instanciaId}/reactivar:
  *   security:
  *     - bearerAuth: []
  *   put:
  *     summary: Reactivate a specific instance of an event [EVENTOS_MANAGE]
- *     description: Reactivate a specific instance of an event . Requires EVENTOS_MANAGE permission.
+ *     description: Reactivate a specific instance of an event. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
- *       - name: eventoId
- *         in: path
- *         required: true
- *         description: The id of the evento
- *         schema:
- *           type: number
  *       - name: instanciaId
  *         in: path
  *         required: true
@@ -550,22 +667,30 @@ router.put(
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/InstanciaEvento'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Instancia reactivada exitosamente"
+ *                 instanciaId:
+ *                   type: number
+ *                 estado:
+ *                   type: string
+ *                   example: "ACTIVA"
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
  *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
- *       400:
- *         description: Bad request - Instance does not belong to the specified event
  *       404:
- *         description: Event or instance not found
+ *         description: Instance not found
  *       500:
  *         description: Internal server error
  */
 router.put(
-  '/:eventoId/instancias/:instanciaId/reactivar',
-  authMiddleware, 
+  '/instancias/:instanciaId/reactivar',
+  authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
+  instanciaEventoAuthMiddleware,
   controller.reactivarInstanciaEvento,
 );
 

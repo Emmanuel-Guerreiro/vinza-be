@@ -1,6 +1,6 @@
 import logger from '@/logger';
 import { CronJob } from 'cron';
-import { instanciaEventoService } from '@/instancia-evento';
+import { instanciaEventoService } from '@/instancia-evento/service';
 
 const dailyMaintenanceJob = new CronJob(
   '0 2 * * *',
