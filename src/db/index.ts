@@ -22,6 +22,7 @@ import {
 } from '@/estado-instancia-evento/model';
 import { Recorrido } from '@/recorrido/model';
 import { Reserva } from '@/reserva/model';
+import { EstadoRecorrido, HEstadoRecorrido } from '@/estado-recorrido/model';
 
 export const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -58,6 +59,8 @@ export const sequelize = new Sequelize({
     HEstadoReserva,
     Reserva,
     Recorrido,
+    EstadoRecorrido,
+    HEstadoRecorrido,
   ], // or [Player, Team],
 });
 

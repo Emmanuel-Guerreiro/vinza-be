@@ -12,8 +12,8 @@ import { sucursalService } from '@/sucursal/service';
 import { User } from '@/users/model';
 import { Valoracion } from '@/valoracion/model';
 import { sequelize } from '.';
-import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum';
-import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
+import { EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
+import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
 
@@ -237,19 +237,11 @@ async function seed() {
     }
 
     await maximosDiasAdelanteReservaService.patch({ valor: 30 });
-    // Create all estado reserva - Comentado temporalmente
-    // const estadoReserva = await Promise.all(
-    //  Object.values(EstadoReserva).map(async (nombre) => {
-    //    return await estadoReservaService.create({
-    //      nombre,
-    //    });
-    //  }),
-    // );
 
     // Create all estado instancia evento
     await Promise.all(
-      Object.values(EstadoInstanciaEvento).map(async (nombre) => {
-        return await EstadoInstanciaEventoModel.create({
+      Object.values(EstadoInstanciaEventoEnum).map(async (nombre) => {
+        return await EstadoInstanciaEvento.create({
           nombre,
         });
       }),

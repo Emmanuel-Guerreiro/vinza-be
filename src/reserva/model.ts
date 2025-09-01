@@ -1,30 +1,25 @@
+import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
+import { InstanciaEvento } from '@/instancia-evento';
+import { Recorrido } from '@/recorrido/model';
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
-  CreatedAt,
   DataType,
   ForeignKey,
-  HasMany,
   Model,
   Table,
-  UpdatedAt,
 } from 'sequelize-typescript';
-import { Recorrido } from '@/recorrido/model';
-import { HEstadoReserva } from '@/estado-reserva/model';
 export interface ReservaAttributes {
-  idReserva: string;
+  id: number;
   precio: number;
   cantidadGente: number;
   instanciaEventoId: number;
   recorridoId: number;
+  estados?: EstadoReserva[];
 }
 
-export type ReservaCreationAttributes = Omit<ReservaAttributes, 'idReserva'> & {
-  precio: number;
-  cantidadGente: number;
-  instanciaEventoId: number;
-  recorridoId: number;
-};
+export type ReservaCreationAttributes = Omit<ReservaAttributes, 'id'>;
 @Table({
   tableName: 'reservas',
   paranoid: true,
@@ -41,7 +36,7 @@ export class Reserva extends Model<
     primaryKey: true,
     autoIncrement: false,
   })
-  idReserva!: number;
+  id!: number;
 
   @Column({ type: DataType.INTEGER, allowNull: false })
   precio!: number;
@@ -49,23 +44,20 @@ export class Reserva extends Model<
   @Column({ type: DataType.INTEGER, allowNull: false })
   cantidadGente!: number;
 
-  @CreatedAt
-  @Column({ type: DataType.DATE, allowNull: false })
-  createdAt!: Date;
-
-  @UpdatedAt
-  @Column({ type: DataType.DATE, allowNull: false })
-  updatedAt!: Date;
-
-  @Column({ type: DataType.DATE, allowNull: false })
+  @ForeignKey(() => InstanciaEvento)
+  @Column({ type: DataType.INTEGER, allowNull: false })
   instanciaEventoId!: number;
-  //FK
+
+  @BelongsTo(() => InstanciaEvento)
+  instanciaEvento!: InstanciaEvento;
+
   @ForeignKey(() => Recorrido)
   @Column({ type: DataType.INTEGER, allowNull: false })
   recorridoId!: number;
-  @BelongsTo(() => Recorrido)
-  recorrido!: number;
 
-  @HasMany(() => HEstadoReserva)
-  historicoEstado!: HEstadoReserva[];
+  @BelongsTo(() => Recorrido)
+  recorrido!: Recorrido;
+
+  @BelongsToMany(() => EstadoReserva, () => HEstadoReserva)
+  estados!: EstadoReserva[];
 }

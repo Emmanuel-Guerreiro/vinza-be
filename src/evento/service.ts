@@ -6,7 +6,7 @@ import { errors } from '@/error';
 import { EstadoEvento } from '@/estado-evento/model';
 import { estadoEventoService } from '@/estado-evento/service';
 import { Sucursal } from '@/sucursal/model';
-import { Op, WhereOptions, FindOptions } from 'sequelize';
+import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { Evento } from './model';
 import {
   CreateEventoDto,
@@ -408,8 +408,12 @@ class EventoService {
       orderBy: 'id:asc',
     });
   }
-  async findByInstanciaEvento(instanciaEventoId: number) {
+  async findByInstanciaEvento(
+    instanciaEventoId: number,
+    transaction?: Transaction,
+  ) {
     return Evento.findOne({
+      transaction,
       include: [
         {
           model: InstanciaEvento,

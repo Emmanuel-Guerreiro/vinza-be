@@ -4,24 +4,30 @@ import { errors } from '@/error';
 import { Recorrido } from './model';
 import { CreateRecorridoDto, UpdateRecorridoDto } from './types';
 import { usersService } from '@/users/service';
+import { Transaction } from 'sequelize';
 
 class RecorridoService {
-  public async create(dto: CreateRecorridoDto) {
-    const transaction = await sequelize.transaction();
+  public async create(dto: CreateRecorridoDto, t?: Transaction) {
+    const transaction = t || (await sequelize.transaction());
     try {
-      const user = await usersService.findOne(dto.userId);
+      const user = await usersService.findOne(dto.userId, transaction);
       if (!user) throw errors.app.user.not_found;
 
-      const recorrido = await Recorrido.create(dto, { transaction });
+      const recorrido = await Recorrido.create(
+        {
+          userId: dto.userId,
+        },
+        { transaction },
+      );
 
       auditEmitter.emitEntry({
         tipoEvento: 'recorrido:create',
         valor: recorrido.dataValues,
       });
-      await transaction.commit();
+      if (!t) await transaction.commit();
       return recorrido;
     } catch (error) {
-      await transaction.rollback();
+      if (!t) await transaction.rollback();
       throw error;
     }
   }
@@ -29,8 +35,8 @@ class RecorridoService {
   public async update(id: number, dto: UpdateRecorridoDto) {
     const transaction = await sequelize.transaction();
     try {
-      const recorrido = await Recorrido.findByPk(id);
-      if (!recorrido) throw errors.app.recorrido.recorrido_not_found;
+      const recorrido = await Recorrido.findByPk(id, { transaction });
+      if (!recorrido) throw errors.app.recorrido.not_found;
 
       const updatedRecorrido = await recorrido.update(dto, {
         returning: true,
@@ -51,49 +57,24 @@ class RecorridoService {
   }
 
   public async findAll() {
-    const transaction = await sequelize.transaction();
-    try {
-      const recorridos = await Recorrido.findAll({
-        where: { deleted_at: null },
-        transaction,
-      });
-      return recorridos;
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
+    const recorridos = await Recorrido.findAll();
+    return recorridos;
   }
 
-  public async findById(id: number) {
-    const transaction = await sequelize.transaction();
-    try {
-      const recorrido = await Recorrido.findByPk(id, { transaction });
-      if (!recorrido) throw errors.app.recorrido.recorrido_not_found;
-      return recorrido;
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
+  public async findById(id: number, transaction?: Transaction) {
+    return Recorrido.findByPk(id, { transaction });
   }
   public async delete(id: number) {
-    const transaction = await sequelize.transaction();
-    try {
-      const recorrido = await recorridoService.findById(id);
-      if (!recorrido) throw errors.app.recorrido.recorrido_not_found;
+    const recorrido = await this.findById(id);
+    if (!recorrido) throw errors.app.recorrido.not_found;
+    await recorrido.destroy();
 
-      await recorrido.destroy({ transaction });
+    auditEmitter.emitEntry({
+      tipoEvento: 'recorrido:delete',
+      valor: recorrido.dataValues,
+    });
 
-      auditEmitter.emitEntry({
-        tipoEvento: 'recorrido:delete',
-        valor: recorrido.dataValues,
-      });
-
-      await transaction.commit();
-      return recorrido;
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
-    }
+    return recorrido;
   }
 }
 export const recorridoService = new RecorridoService();

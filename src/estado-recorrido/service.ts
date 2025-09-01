@@ -8,22 +8,29 @@ class EstadoRecorridoService {
     const estadoRecorrido = await EstadoRecorrido.create(dto);
     return estadoRecorrido;
   }
+
   public findAll() {
     return EstadoRecorrido.findAll();
   }
+
   public async findOne(id: number, transaction?: Transaction) {
     const estadoRecorrido = await EstadoRecorrido.findByPk(id, { transaction });
     if (!estadoRecorrido) throw errors.app.estadoRecorrido.estado_not_found;
+
     return estadoRecorrido;
   }
+
   public async update(id: number, dto: UpdateEstadoRecorridoDto) {
     const estadoRecorrido = await EstadoRecorrido.findByPk(id);
     if (!estadoRecorrido) throw errors.app.estadoRecorrido.estado_not_found;
+
     const updatedEstadoRecorrido = await estadoRecorrido.update(dto, {
       returning: true,
     });
+
     return updatedEstadoRecorrido;
   }
+
   public async delete(id: number) {
     const estadoRecorrido = await EstadoRecorrido.findByPk(id);
     if (!estadoRecorrido) throw errors.app.estadoRecorrido.estado_not_found;

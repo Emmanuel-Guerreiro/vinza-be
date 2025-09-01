@@ -2,6 +2,7 @@ import { User } from '@/users/model';
 import { Reserva } from '@/reserva/model';
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   DataType,
   ForeignKey,
@@ -9,6 +10,7 @@ import {
   Model,
   Table,
 } from 'sequelize-typescript';
+import { EstadoRecorrido, HEstadoRecorrido } from '@/estado-recorrido/model';
 
 export interface RecorridoAttributes {
   created_at: Date;
@@ -44,10 +46,10 @@ export class Recorrido extends Model<
   created_at!: Date;
 
   @Column({ type: DataType.DATE, allowNull: true })
-  deleted_at!: Date | null;
+  deleted_at!: Date;
 
   @Column({ type: DataType.DATE, allowNull: true })
-  last_optimization!: Date | null;
+  last_optimization!: Date;
 
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER, allowNull: false })
@@ -58,4 +60,7 @@ export class Recorrido extends Model<
 
   @HasMany(() => Reserva)
   reservas!: Reserva[];
+
+  @BelongsToMany(() => EstadoRecorrido, () => HEstadoRecorrido)
+  estados!: EstadoRecorrido[];
 }

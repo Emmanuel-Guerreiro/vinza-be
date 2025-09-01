@@ -136,6 +136,18 @@
       }
     },
     "reserva": {
+      "delete_error": {
+        "key": "app.reserva.delete_error",
+        "message": "Error al eliminar la reserva",
+        "message_eng": "Error deleting the reservation",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.reserva.update_error",
+        "message": "Error al actualizar la reserva",
+        "message_eng": "Error updating the reservation",
+        "status": 500
+      },
       "not_found": {
         "key": "app.reserva.not_found",
         "message": "Reserva not found",
@@ -147,6 +159,12 @@
         "message": "Estado not found",
         "message_eng": "Estado not found",
         "status": 404
+      },
+      "invalid_state": {
+        "key": "app.reserva.invalid_state",
+        "message": "El estado de la reserva no es válido",
+        "message_eng": "The reservation status is not valid",
+        "status": 400
       },
       "create_error": {
         "key": "app.reserva.create_error",
@@ -163,12 +181,12 @@
       "cupos_not_enough": {
         "key": "app.reserva.cupos_not_found",
         "message": "No hay cupos suficientes",
-        "message_eng": "No tickets enought?",
+        "message_eng": "No tickets enough",
         "status": 404
       }
     },
     "recorrido": {
-      "recorrido_not_found": {
+      "not_found": {
         "key": "app.recorrido.not_found",
         "message": "Recorrido not found",
         "message_eng": "Recorrido not found",

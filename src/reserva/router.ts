@@ -68,7 +68,7 @@ router.get(
  *     tags:
  *       - Reservas
  *     requestBody:
- *       required: true
+ *       required: false
  *       content:
  *         application/json:
  *           schema:

@@ -1,8 +1,7 @@
+import { errors } from '@/error';
 import { Transaction } from 'sequelize';
 import { EstadoReserva } from './model';
 import { CreateEstadoReservaDto, UpdateEstadoReservaDto } from './types';
-import { errors } from '@/error';
-import { sequelize } from '@/db';
 
 class EstadoReservaService {
   public async create(dto: CreateEstadoReservaDto) {
@@ -15,23 +14,11 @@ class EstadoReservaService {
   }
 
   public async findOne(id: number, transaction?: Transaction) {
-    const estadoReserva = await EstadoReserva.findByPk(id, { transaction });
-    if (!estadoReserva) throw errors.app.reserva.estado_not_found;
-    return estadoReserva;
+    return EstadoReserva.findByPk(id, { transaction });
   }
-  public async findByName(nombre: string) {
-    const transaction = await sequelize.transaction();
-    try {
-      const estadoReserva = await EstadoReserva.findOne({
-        where: {
-          nombre: nombre,
-        },
-      });
-      await transaction.commit();
-      return estadoReserva;
-    } catch {
-      throw errors;
-    }
+
+  public async findByName(nombre: string, transaction?: Transaction) {
+    return EstadoReserva.findOne({ where: { nombre }, transaction });
   }
 
   public async update(id: number, dto: UpdateEstadoReservaDto) {

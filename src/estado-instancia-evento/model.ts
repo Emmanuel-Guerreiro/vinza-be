@@ -108,12 +108,4 @@ export class HEstadoInstanciaEvento extends Model<
 
   @BelongsTo(() => EstadoInstanciaEvento)
   estadoInstanciaEvento?: EstadoInstanciaEvento;
-
-  @CreatedAt
-  @Column({ type: DataType.DATE })
-  created_at!: Date;
-
-  @DeletedAt
-  @Column({ type: DataType.DATE })
-  deleted_at!: Date | null;
 }
