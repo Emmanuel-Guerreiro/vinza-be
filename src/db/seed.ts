@@ -14,6 +14,7 @@ import { Valoracion } from '@/valoracion/model';
 import { sequelize } from '.';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum';
 import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
+import { EstadoEvento } from '@/estado-evento/enum';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
 
@@ -27,13 +28,22 @@ async function seed() {
     // ========================================
 
     // Create estados de evento
-    const [activoEstadoEvento, inactivoEstadoEvento] = await Promise.all(
-      ['activo', 'inactivo'].map(async (nombre) => {
+    const estadosEvento = await Promise.all(
+      Object.values(EstadoEvento).map(async (nombre) => {
         return await estadoEventoService.create({
           nombre,
         });
       }),
     );
+    
+    // Obtener referencias a los estados creados
+    const activoEstadoEvento = await estadoEventoService.findByName(EstadoEvento.ACTIVO);
+    const suspendidoEstadoEvento = await estadoEventoService.findByName(EstadoEvento.SUSPENDIDO);
+    const finalizadoEstadoEvento = await estadoEventoService.findByName(EstadoEvento.FINALIZADO);
+    
+    if (!activoEstadoEvento || !suspendidoEstadoEvento || !finalizadoEstadoEvento) {
+      throw new Error('Error al crear estados de evento');
+    }
 
     // Create categorías de evento
     const [categoriaEvento1, categoriaEvento2] = await Promise.all(
@@ -307,7 +317,7 @@ async function seed() {
       descripcion: 'Aprende técnicas de cocina profesional',
       cupo: 15,
       sucursalId: mainSucursal.id,
-      estadoId: inactivoEstadoEvento.id,
+      estadoId: suspendidoEstadoEvento.id,
       categoriaId: categoriaEvento2.id,
       precio: 300,
       recurrencias: [
@@ -470,7 +480,7 @@ async function seed() {
       descripcion: 'Introducción al mundo del vino y la enología',
       cupo: 35,
       sucursalId: sucursalTrapiche3.id,
-      estadoId: inactivoEstadoEvento.id,
+      estadoId: suspendidoEstadoEvento.id,
       categoriaId: categoriaEvento1.id,
       precio: 280,
       recurrencias: [

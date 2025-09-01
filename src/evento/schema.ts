@@ -1,6 +1,7 @@
 import { paginationAndOrderSchema } from '@/pagination/schemas';
 import { z } from 'zod';
 import { DiaSemana, HoraEvento } from './model';
+import { EstadoEvento } from '@/estado-evento/enum';
 
 // Schema para recurrencia individual
 const recurrenciaSchema = z

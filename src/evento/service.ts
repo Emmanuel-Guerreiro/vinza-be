@@ -24,6 +24,8 @@ import {
 import { RecurrenciaEvento } from './model';
 import { Bodega } from '@/bodega/model';
 import { instanciaEventoService } from '@/instancia-evento/service';
+import { InstanciaEvento } from '@/instancia-evento/model';
+import { Valoracion } from '@/valoracion/model';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
@@ -242,15 +244,41 @@ class EventoService {
   }
 
   public async delete(id: number) {
-    const evento = await Evento.findByPk(id);
-    if (!evento) throw errors.app.evento.not_found;
-    await evento.destroy();
+    const transaction = await sequelize.transaction();
+    try {
+      const evento = await Evento.findByPk(id, { transaction });
+      if (!evento) throw errors.app.evento.not_found;
 
-    auditEmitter.emitEntry({
-      tipoEvento: 'evento:delete',
-      valor: evento.dataValues,
-    });
-    return evento;
+      // Eliminar en cascada las dependencias
+      await RecurrenciaEvento.destroy({ 
+        where: { eventoId: id }, 
+        transaction 
+      });
+      
+      await InstanciaEvento.destroy({ 
+        where: { eventoId: id }, 
+        transaction 
+      });
+      
+      await Valoracion.destroy({ 
+        where: { eventoId: id }, 
+        transaction 
+      });
+
+      // Finalmente eliminar el evento
+      await evento.destroy({ transaction });
+      
+      await transaction.commit();
+
+      auditEmitter.emitEntry({
+        tipoEvento: 'evento:delete',
+        valor: evento.dataValues,
+      });
+      return evento;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   /**
