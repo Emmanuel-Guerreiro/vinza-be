@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import {
   createEventoSchema,
   findAllParamsSchema,
@@ -23,31 +23,28 @@ export class EventoController {
   }
 
   public getAll(req: Request, res: Response) {
-    findAllParamsSchema.parseAsync(req.query).then((query) => {
-      this.eventoService.findAll(query).then((data) => res.json(data));
-    });
+    const query = findAllParamsSchema.parse(req.query);
+    this.eventoService.findAll(query).then((data) => res.json(data));
   }
 
   public getOne(req: Request, res: Response) {
     this.eventoService.findOne(+req.params.id).then((data) => res.json(data));
   }
 
-  public create(req: Request, res: Response) {
-    createEventoSchema.parseAsync(req.body).then((dto) =>
-      this.eventoService
-        .create(dto)
-        .then((data) => res.json(data))
-        .catch((err) => res.json(err)),
-    );
+  public create(req: Request, res: Response, next: NextFunction) {
+    const dto = createEventoSchema.parse(req.body);
+    this.eventoService
+      .create(dto)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
   }
 
-  public update(req: Request, res: Response) {
-    updateEventoSchema.parseAsync(req.body).then((dto) =>
-      this.eventoService
-        .update(+req.params.id, dto)
-        .then((data) => res.json(data))
-        .catch((err) => res.json(err)),
-    );
+  public update(req: Request, res: Response, next: NextFunction) {
+    const dto = updateEventoSchema.parse(req.body);
+    this.eventoService
+      .update(+req.params.id, dto)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
   }
 
   public delete(req: Request, res: Response) {
@@ -60,7 +57,7 @@ export class EventoController {
       .then((data) => res.json(data));
   }
 
-  public generarInstanciasEvento(req: Request, res: Response) {
+  public generarInstanciasEvento(req: Request, res: Response, next: NextFunction) {
     this.eventoService
       .generarInstanciasEvento(+req.params.id)
       .then((data) => {
@@ -78,26 +75,24 @@ export class EventoController {
           res.json(data);
         }
       })
-      .catch((err) => res.status(err.status || 500).json(err));
+      .catch((err) => next(err));
   }
 
-  public suspenderInstanciaEvento(req: Request, res: Response) {
-    const eventoId = +req.params.eventoId;
+  public suspenderInstanciaEvento(req: Request, res: Response, next: NextFunction) {
     const instanciaId = +req.params.instanciaId;
 
     this.eventoService
-      .suspenderInstanciaEvento(eventoId, instanciaId)
+      .suspenderInstanciaEvento(instanciaId)
       .then((data) => res.json(data))
-      .catch((err) => res.status(err.status || 500).json(err));
+      .catch((err) => next(err));
   }
 
-  public reactivarInstanciaEvento(req: Request, res: Response) {
-    const eventoId = +req.params.eventoId;
+  public reactivarInstanciaEvento(req: Request, res: Response, next: NextFunction) {
     const instanciaId = +req.params.instanciaId;
 
     this.eventoService
-      .reactivarInstanciaEvento(eventoId, instanciaId)
+      .reactivarInstanciaEvento(instanciaId)
       .then((data) => res.json(data))
-      .catch((err) => res.status(err.status || 500).json(err));
+      .catch((err) => next(err));
   }
 }

@@ -7,13 +7,14 @@ import { eventoService } from '@/evento/service';
 import { maximosDiasAdelanteReservaService } from '@/maximos-dias-adelante-reserva/service';
 import { Permissions } from '@/rbac/permissions';
 import { permissionsService, rolesService } from '@/rbac/service';
-import { DiaSemana, HoraEvento } from '@/recurrencia-evento/model';
+import { DiaSemana, HoraEvento } from '@/evento/model';
 import { sucursalService } from '@/sucursal/service';
 import { User } from '@/users/model';
 import { Valoracion } from '@/valoracion/model';
 import { sequelize } from '.';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum';
 import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
+import { EstadoEvento } from '@/estado-evento/enum';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
 
@@ -21,26 +22,53 @@ async function seed() {
   try {
     await sequelize.sync({ force: true });
     config.IS_AUDIT_DISABLED = true;
-    // Create bodega 'zuccardi'
-    const zuccardi = await Bodega.create({
-      nombre: 'zuccardi',
-      descripcion: 'Bodega Zuccardi',
-    });
 
-    // Create a main sucural
-    const mainSucursal = await sucursalService.create({
-      nombre: 'main',
-      es_principal: true,
-      direccion: 'direccion 1',
-      aclaraciones: 'Sucursal principal de ejemplo',
-      bodegaId: zuccardi.id,
-    });
+    // ========================================
+    // 1. CREAR ENTIDADES BÁSICAS
+    // ========================================
 
-    // Create admin role (all permissions except SUDO), related to zuccardi
-    const adminRole = await rolesService.create({
-      nombre: 'ADMIN',
-      bodegaId: zuccardi.id,
-    });
+    // Create estados de evento
+    const estadosEvento = await Promise.all(
+      Object.values(EstadoEvento).map(async (nombre) => {
+        return await estadoEventoService.create({
+          nombre,
+        });
+      }),
+    );
+    
+    // Obtener referencias a los estados creados
+    const activoEstadoEvento = await estadoEventoService.findByName(EstadoEvento.ACTIVO);
+    const suspendidoEstadoEvento = await estadoEventoService.findByName(EstadoEvento.SUSPENDIDO);
+    const finalizadoEstadoEvento = await estadoEventoService.findByName(EstadoEvento.FINALIZADO);
+    
+    if (!activoEstadoEvento || !suspendidoEstadoEvento || !finalizadoEstadoEvento) {
+      throw new Error('Error al crear estados de evento');
+    }
+
+    // Create categorías de evento
+    const [categoriaEvento1, categoriaEvento2] = await Promise.all(
+      ['categoria 1', 'categoria 2'].map(async (nombre) => {
+        return await categoriaEventoService.create({
+          nombre,
+        });
+      }),
+    );
+
+    // Create estados de instancia evento
+    await Promise.all(
+      Object.values(EstadoInstanciaEvento).map(async (nombre) => {
+        return await EstadoInstanciaEventoModel.create({
+          nombre,
+        });
+      }),
+    );
+
+    // Create configuración de días máximos
+    await maximosDiasAdelanteReservaService.patch({ valor: 30 });
+
+    // ========================================
+    // 2. CREAR PERMISOS Y ROLES
+    // ========================================
 
     // Create all permissions
     const permissions = await Promise.all(
@@ -52,6 +80,122 @@ async function seed() {
       }),
     );
 
+    // Create SUDO role (all permissions), no bodega related
+    const sudoRole = await rolesService.create({
+      nombre: 'SUDO',
+    });
+    await rolesService.update(sudoRole.id, {
+      permisos: permissions.map((p) => p.id),
+    });
+
+    // ========================================
+    // 3. CREAR BODEGAS Y SUCURSALES
+    // ========================================
+
+    // Create bodega 'zuccardi'
+    const zuccardi = await Bodega.create({
+      nombre: 'zuccardi',
+      descripcion: 'Bodega Zuccardi',
+    });
+
+    // Create additional bodegas
+    const [bodegaCatena, bodegaTrapiche, bodegaLuigiBosca] = await Promise.all([
+      Bodega.create({
+        nombre: 'catena-zapata',
+        descripcion: 'Bodega Catena Zapata',
+      }),
+      Bodega.create({
+        nombre: 'trapiche',
+        descripcion: 'Bodega Trapiche',
+      }),
+      Bodega.create({
+        nombre: 'luigi-bosca',
+        descripcion: 'Bodega Luigi Bosca',
+      }),
+    ]);
+
+    // Create sucursales for zuccardi bodega
+    const [mainSucursal, sucursalZuccardi2] = await Promise.all([
+      sucursalService.create({
+        nombre: 'main',
+        es_principal: true,
+        direccion: 'direccion 1',
+        aclaraciones: 'Sucursal principal de ejemplo',
+        bodegaId: zuccardi.id,
+      }),
+      sucursalService.create({
+        nombre: 'zuccardi-2',
+        es_principal: false,
+        direccion: 'direccion 2',
+        aclaraciones: 'Segunda sucursal de Zuccardi',
+        bodegaId: zuccardi.id,
+      }),
+    ]);
+
+    // Create sucursales for Catena Zapata
+    const [sucursalCatena1, sucursalCatena2] = await Promise.all([
+      sucursalService.create({
+        nombre: 'catena-principal',
+        es_principal: true,
+        direccion: 'Mendoza, Argentina',
+        aclaraciones: 'Sucursal principal de Catena Zapata',
+        bodegaId: bodegaCatena.id,
+      }),
+      sucursalService.create({
+        nombre: 'catena-secundaria',
+        es_principal: false,
+        direccion: 'Buenos Aires, Argentina',
+        aclaraciones: 'Sucursal secundaria de Catena Zapata',
+        bodegaId: bodegaCatena.id,
+      }),
+    ]);
+
+    // Create sucursales for Trapiche
+    const [sucursalTrapiche1, sucursalTrapiche2, sucursalTrapiche3] = await Promise.all([
+      sucursalService.create({
+        nombre: 'trapiche-central',
+        es_principal: true,
+        direccion: 'Maipú, Mendoza',
+        aclaraciones: 'Sucursal central de Trapiche',
+        bodegaId: bodegaTrapiche.id,
+      }),
+      sucursalService.create({
+        nombre: 'trapiche-norte',
+        es_principal: false,
+        direccion: 'Salta, Argentina',
+        aclaraciones: 'Sucursal norte de Trapiche',
+        bodegaId: bodegaTrapiche.id,
+      }),
+      sucursalService.create({
+        nombre: 'trapiche-sur',
+        es_principal: false,
+        direccion: 'Neuquén, Argentina',
+        aclaraciones: 'Sucursal sur de Trapiche',
+        bodegaId: bodegaTrapiche.id,
+      }),
+    ]);
+
+    // Create sucursales for Luigi Bosca
+    const [sucursalLuigiBosca1] = await Promise.all([
+      sucursalService.create({
+        nombre: 'luigi-bosca-mendoza',
+        es_principal: true,
+        direccion: 'Luján de Cuyo, Mendoza',
+        aclaraciones: 'Sucursal principal de Luigi Bosca',
+        bodegaId: bodegaLuigiBosca.id,
+      }),
+    ]);
+
+    // ========================================
+    // 4. CREAR ROLES ESPECÍFICOS DE BODEGA
+    // ========================================
+
+    // Create admin role (all permissions except SUDO), related to zuccardi
+    const adminRole = await rolesService.create({
+      nombre: 'ADMIN',
+      bodegaId: zuccardi.id,
+    });
+
     // All permissions except SUDO for admin
     const adminPermissions = permissions.filter(
       (p) => p.nombre !== Permissions.SUDO,
@@ -59,6 +203,10 @@ async function seed() {
     await rolesService.update(adminRole.id, {
       permisos: adminPermissions.map((p) => p.id),
     });
+
+    // ========================================
+    // 5. CREAR USUARIOS
+    // ========================================
 
     // Create admin user related to zuccardi
     const adminPassword = await hashPassword('admin123');
@@ -73,17 +221,6 @@ async function seed() {
     });
     await adminUser.$set('roles', [adminRole.id]);
 
-    // This new user is a vinza admin, so there is no bodega related to the
-    // role nor the user itself
-
-    // Create SUDO role (all permissions), no bodega related
-    const sudoRole = await rolesService.create({
-      nombre: 'SUDO',
-    });
-    await rolesService.update(sudoRole.id, {
-      permisos: permissions.map((p) => p.id),
-    });
-
     // Create sudoer user with SUDO role and no bodega
     const sudoPassword = await hashPassword('sudo123');
     const sudoer = await User.create({
@@ -96,27 +233,58 @@ async function seed() {
     });
     await sudoer.$set('roles', [sudoRole.id]);
 
-    const [activoEstadoEvento, inactivoEstadoEvento] = await Promise.all(
-      ['activo', 'inactivo'].map(async (nombre) => {
-        return await estadoEventoService.create({
-          nombre,
-        });
-      }),
-    );
+    // ========================================
+    // 5.1 CREAR USUARIOS PARA CADA BODEGA
+    // ========================================
 
-    const [categoriaEvento1, categoriaEvento2] = await Promise.all(
-      ['categoria 1', 'categoria 2'].map(async (nombre) => {
-        return await categoriaEventoService.create({
-          nombre,
-        });
-      }),
-    );
+    // Create user for Catena Zapata (usa el mismo rol ADMIN)
+    const adminCatenaPassword = await hashPassword('catena123');
+    const adminCatena = await User.create({
+      nombre: 'Admin',
+      apellido: 'Catena',
+      email: 'admin@catena.com',
+      contrasena: adminCatenaPassword,
+      roles: [adminRole.id], // Mismo rol ADMIN
+      bodegaId: bodegaCatena.id,
+      validado: new Date(),
+    });
+    await adminCatena.$set('roles', [adminRole.id]);
+
+    // Create user for Trapiche (usa el mismo rol ADMIN)
+    const adminTrapichePassword = await hashPassword('trapiche123');
+    const adminTrapiche = await User.create({
+      nombre: 'Admin',
+      apellido: 'Trapiche',
+      email: 'admin@trapiche.com',
+      contrasena: adminTrapichePassword,
+      roles: [adminRole.id], // Mismo rol ADMIN
+      bodegaId: bodegaTrapiche.id,
+      validado: new Date(),
+    });
+    await adminTrapiche.$set('roles', [adminRole.id]);
+
+    // Create user for Luigi Bosca (usa el mismo rol ADMIN)
+    const adminLuigiBoscaPassword = await hashPassword('luigibosca123');
+    const adminLuigiBosca = await User.create({
+      nombre: 'Admin',
+      apellido: 'Luigi Bosca',
+      email: 'admin@luigibosca.com',
+      contrasena: adminLuigiBoscaPassword,
+      roles: [adminRole.id], // Mismo rol ADMIN
+      bodegaId: bodegaLuigiBosca.id,
+      validado: new Date(),
+    });
+    await adminLuigiBosca.$set('roles', [adminRole.id]);
+
+    // ========================================
+    // 6. CREAR EVENTOS
+    // ========================================
 
     // Evento 1: Clases de yoga semanales
     const evento1 = await eventoService.create({
       nombre: 'Clases de Yoga',
       descripcion: 'Clases de yoga para todos los niveles',
-      cupo: '20',
+      cupo: 20,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEvento1.id,
@@ -147,9 +315,9 @@ async function seed() {
     const evento2 = await eventoService.create({
       nombre: 'Taller de Cocina',
       descripcion: 'Aprende técnicas de cocina profesional',
-      cupo: '15',
+      cupo: 15,
       sucursalId: mainSucursal.id,
-      estadoId: inactivoEstadoEvento.id,
+      estadoId: suspendidoEstadoEvento.id,
       categoriaId: categoriaEvento2.id,
       precio: 300,
       recurrencias: [
@@ -172,7 +340,7 @@ async function seed() {
     const evento3 = await eventoService.create({
       nombre: 'Charlas de Tecnología',
       descripcion: 'Charlas sobre las últimas tendencias en tecnología',
-      cupo: '50',
+      cupo: 50,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEvento1.id,
@@ -209,7 +377,7 @@ async function seed() {
     const evento4 = await eventoService.create({
       nombre: 'Conferencia Única',
       descripcion: 'Conferencia especial sobre innovación',
-      cupo: '100',
+      cupo: 100,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEvento2.id,
@@ -224,19 +392,190 @@ async function seed() {
       ],
     });
 
+    // Evento 5: Cata de vinos en Catena Zapata (Mendoza)
+    const evento5 = await eventoService.create({
+      nombre: 'Cata de Vinos Premium',
+      descripcion: 'Degustación de vinos premium de Catena Zapata',
+      cupo: 25,
+      sucursalId: sucursalCatena1.id,
+      estadoId: activoEstadoEvento.id,
+      categoriaId: categoriaEvento1.id,
+      precio: 800,
+      recurrencias: [
+        {
+          dia: DiaSemana.SABADO,
+          hora: HoraEvento.HORA_16_00,
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
+        },
+      ],
+    });
+
+    // Evento 6: Tour gastronómico en Catena (Buenos Aires)
+    const evento6 = await eventoService.create({
+      nombre: 'Tour Gastronómico',
+      descripcion: 'Recorrido por la gastronomía porteña con vinos Catena',
+      cupo: 30,
+      sucursalId: sucursalCatena2.id,
+      estadoId: activoEstadoEvento.id,
+      categoriaId: categoriaEvento2.id,
+      precio: 1200,
+      recurrencias: [
+        {
+          dia: DiaSemana.DOMINGO,
+          hora: HoraEvento.HORA_11_00,
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
+        },
+      ],
+    });
+
+    // Evento 7: Clases de cocina regional en Trapiche Central
+    const evento7 = await eventoService.create({
+      nombre: 'Cocina Regional Mendocina',
+      descripcion: 'Aprende a cocinar platos típicos de Mendoza',
+      cupo: 18,
+      sucursalId: sucursalTrapiche1.id,
+      estadoId: activoEstadoEvento.id,
+      categoriaId: categoriaEvento2.id,
+      precio: 450,
+      recurrencias: [
+        {
+          dia: DiaSemana.MIERCOLES,
+          hora: HoraEvento.HORA_19_00,
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
+        },
+        {
+          dia: DiaSemana.SABADO,
+          hora: HoraEvento.HORA_15_00,
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
+        },
+      ],
+    });
+
+    // Evento 8: Festival de vinos del norte en Trapiche Norte
+    const evento8 = await eventoService.create({
+      nombre: 'Festival de Vinos del Norte',
+      descripcion: 'Celebración de vinos de altura de Salta',
+      cupo: 60,
+      sucursalId: sucursalTrapiche2.id,
+      estadoId: activoEstadoEvento.id,
+      categoriaId: categoriaEvento1.id,
+      precio: 350,
+      recurrencias: [
+        {
+          dia: DiaSemana.VIERNES,
+          hora: HoraEvento.HORA_20_00,
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
+        },
+      ],
+    });
+
+    // Evento 9: Enología para principiantes en Trapiche Sur
+    const evento9 = await eventoService.create({
+      nombre: 'Enología para Principiantes',
+      descripcion: 'Introducción al mundo del vino y la enología',
+      cupo: 35,
+      sucursalId: sucursalTrapiche3.id,
+      estadoId: suspendidoEstadoEvento.id,
+      categoriaId: categoriaEvento1.id,
+      precio: 280,
+      recurrencias: [
+        {
+          dia: DiaSemana.JUEVES,
+          hora: HoraEvento.HORA_18_30,
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
+        },
+      ],
+    });
+
+    // Evento 10: Maridaje de vinos en Luigi Bosca
+    const evento10 = await eventoService.create({
+      nombre: 'Maridaje de Vinos y Quesos',
+      descripcion: 'Aprende a combinar vinos con diferentes tipos de queso',
+      cupo: 22,
+      sucursalId: sucursalLuigiBosca1.id,
+      estadoId: activoEstadoEvento.id,
+      categoriaId: categoriaEvento2.id,
+      precio: 600,
+      recurrencias: [
+        {
+          dia: DiaSemana.MARTES,
+          hora: HoraEvento.HORA_19_30,
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
+        },
+        {
+          dia: DiaSemana.SABADO,
+          hora: HoraEvento.HORA_17_00,
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
+        },
+      ],
+    });
+
+    // Evento 11: Evento especial en Zuccardi segunda sucursal
+    const evento11 = await eventoService.create({
+      nombre: 'Noche de Malbec',
+      descripcion: 'Celebración especial del Malbec argentino',
+      cupo: 40,
+      sucursalId: sucursalZuccardi2.id,
+      estadoId: activoEstadoEvento.id,
+      categoriaId: categoriaEvento1.id,
+      precio: 400,
+      recurrencias: [
+        {
+          dia: DiaSemana.VIERNES,
+          hora: HoraEvento.HORA_21_00,
+          fecha_desde: new Date('2025-08-23'),
+          fecha_hasta: new Date('2026-12-31'),
+        },
+      ],
+    });
+
+    // Evento 12: Evento único en Luigi Bosca
+    const evento12 = await eventoService.create({
+      nombre: 'Gran Cena de Gala',
+      descripcion: 'Cena de gala con vinos premium de Luigi Bosca',
+      cupo: 80,
+      sucursalId: sucursalLuigiBosca1.id,
+      estadoId: activoEstadoEvento.id,
+      categoriaId: categoriaEvento2.id,
+      precio: 1500,
+      recurrencias: [
+        {
+          dia: DiaSemana.SABADO,
+          hora: HoraEvento.HORA_20_00,
+          fecha_desde: new Date('2025-12-20'),
+          fecha_hasta: new Date('2025-12-20'),
+        },
+      ],
+    });
+
+    // ========================================
+    // 7. CREAR VALORACIONES
+    // ========================================
+
     // Create 3 valoraciones for each event
     const valoracionesData = [
       { valor: 5, comentario: 'Excelente evento', userId: adminUser.id },
       { valor: 3, comentario: 'Estuvo bien', userId: adminUser.id },
       { valor: 1, comentario: 'No me gustó', userId: adminUser.id },
     ];
-    for (const evento of [evento1, evento2, evento3, evento4]) {
+    for (const evento of [evento1, evento2, evento3, evento4, evento5, evento6, evento7, evento8, evento9, evento10, evento11, evento12]) {
       for (const val of valoracionesData) {
         await Valoracion.create({ ...val, eventoId: evento.id });
       }
     }
 
-    await maximosDiasAdelanteReservaService.patch({ valor: 30 });
+    // ========================================
+    // 8. ESTADOS DE RESERVA (COMENTADO TEMPORALMENTE)
+    // ========================================
+
     // Create all estado reserva - Comentado temporalmente
     // const estadoReserva = await Promise.all(
     //  Object.values(EstadoReserva).map(async (nombre) => {
@@ -246,16 +585,33 @@ async function seed() {
     //  }),
     // );
 
-    // Create all estado instancia evento
-    await Promise.all(
-      Object.values(EstadoInstanciaEvento).map(async (nombre) => {
-        return await EstadoInstanciaEventoModel.create({
-          nombre,
-        });
-      }),
-    );
     // eslint-disable-next-line no-console
     console.log('Database seeded successfully');
+    
+    // ========================================
+    // INFORMACIÓN DE USUARIOS PARA PRUEBAS
+    // ========================================
+    console.log('\n=== USUARIOS CREADOS PARA PRUEBAS ===');
+    console.log('SUDO (Sin bodega - Acceso total):');
+    console.log('  Email: sudo@sudo.com | Password: sudo123');
+    console.log('\nADMIN ZUCCARDI (Bodega 1):');
+    console.log('  Email: admin@example.com | Password: admin123');
+    console.log('  Puede acceder a eventos de Zuccardi');
+    console.log('\nADMIN CATENA ZAPATA (Bodega 2):');
+    console.log('  Email: admin@catena.com | Password: catena123');
+    console.log('  Puede acceder a eventos de Catena Zapata');
+    console.log('\nADMIN TRAPICHE (Bodega 3):');
+    console.log('  Email: admin@trapiche.com | Password: trapiche123');
+    console.log('  Puede acceder a eventos de Trapiche');
+    console.log('\nADMIN LUIGI BOSCA (Bodega 4):');
+    console.log('  Email: admin@luigibosca.com | Password: luigibosca123');
+    console.log('  Puede acceder a eventos de Luigi Bosca');
+    console.log('\n=== PRUEBAS DE AUTORIZACIÓN ===');
+    console.log('1. Login con admin@catena.com');
+    console.log('2. Intentar crear evento en sucursal de Zuccardi → Debe fallar (403)');
+    console.log('3. Crear evento en sucursal de Catena → Debe funcionar (201)');
+    console.log('4. Intentar modificar evento de Trapiche → Debe fallar (403)');
+    console.log('5. Modificar evento de Catena → Debe funcionar (200)');
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error('Error seeding database:', error);
@@ -264,6 +620,7 @@ async function seed() {
     config.IS_AUDIT_DISABLED = false;
   }
 }
+
 // Run the seed
 seed()
   .then(() => {
