@@ -7,3 +7,11 @@ export const createEstadoReservaSchema = z.object({
 export const updateEstadoReservaSchema = z.object({
   nombre: z.string().optional(),
 });
+
+export type EstadoReservaOrderByAttributes = [
+  'id',
+  'nombre',
+  'created_at',
+  'updated_at',
+  'deleted_at',
+];

@@ -22,6 +22,8 @@ import valoracionRouter from './valoracion/router';
 import maximosDiasAdelanteReservaRouter from './maximos-dias-adelante-reserva/router';
 
 import categoriaEventoRouter from './categoria-evento/router';
+import estadoReservaRouter from './estado-reserva/router';
+import estadoInstanciaEventoRouter from './estado-instancia-evento/router';
 
 function initializeRouter() {
   const router = Router();
@@ -42,6 +44,8 @@ function initializeRouter() {
     maximosDiasAdelanteReservaRouter,
   );
 
+  router.use('/estado-reservas', estadoReservaRouter);
+  router.use('/estado-instancia-eventos', estadoInstanciaEventoRouter);
   return router;
 }
 

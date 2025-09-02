@@ -15,7 +15,7 @@ import { Valoracion } from '@/valoracion/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
 import { RecurrenciaEvento } from '@/evento/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
-// import { EstadoReserva } from '@/estado-reserva/model'; // Comentado temporalmente
+import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
 import {
   EstadoInstanciaEvento,
   HEstadoInstanciaEvento,
@@ -52,7 +52,8 @@ export const sequelize = new Sequelize({
     InstanciaEvento,
     EstadoInstanciaEvento,
     HEstadoInstanciaEvento,
-    // EstadoReserva, // Comentado temporalmente
+    EstadoReserva,
+    HEstadoReserva,
   ], // or [Player, Team],
 });
 
