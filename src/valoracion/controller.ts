@@ -30,7 +30,7 @@ export class ValoracionController {
       .parseAsync(req.body)
       .then((dto) =>
         this.valoracionService
-          .create({ ...dto, userId: req.user!.user })
+          .create({ ...dto, userId: req.user! })
           .then((data) => res.json(data)),
       );
   }
