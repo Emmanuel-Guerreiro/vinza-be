@@ -17,7 +17,7 @@ export const eventoAuthMiddleware = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const userBodegaId = req.user?.bodegaId;
+  const userBodegaId = req.bodegaId;
   const eventoId = +req.params.id;
 
   if (!userBodegaId) {
@@ -47,7 +47,7 @@ export const sucursalAuthMiddleware = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const userBodegaId = req.user?.bodegaId;
+  const userBodegaId = req.bodegaId;
   const sucursalId = req.body.sucursalId || +req.params.sucursalId;
 
   if (!userBodegaId) {
@@ -70,7 +70,7 @@ export const instanciaEventoAuthMiddleware = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const userBodegaId = req.user?.bodegaId;
+  const userBodegaId = req.bodegaId;
   const instanciaId = +req.params.instanciaId;
 
   if (!userBodegaId) {

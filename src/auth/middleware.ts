@@ -7,7 +7,8 @@ import { JwtAuthPayload } from './types';
 
 declare module 'express' {
   interface Request {
-    user?: JwtAuthPayload;
+    user?: JwtAuthPayload['user'];
+    bodegaId?: JwtAuthPayload['bodegaId'];
   }
 }
 
@@ -25,11 +26,11 @@ export const authMiddleware = (
   if (!decoded) {
     throw errors.app.auth.unauthorized;
   }
-  req.user = decoded as unknown as JwtAuthPayload;
-
-  req.logger.debug(`Setting user context, ${req.user.user}`);
+  req.user = (decoded as unknown as JwtAuthPayload).user;
+  req.bodegaId = (decoded as unknown as JwtAuthPayload).bodegaId;
+  req.logger.debug(`Setting user context, ${req.user}`);
   // This context is used to log the user in the audit
-  setContext('user', req.user.user);
+  setContext('user', req.user);
 
   next();
 };

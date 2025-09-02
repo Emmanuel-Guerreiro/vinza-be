@@ -17,7 +17,7 @@ export function requirePermissions(requiredPermissions: Permissions[]) {
     }
 
     // Fetch user with role and permissions
-    const user = await usersService.findOne(req.user.user);
+    const user = await usersService.findOne(req.user);
     if (!user) {
       req.logger.error('User not found in database.');
       throw errors.app.general.not_found;
@@ -35,7 +35,7 @@ export function requirePermissions(requiredPermissions: Permissions[]) {
 
     if (!hasAllPermissions) {
       req.logger.error(
-        `User ${req.user.user} lacks required permissions: ${requiredPermissions
+        `User ${req.user} lacks required permissions: ${requiredPermissions
           .filter((perm) => !userPermissions.includes(perm))
           .join(', ')}`,
       );
