@@ -9,7 +9,7 @@ export interface BodegaAttributes {
   descripcion: string;
   roles?: Rol[];
   users?: User[];
-  validada: boolean;
+  validada: Date | null;
 }
 
 export type BodegaCreationAttributes = Omit<
@@ -47,6 +47,6 @@ export class Bodega extends Model<BodegaAttributes, BodegaCreationAttributes> {
   @HasMany(() => Sucursal)
   sucursales?: Sucursal[];
 
-  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
-  validada!: boolean;
+  @Column({ type: DataType.DATE, allowNull: false })
+  validada!: Date;
 }
