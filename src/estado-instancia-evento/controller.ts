@@ -4,6 +4,7 @@ import {
   createEstadoInstanciaEventoSchema,
   updateEstadoInstanciaEventoSchema,
 } from './schema';
+import { paginationSchema } from '@/pagination/schemas';
 
 export class EstadoInstanciaEventoController {
   readonly estadoInstanciaEventoService;
@@ -17,8 +18,12 @@ export class EstadoInstanciaEventoController {
     this.delete = this.delete.bind(this);
   }
 
-  public getAll(_req: Request, res: Response) {
-    this.estadoInstanciaEventoService.findAll().then((data) => res.json(data));
+  public getAll(req: Request, res: Response) {
+    paginationSchema.parseAsync(req.query).then((query) => {
+      this.estadoInstanciaEventoService
+        .findAll(query)
+        .then((data) => res.json(data));
+    });
   }
 
   public getOne(req: Request, res: Response) {
