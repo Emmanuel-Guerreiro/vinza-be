@@ -128,7 +128,7 @@ class BodegaService {
     if (!bodega) {
       throw errors.app.bodega.not_found;
     }
-    await bodega.update({ validada: dto.es_valida });
+    await bodega.update({ validada: dto.es_valida ? new Date() : null });
     return bodega;
   }
 

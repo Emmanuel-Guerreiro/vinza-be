@@ -47,6 +47,6 @@ export class Bodega extends Model<BodegaAttributes, BodegaCreationAttributes> {
   @HasMany(() => Sucursal)
   sucursales?: Sucursal[];
 
-  @Column({ type: DataType.DATE, allowNull: false })
-  validada!: Date;
+  @Column({ type: DataType.DATE, allowNull: true })
+  validada!: Date | null;
 }
