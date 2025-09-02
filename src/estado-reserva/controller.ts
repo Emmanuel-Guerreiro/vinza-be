@@ -1,6 +1,7 @@
 import { IEstadoReservaService } from './service';
 import type { Request, Response } from 'express';
 import { createEstadoReservaSchema, updateEstadoReservaSchema } from './schema';
+import { paginationSchema } from '@/pagination/schemas';
 
 export class EstadoReservaController {
   readonly estadoReservaService;
@@ -14,8 +15,10 @@ export class EstadoReservaController {
     this.delete = this.delete.bind(this);
   }
 
-  public getAll(_req: Request, res: Response) {
-    this.estadoReservaService.findAll().then((data) => res.json(data));
+  public getAll(req: Request, res: Response) {
+    paginationSchema.parseAsync(req.query).then((query) => {
+      this.estadoReservaService.findAll(query).then((data) => res.json(data));
+    });
   }
 
   public getOne(req: Request, res: Response) {
