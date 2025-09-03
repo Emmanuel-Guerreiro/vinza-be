@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { EventoController } from './controller';
 import { eventoService } from './service';
+import { requirePermissions } from '@/rbac/middleware';
+import { Permissions } from '@/rbac/permissions';
+import { authMiddleware } from '@/auth/middleware';
+import { eventoAuthMiddleware, sucursalAuthMiddleware, instanciaEventoAuthMiddleware } from './middleware';
 import logger from '@/logger';
 
 const controller = new EventoController(eventoService);
@@ -11,6 +15,7 @@ const router = Router();
  * /eventos:
  *   get:
  *     summary: Get all eventos
+ *     description: Get all eventos with optional filtering
  *     tags:
  *       - Eventos
  *     parameters:
@@ -46,20 +51,20 @@ const router = Router();
  *           type: number
  *       - name: bodegaId
  *         in: query
- *         description: Filter by specific bodega ID (through sucursal relationship)
+ *         description: Filter by specific bodega ID through sucursal relationship
  *         required: false
  *         schema:
- *           type: string
+ *           type: number
  *       - name: fechaDesde
  *         in: query
- *         description: Filter events created from this date (ISO format)
+ *         description: Filter events created from this date in ISO format
  *         required: false
  *         schema:
  *           type: string
  *           format: date-time
  *       - name: fechaHasta
  *         in: query
- *         description: Filter events created until this date (ISO format)
+ *         description: Filter events created until this date in ISO format
  *         required: false
  *         schema:
  *           type: string
@@ -72,37 +77,80 @@ const router = Router();
  *           type: number
  *       - name: puntuacionMinima
  *         in: query
- *         description: Filter events with minimum rating (0-5 scale)
+ *         description: Filter events with minimum rating on 0-5 scale
  *         required: false
  *         schema:
  *           type: number
  *       - name: nombre
  *         in: query
- *         description: Filter events by name (case-insensitive search)
+ *         description: Filter events by name using case-insensitive search
  *         required: false
  *         schema:
  *           type: string
  *       - name: orderBy
  *         in: query
- *         description: "Order results by field and direction (format: field:direction)"
+ *         description: Order results by field and direction. Format field:direction
  *         required: false
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: List of eventos retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: number
+ *                       nombre:
+ *                         type: string
+ *                       descripcion:
+ *                         type: string
+ *                       cupo:
+ *                         type: number
+ *                       precio:
+ *                         type: number
+ *                       sucursalId:
+ *                         type: number
+ *                       estadoId:
+ *                         type: number
+ *                       categoriaId:
+ *                         type: number
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: number
+ *                     currentPage:
+ *                       type: number
+ *                     itemsPerPage:
+ *                       type: number
+ *                     totalPages:
+ *                       type: number
  *       400:
  *         description: Bad request - Invalid filter parameters
  *       500:
  *         description: Internal server error
  */
-router.get('', controller.getAll);
+router.get(
+  '',
+  controller.getAll
+);
 
 /**
  * @openapi
  * /eventos/{id}:
+ *   security:
+ *     - bearerAuth: []
  *   get:
- *     summary: Get an evento by id
+ *     summary: Get an evento by id [EVENTOS_READ]
+ *     description: Get a specific evento by its ID . Requires EVENTOS_READ permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -113,18 +161,57 @@ router.get('', controller.getAll);
  *     responses:
  *       200:
  *         description: Evento found successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: number
+ *                 nombre:
+ *                   type: string
+ *                 descripcion:
+ *                   type: string
+ *                 cupo:
+ *                   type: number
+ *                 precio:
+ *                   type: number
+ *                 sucursalId:
+ *                   type: number
+ *                 estadoId:
+ *                   type: number
+ *                 categoriaId:
+ *                   type: number
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions . EVENTOS_READ required.
  *       400:
  *         description: Bad request
  *       500:
  *         description: Internal server error
  */
-router.get('/:id', controller.getOne);
+router.get(
+  '/:id',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_READ]),
+  controller.getOne
+);
 
 /**
  * @openapi
  * /eventos:
+ *   security:
+ *     - bearerAuth: []
  *   post:
- *     summary: Create an evento
+ *     summary: Create an evento [EVENTOS_MANAGE]
+ *     description: Create a new evento with recurrences. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     requestBody:
@@ -145,10 +232,10 @@ router.get('/:id', controller.getOne);
  *                 required: true
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
- *                 type: string
- *                 description: Cupo del evento (debe ser un número válido mayor a 0)
+ *                 type: number
+ *                 description: Cupo del evento debe ser un número mayor a 0
  *                 required: true
- *                 example: "50"
+ *                 example: 50
  *               sucursalId:
  *                 type: number
  *                 description: ID de la sucursal a la que pertenece
@@ -171,7 +258,7 @@ router.get('/:id', controller.getOne);
  *                 example: 25.50
  *               recurrencias:
  *                 type: array
- *                 description: Array de recurrencias del evento (mínimo 1 recurrencia)
+ *                 description: Array de recurrencias del evento mínimo 1 recurrencia
  *                 required: true
  *                 minItems: 1
  *                 items:
@@ -179,12 +266,12 @@ router.get('/:id', controller.getOne);
  *                   properties:
  *                     dia:
  *                       type: string
- *                       description: Día de la semana (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo)
+ *                       description: Día de la semana Lunes Martes Miércoles Jueves Viernes Sábado Domingo
  *                       enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
  *                       example: "Lunes"
  *                     hora:
  *                       type: string
- *                       description: Hora del evento (formato HH:MM, desde 08:00 hasta 23:30)
+ *                       description: Hora del evento formato HH:MM desde 08:00 hasta 23:30
  *                       enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
  *                       example: "18:00"
  *                     fecha_desde:
@@ -200,18 +287,55 @@ router.get('/:id', controller.getOne);
  *     responses:
  *       201:
  *         description: Evento created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: number
+ *                 nombre:
+ *                   type: string
+ *                 descripcion:
+ *                   type: string
+ *                 cupo:
+ *                   type: number
+ *                 precio:
+ *                   type: number
+ *                 sucursalId:
+ *                   type: number
+ *                 estadoId:
+ *                   type: number
+ *                 categoriaId:
+ *                   type: number
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions. EVENTOS_MANAGE required.
  *       400:
  *         description: Bad request
  *       500:
  *         description: Internal server error
  */
-router.post('', controller.create);
+router.post(
+  '',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  sucursalAuthMiddleware,
+  controller.create
+);
 
 /**
  * @openapi
  * /eventos/{id}:
+ *   security:
+ *     - bearerAuth: []
  *   put:
- *     summary: Update an evento
+ *     summary: Update an evento [EVENTOS_MANAGE]
+ *     description: Update an existing evento . Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -235,9 +359,9 @@ router.post('', controller.create);
  *                 description: Descripción del evento
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
- *                 type: string
- *                 description: Cupo del evento (debe ser un número válido mayor a 0)
- *                 example: "50"
+ *                 type: number
+ *                 description: Cupo del evento debe ser un número mayor a 0
+ *                 example: 50
  *               sucursalId:
  *                 type: number
  *                 description: ID de la sucursal a la que pertenece
@@ -256,19 +380,19 @@ router.post('', controller.create);
  *                 example: 25.50
  *               recurrencias:
  *                 type: array
- *                 description: Array de recurrencias del evento (mínimo 1 recurrencia)
+ *                 description: Array de recurrencias del evento mínimo 1 recurrencia
  *                 minItems: 1
  *                 items:
  *                   type: object
  *                   properties:
  *                     dia:
  *                       type: string
- *                       description: Día de la semana (Lunes, Martes, Miércoles, Jueves, Viernes, Sábado, Domingo)
+ *                       description: Día de la semana Lunes Martes Miércoles Jueves Viernes Sábado Domingo
  *                       enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
  *                       example: "Martes"
  *                     hora:
  *                       type: string
- *                       description: Hora del evento (formato HH:MM, desde 08:00 hasta 23:30)
+ *                       description: Hora del evento formato HH:MM desde 08:00 hasta 23:30
  *                       enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
  *                       example: "19:00"
  *                     fecha_desde:
@@ -284,18 +408,55 @@ router.post('', controller.create);
  *     responses:
  *       200:
  *         description: Evento updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: number
+ *                 nombre:
+ *                   type: string
+ *                 descripcion:
+ *                   type: string
+ *                 cupo:
+ *                   type: number
+ *                 precio:
+ *                   type: number
+ *                 sucursalId:
+ *                   type: number
+ *                 estadoId:
+ *                   type: number
+ *                 categoriaId:
+ *                   type: number
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       400:
  *         description: Bad request
  *       500:
  *         description: Internal server error
  */
-router.put('/:id', controller.update);
+router.put(
+  '/:id',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  eventoAuthMiddleware,
+  controller.update
+);
 
 /**
  * @openapi
  * /eventos/{id}:
+ *   security:
+ *     - bearerAuth: []
  *   delete:
- *     summary: Delete an evento
+ *     summary: Delete an evento [EVENTOS_MANAGE]
+ *     description: Delete an existing evento . Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -306,18 +467,39 @@ router.put('/:id', controller.update);
  *     responses:
  *       200:
  *         description: Evento deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Evento eliminado exitosamente"
+ *                 id:
+ *                   type: number
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       400:
  *         description: Bad request
  *       500:
  *         description: Internal server error
  */
-router.delete('/:id', controller.delete);
+router.delete(
+  '/:id',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  eventoAuthMiddleware,
+  controller.delete
+);
 
 /**
  * @openapi
  * /eventos/{id}/instancias:
  *   get:
  *     summary: Get all instances of a specific event
+ *     description: Get all instances of a specific event
  *     tags:
  *       - Eventos
  *     parameters:
@@ -336,7 +518,21 @@ router.delete('/:id', controller.delete);
  *                 items:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/InstanciaEvento'
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: number
+ *                       eventoId:
+ *                         type: number
+ *                       fecha:
+ *                         type: string
+ *                         format: date
+ *                       hora:
+ *                         type: string
+ *                       estado:
+ *                         type: string
+ *                       cupoDisponible:
+ *                         type: number
  *                 meta:
  *                   type: object
  *                   properties:
@@ -358,8 +554,11 @@ router.get('/:id/instancias', controller.getInstanciasEvento);
 /**
  * @openapi
  * /eventos/{id}/generar-instancias:
+ *   security:
+ *     - bearerAuth: []
  *   post:
- *     summary: Force generation of instances for a specific event
+ *     summary: Force generation of instances for a specific event [EVENTOS_MANAGE]
+ *     description: Force generation of instances for a specific event . Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -378,27 +577,34 @@ router.get('/:id/instancias', controller.getInstanciasEvento);
  *                 totalInstanciasCreadas:
  *                   type: number
  *                   description: Total number of instances created
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       404:
  *         description: Event not found or event has no recurrences
  *       500:
  *         description: Internal server error
  */
-router.post('/:id/generar-instancias', controller.generarInstanciasEvento);
+router.post(
+  '/:id/generar-instancias',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  eventoAuthMiddleware,
+  controller.generarInstanciasEvento
+);
 
 /**
  * @openapi
- * /eventos/{eventoId}/instancias/{instanciaId}/suspender:
+ * /eventos/instancias/{instanciaId}/suspender:
+ *   security:
+ *     - bearerAuth: []
  *   put:
- *     summary: Suspend a specific instance of an event
+ *     summary: Suspend a specific instance of an event [EVENTOS_MANAGE]
+ *     description: Suspend a specific instance of an event. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
- *       - name: eventoId
- *         in: path
- *         required: true
- *         description: The id of the evento
- *         schema:
- *           type: number
  *       - name: instanciaId
  *         in: path
  *         required: true
@@ -411,33 +617,44 @@ router.post('/:id/generar-instancias', controller.generarInstanciasEvento);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/InstanciaEvento'
- *       400:
- *         description: Bad request - Instance does not belong to the specified event
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Instancia suspendida exitosamente"
+ *                 instanciaId:
+ *                   type: number
+ *                 estado:
+ *                   type: string
+ *                   example: "SUSPENDIDA"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       404:
- *         description: Event or instance not found
+ *         description: Instance not found
  *       500:
  *         description: Internal server error
  */
 router.put(
-  '/:eventoId/instancias/:instanciaId/suspender',
+  '/instancias/:instanciaId/suspender',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  instanciaEventoAuthMiddleware,
   controller.suspenderInstanciaEvento,
 );
 
 /**
  * @openapi
- * /eventos/{eventoId}/instancias/{instanciaId}/reactivar:
+ * /eventos/instancias/{instanciaId}/reactivar:
+ *   security:
+ *     - bearerAuth: []
  *   put:
- *     summary: Reactivate a specific instance of an event
+ *     summary: Reactivate a specific instance of an event [EVENTOS_MANAGE]
+ *     description: Reactivate a specific instance of an event. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     parameters:
- *       - name: eventoId
- *         in: path
- *         required: true
- *         description: The id of the evento
- *         schema:
- *           type: number
  *       - name: instanciaId
  *         in: path
  *         required: true
@@ -450,16 +667,30 @@ router.put(
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/InstanciaEvento'
- *       400:
- *         description: Bad request - Instance does not belong to the specified event
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Instancia reactivada exitosamente"
+ *                 instanciaId:
+ *                   type: number
+ *                 estado:
+ *                   type: string
+ *                   example: "ACTIVA"
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
  *       404:
- *         description: Event or instance not found
+ *         description: Instance not found
  *       500:
  *         description: Internal server error
  */
 router.put(
-  '/:eventoId/instancias/:instanciaId/reactivar',
+  '/instancias/:instanciaId/reactivar',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  instanciaEventoAuthMiddleware,
   controller.reactivarInstanciaEvento,
 );
 

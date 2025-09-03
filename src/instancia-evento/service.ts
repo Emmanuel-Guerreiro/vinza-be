@@ -2,8 +2,9 @@ import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { Evento } from '@/evento/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
-import { RecurrenciaEvento } from '@/recurrencia-evento/model';
+import { RecurrenciaEvento } from '@/evento/model';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
+import { EstadoInstanciaEvento as EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
 import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { InstanciaEvento } from './model';
 import {
@@ -95,6 +96,34 @@ class InstanciaEventoService {
     });
   }
 
+  public async findAllByEventoId(
+    eventoId: number,
+    transaction?: Transaction,
+  ): Promise<InstanciaEvento[]> {
+    return await InstanciaEvento.findAll({
+      where: { eventoId },
+      transaction,
+      include: [
+        {
+          model: Evento,
+          as: 'evento',
+          attributes: ['id', 'nombre', 'descripcion', 'precio', 'cupo'],
+        },
+        {
+          model: RecurrenciaEvento,
+          as: 'recurrenciaEvento',
+          attributes: ['id', 'dia', 'hora', 'fecha_desde', 'fecha_hasta'],
+        },
+        {
+          model: EstadoInstanciaEvento,
+          as: 'estado',
+          attributes: ['id', 'nombre'],
+          required: false, // LEFT JOIN para incluir instancias sin estado
+        },
+      ],
+    });
+  }
+
   public async create(
     dto: CreateInstanciaEventoDto,
     transaction?: Transaction,
@@ -102,7 +131,7 @@ class InstanciaEventoService {
     // Si no se proporciona estadoId, asignar estado ACTIVA por defecto
     if (!dto.estadoId) {
       const estadoActiva = await EstadoInstanciaEvento.findOne({
-        where: { nombre: 'ACTIVA' },
+        where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
       });
 
       if (estadoActiva) {
@@ -123,7 +152,7 @@ class InstanciaEventoService {
   ) {
     // Si no se proporciona estadoId, asignar estado ACTIVA por defecto
     const estadoActiva = await EstadoInstanciaEvento.findOne({
-      where: { nombre: 'ACTIVA' },
+      where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
     });
 
     if (estadoActiva) {
@@ -171,17 +200,20 @@ class InstanciaEventoService {
 
     // Buscar el estado SUSPENDIDA por nombre
     const estadoSuspendida = await EstadoInstanciaEvento.findOne({
-      where: { nombre: 'SUSPENDIDA' },
+      where: { nombre: EstadoInstanciaEventoEnum.SUSPENDIDA },
     });
 
     if (!estadoSuspendida) {
       throw errors.app.instancia_evento.estado_not_found;
     }
 
-    return await instancia.update(
+    await instancia.update(
       { estadoId: estadoSuspendida.id },
       { transaction },
     );
+
+    // Retornar la instancia actualizada con todas las relaciones
+    return await this.findOne(id, transaction);
   }
 
   /**
@@ -193,7 +225,7 @@ class InstanciaEventoService {
 
     // Buscar el estado ACTIVA por nombre
     const estadoActiva = await EstadoInstanciaEvento.findOne({
-      where: { nombre: 'ACTIVA' },
+      where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
       transaction,
     });
 
@@ -201,17 +233,20 @@ class InstanciaEventoService {
       throw errors.app.instancia_evento.estado_not_found;
     }
 
-    return await instancia.update(
+    await instancia.update(
       { estadoId: estadoActiva.id },
       { transaction },
     );
+
+    // Retornar la instancia actualizada con todas las relaciones
+    return await this.findOne(id, transaction);
   }
 
   /**
    * Método principal para generar instancias de eventos automáticamente
    * basado en las recurrencias y la configuración de días máximos
    */
-  public async generarInstanciasAutomaticamente() {
+  public async generarInstanciasAutomaticamente(): Promise<{ totalInstanciasCreadas: number }> {
     const transaction = await sequelize.transaction();
     try {
       logger.info('Iniciando generación automática de instancias de eventos');
@@ -223,9 +258,9 @@ class InstanciaEventoService {
       });
 
       if (!configuracionDias) {
-        logger.warn('No se encontró configuración de días máximos adelante');
+        logger.error('No se encontró configuración de días máximos adelante');
         await transaction.rollback();
-        return;
+        throw errors.app.general.validation_error;
       }
 
       const diasMaximos = configuracionDias.valor;
@@ -253,41 +288,16 @@ class InstanciaEventoService {
 
       // 3. Para cada evento, generar instancias según sus recurrencias
       for (const evento of eventosConRecurrencias) {
-        if (!evento.recurrencias || evento.recurrencias.length === 0) {
-          logger.warn(`Evento ${evento.nombre} no tiene recurrencias`);
-          continue;
-        }
-
-        // Verificar si es un evento único (fecha_desde = fecha_hasta) o recurrente
-        const esEventoUnico = evento.recurrencias.every(
-          (recurrencia) =>
-            recurrencia.fecha_desde.getTime() ===
-            recurrencia.fecha_hasta.getTime(),
-        );
-
-        if (esEventoUnico) {
-          // Evento único - crear una sola instancia por recurrencia
-          for (const recurrencia of evento.recurrencias) {
-            const instanciaUnica = await this.generarInstanciaUnica(
-              evento,
-              recurrencia,
-              diasMaximos,
-              transaction,
-            );
-            if (instanciaUnica) totalInstanciasCreadas++;
-          }
-        } else {
-          // Evento recurrente - generar múltiples instancias según el patrón
-          for (const recurrencia of evento.recurrencias) {
-            const instanciasGeneradas =
-              await this.generarInstanciasParaRecurrencia(
-                evento,
-                recurrencia,
-                diasMaximos,
-                transaction,
-              );
-            totalInstanciasCreadas += instanciasGeneradas;
-          }
+        try {
+          const instanciasGeneradas = await this.generarInstanciasParaEvento(
+            evento.id,
+            diasMaximos,
+            transaction,
+          );
+          totalInstanciasCreadas += instanciasGeneradas.totalInstanciasCreadas;
+        } catch (error) {
+          logger.error(`Error generando instancias para evento ${evento.id}:`, error);
+          // Continuar con el siguiente evento en caso de error
         }
       }
 
@@ -321,8 +331,16 @@ class InstanciaEventoService {
         return false;
       }
 
+      // Usar fecha actual si fecha_desde está vacía o es anterior
+      let fechaDesde = recurrencia.fecha_desde || new Date();
+      const fechaActual = new Date();
+      
+      if (fechaDesde < fechaActual) {
+        fechaDesde = fechaActual;
+      }
+
       // Crear la fecha del evento combinando fecha_desde con la hora
-      const fechaEvento = new Date(recurrencia.fecha_desde);
+      const fechaEvento = new Date(fechaDesde);
       fechaEvento.setHours(
         parseInt(recurrencia.hora.split(':')[0]),
         parseInt(recurrencia.hora.split(':')[1]),
@@ -331,7 +349,6 @@ class InstanciaEventoService {
       );
 
       // Verificar que la fecha del evento esté en el futuro
-      const fechaActual = new Date();
       if (fechaEvento <= fechaActual) {
         logger.debug(
           `Evento único ${evento.nombre} ya pasó (${fechaEvento.toISOString()})`,
@@ -368,7 +385,7 @@ class InstanciaEventoService {
 
       // Buscar el estado ACTIVA por nombre
       const estadoActiva = await EstadoInstanciaEvento.findOne({
-        where: { nombre: 'ACTIVA' },
+        where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
       });
 
       if (!estadoActiva) {
@@ -434,9 +451,19 @@ class InstanciaEventoService {
     // Extraer hora y minutos de la hora del evento
     const [hora, minutos] = recurrencia.hora.split(':').map(Number);
 
+    // Usar fecha actual si fecha_desde está vacía o es anterior
+    let fechaDesde = recurrencia.fecha_desde || new Date();
+    if (fechaDesde < fechaActual) {
+      fechaDesde = fechaActual;
+    }
+
+    // Para fecha_hasta, si es null significa tiempo ilimitado
+    // Solo usamos el límite de días máximos
+    const fechaHasta = recurrencia.fecha_hasta;
+
     // Iniciar desde la fecha más reciente entre: fecha actual o fecha_desde de la recurrencia
     let fechaInicio = new Date(
-      Math.max(fechaActual.getTime(), recurrencia.fecha_desde.getTime()),
+      Math.max(fechaActual.getTime(), fechaDesde.getTime()),
     );
     let instanciasCreadas = 0;
 
@@ -454,11 +481,14 @@ class InstanciaEventoService {
       fechaInicio = new Date(fechaInicio.getTime() + 7 * 24 * 60 * 60 * 1000);
     }
 
-    // Generar instancias hasta alcanzar el límite de días
-    while (
-      fechaInicio <= fechaLimite &&
-      fechaInicio <= new Date(recurrencia.fecha_hasta)
-    ) {
+    // Generar instancias hasta alcanzar el límite de días máximos
+    // Si fecha_hasta es null, solo usar fechaLimite
+    // Si fecha_hasta tiene valor, usar el mínimo entre fechaLimite y fecha_hasta
+    const fechaFinal = fechaHasta 
+      ? new Date(Math.min(fechaLimite.getTime(), fechaHasta.getTime()))
+      : fechaLimite;
+
+    while (fechaInicio <= fechaFinal) {
       // Verificar que la fecha esté en el futuro
       if (fechaInicio <= fechaActual) {
         fechaInicio = new Date(fechaInicio.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -478,7 +508,7 @@ class InstanciaEventoService {
       if (!instanciaExistente) {
         // Buscar el estado ACTIVA por nombre
         const estadoActiva = await EstadoInstanciaEvento.findOne({
-          where: { nombre: 'ACTIVA' },
+          where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
         });
 
         if (!estadoActiva) {
@@ -509,6 +539,105 @@ class InstanciaEventoService {
     }
 
     return instanciasCreadas;
+  }
+
+  /**
+   * Genera instancias para un evento específico basado en sus recurrencias
+   * Método unificado que maneja tanto eventos únicos como recurrentes
+   */
+  public async generarInstanciasParaEvento(
+    eventoId: number,
+    diasMaximos?: number,
+    transaction?: Transaction,
+  ): Promise<{ totalInstanciasCreadas: number }> {
+    // Si no se proporciona transacción, crear una nueva
+    const useTransaction = transaction || await sequelize.transaction();
+    const shouldCommit = !transaction;
+
+    try {
+      // Si no se proporcionan días máximos, obtener la configuración
+      if (!diasMaximos) {
+        const configuracionDias = await MaximosDiasAdelanteReserva.findOne({
+          where: { deleted_at: null },
+          order: [['created_at', 'DESC']],
+        });
+
+        if (!configuracionDias) {
+          throw errors.app.general.validation_error;
+        }
+
+        diasMaximos = configuracionDias.valor;
+      }
+
+      // Obtener el evento con sus recurrencias
+      const evento = await Evento.findByPk(eventoId, {
+        include: [
+          {
+            model: RecurrenciaEvento,
+            as: 'recurrencias',
+            where: {
+              [Op.or]: [
+                // Recurrencias con fecha_hasta en el futuro
+                { fecha_hasta: { [Op.gt]: new Date() } },
+                // Recurrencias sin fecha_hasta (tiempo ilimitado)
+                { fecha_hasta: null }
+              ]
+            },
+            required: true,
+          },
+        ],
+        transaction: useTransaction,
+      });
+
+      if (!evento) {
+        throw errors.app.evento.not_found;
+      }
+
+      if (!evento.recurrencias || evento.recurrencias.length === 0) {
+        throw errors.app.evento.recurrencias_required;
+      }
+
+      let instanciasCreadas = 0;
+
+             for (const recurrencia of evento.recurrencias) {
+         // Verificar si es un evento único (fecha_desde = fecha_hasta y ambas no son null)
+         const esEventoUnico =
+           recurrencia.fecha_desde !== null && 
+           recurrencia.fecha_hasta !== null && 
+           recurrencia.fecha_desde.getTime() === recurrencia.fecha_hasta.getTime();
+
+        if (esEventoUnico) {
+          // Evento único - crear una sola instancia
+          const instanciaCreada = await this.generarInstanciaUnica(
+            evento,
+            recurrencia,
+            diasMaximos,
+            useTransaction,
+          );
+          if (instanciaCreada) instanciasCreadas++;
+        } else {
+          // Evento recurrente - generar múltiples instancias según el patrón
+          const instanciasGeneradas = await this.generarInstanciasParaRecurrencia(
+            evento,
+            recurrencia,
+            diasMaximos,
+            useTransaction,
+          );
+          instanciasCreadas += instanciasGeneradas;
+        }
+      }
+
+      if (shouldCommit) {
+        await useTransaction.commit();
+      }
+
+      return { totalInstanciasCreadas: instanciasCreadas };
+    } catch (error) {
+      if (shouldCommit) {
+        await useTransaction.rollback();
+      }
+      throw error;
+    }
   }
 
   private generateWhereConditions(params: FindAllParams): WhereOptions {

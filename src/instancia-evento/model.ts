@@ -12,7 +12,7 @@ import {
   EstadoInstanciaEvento,
   HEstadoInstanciaEvento,
 } from '@/estado-instancia-evento/model';
-import { RecurrenciaEvento } from '@/recurrencia-evento/model';
+import { RecurrenciaEvento } from '@/evento/model';
 
 export interface InstanciaEventoAttributes {
   id: number;

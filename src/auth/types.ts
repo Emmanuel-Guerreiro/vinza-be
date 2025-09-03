@@ -22,4 +22,5 @@ export type ValidateAccountDto = z.infer<typeof validateAccountSchema>;
 export type JwtAuthPayload = {
   user: number;
   role: number;
+  bodegaId?: number;
 };

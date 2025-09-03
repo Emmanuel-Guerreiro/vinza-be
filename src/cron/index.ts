@@ -1,16 +1,23 @@
 import logger from '@/logger';
 import { CronJob } from 'cron';
-import { instanciaEventoService } from '@/instancia-evento';
+import { instanciaEventoService } from '@/instancia-evento/service';
 
 const dailyMaintenanceJob = new CronJob(
   '0 2 * * *',
-  async () => {
+  () => {
     logger.info('Iniciando tarea de mantenimiento diario');
 
     // Tu lógica aquí
     // Por ejemplo: limpiar logs antiguos, actualizar estadísticas, etc.
-
-    logger.info('Tarea de mantenimiento diario completada');
+    Promise.resolve()
+      .then(() => {
+        // Aquí iría tu lógica de mantenimiento
+        logger.info('Tarea de mantenimiento diario completada');
+      })
+      .catch((error) => {
+        logger.error('Error en tarea de mantenimiento diario:', error);
+        logger.error(error);
+      });
   },
   null, // onComplete callback
   true, // start immediately
@@ -19,19 +26,23 @@ const dailyMaintenanceJob = new CronJob(
 
 const generarInstanciasEventoJob = new CronJob(
   '0 1 * * *', // Ejecutar todos los días a la 1:00 AM
-  async () => {
+  () => {
     logger.info('Iniciando generación automática de instancias de eventos');
 
-    const resultado =
-      await instanciaEventoService.generarInstanciasAutomaticamente();
-
-    if (resultado) {
-      logger.info(
-        `Generación completada. Total de instancias creadas: ${resultado.totalInstanciasCreadas}`,
-      );
-    } else {
-      logger.info('No se generaron nuevas instancias');
-    }
+    instanciaEventoService.generarInstanciasAutomaticamente()
+      .then((resultado) => {
+        if (resultado) {
+          logger.info(
+            `Generación completada. Total de instancias creadas: ${resultado.totalInstanciasCreadas}`,
+          );
+        } else {
+          logger.info('No se generaron nuevas instancias');
+        }
+      })
+      .catch((error) => {
+        logger.error('Error en generación automática de instancias:', error);
+        logger.error(error);
+      });
   },
   null, // onComplete callback
   true, // start immediately

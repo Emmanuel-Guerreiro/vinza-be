@@ -5,6 +5,8 @@ import {
   UpdateEstadoInstanciaEventoDto,
 } from './types';
 import { errors } from '@/error';
+import { PaginationParams } from '@/pagination/schemas';
+import { generatePaginationParams } from '@/pagination';
 
 class EstadoInstanciaEventoService {
   public async create(dto: CreateEstadoInstanciaEventoDto) {
@@ -12,8 +14,20 @@ class EstadoInstanciaEventoService {
     return estadoInstanciaEvento;
   }
 
-  public findAll() {
-    return EstadoInstanciaEvento.findAll();
+  public async findAll(params: PaginationParams) {
+    const { limit, offset } = generatePaginationParams(params);
+    const [meta, items] = await Promise.all([
+      this.getCountAndMetadata(params, limit),
+      EstadoInstanciaEvento.findAll({
+        limit,
+        offset,
+      }),
+    ]);
+
+    return {
+      items,
+      meta,
+    };
   }
 
   public async findOne(id: number, transaction?: Transaction) {
@@ -44,6 +58,16 @@ class EstadoInstanciaEventoService {
       throw errors.app.instancia_evento.estado_not_found;
     await estadoInstanciaEvento.destroy();
     return estadoInstanciaEvento;
+  }
+
+  private async getCountAndMetadata(params: PaginationParams, limit: number) {
+    const totalItems = await EstadoInstanciaEvento.count();
+    return {
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: params.page || 1,
+      itemsPerPage: limit,
+    };
   }
 }
 

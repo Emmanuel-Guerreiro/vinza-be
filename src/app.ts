@@ -20,12 +20,14 @@ import auditRouter from './audit/router';
 import { contextMiddleware } from './context';
 import valoracionRouter from './valoracion/router';
 import maximosDiasAdelanteReservaRouter from './maximos-dias-adelante-reserva/router';
-import recurrenciaEventoRouter from './recurrencia-evento/router';
+
 import categoriaEventoRouter from './categoria-evento/router';
 import reservaRouter from './reserva/router';
 import estadoReserva from './estado-reserva/router';
 import recorrido from './recorrido/router';
 import estadoRecorridoRouter from './estado-recorrido/router';
+import estadoReservaRouter from './estado-reserva/router';
+import estadoInstanciaEventoRouter from './estado-instancia-evento/router';
 
 function initializeRouter() {
   const router = Router();
@@ -45,11 +47,13 @@ function initializeRouter() {
     '/maximos-dias-adelante-reserva',
     maximosDiasAdelanteReservaRouter,
   );
-  router.use('/recurrencia-evento', recurrenciaEventoRouter);
   router.use('/reserva', reservaRouter);
   router.use('/estado-reserva', estadoReserva);
   router.use('/recorrido', recorrido);
   router.use('/estado-recorrido', estadoRecorridoRouter);
+  router.use('/estado-reservas', estadoReservaRouter);
+  router.use('/estado-instancia-eventos', estadoInstanciaEventoRouter);
+
   return router;
 }
 

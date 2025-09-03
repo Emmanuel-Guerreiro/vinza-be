@@ -13,7 +13,7 @@ import { CategoriaEvento } from '@/categoria-evento/model';
 import { HCategoriaEvento } from '@/categoria-evento/model';
 import { Valoracion } from '@/valoracion/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
-import { RecurrenciaEvento } from '@/recurrencia-evento/model';
+import { RecurrenciaEvento } from '@/evento/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
 import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
 import {
