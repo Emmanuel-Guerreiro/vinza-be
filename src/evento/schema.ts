@@ -1,7 +1,6 @@
 import { paginationAndOrderSchema } from '@/pagination/schemas';
 import { z } from 'zod';
 import { DiaSemana, HoraEvento } from './model';
-import { EstadoEvento } from '@/estado-evento/enum';
 
 // Schema para recurrencia individual
 const recurrenciaSchema = z
@@ -38,16 +37,19 @@ const recurrenciaSchema = z
         return date || null;
       }),
   })
-  .refine((data) => {
-    // Solo validar si ambas fechas están presentes y no son null
-    if (data.fecha_desde && data.fecha_hasta) {
-      return data.fecha_hasta >= data.fecha_desde;
-    }
-    return true;
-  }, {
-    message: 'La fecha hasta debe ser igual o posterior a la fecha desde',
-    path: ['fecha_hasta'],
-  });
+  .refine(
+    (data) => {
+      // Solo validar si ambas fechas están presentes y no son null
+      if (data.fecha_desde && data.fecha_hasta) {
+        return data.fecha_hasta >= data.fecha_desde;
+      }
+      return true;
+    },
+    {
+      message: 'La fecha hasta debe ser igual o posterior a la fecha desde',
+      path: ['fecha_hasta'],
+    },
+  );
 
 export const createEventoSchema = z.object({
   nombre: z.string().min(1, 'El nombre no puede estar vacío'),
@@ -64,7 +66,10 @@ export const createEventoSchema = z.object({
 
 export const updateEventoSchema = z.object({
   nombre: z.string().min(1, 'El nombre no puede estar vacío').optional(),
-  descripcion: z.string().min(1, 'La descripción no puede estar vacía').optional(),
+  descripcion: z
+    .string()
+    .min(1, 'La descripción no puede estar vacía')
+    .optional(),
   cupo: z.number().positive('El cupo debe ser un número mayor a 0').optional(),
   sucursalId: z.number().optional(),
   estadoId: z.number().optional(),

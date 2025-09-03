@@ -1,7 +1,7 @@
+import { errors } from '@/error';
 import { Transaction } from 'sequelize';
 import { EstadoReserva } from './model';
 import { CreateEstadoReservaDto, UpdateEstadoReservaDto } from './types';
-import { errors } from '@/error';
 import { PaginationParams } from '@/pagination/schemas';
 import { generatePaginationParams } from '@/pagination';
 
@@ -28,9 +28,11 @@ class EstadoReservaService {
   }
 
   public async findOne(id: number, transaction?: Transaction) {
-    const estadoReserva = await EstadoReserva.findByPk(id, { transaction });
-    if (!estadoReserva) throw errors.app.reserva.estado_not_found;
-    return estadoReserva;
+    return EstadoReserva.findByPk(id, { transaction });
+  }
+
+  public async findByName(nombre: string, transaction?: Transaction) {
+    return EstadoReserva.findOne({ where: { nombre }, transaction });
   }
 
   public async update(id: number, dto: UpdateEstadoReservaDto) {

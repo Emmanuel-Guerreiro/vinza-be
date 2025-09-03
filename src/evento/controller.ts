@@ -57,7 +57,11 @@ export class EventoController {
       .then((data) => res.json(data));
   }
 
-  public generarInstanciasEvento(req: Request, res: Response, next: NextFunction) {
+  public generarInstanciasEvento(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
     this.eventoService
       .generarInstanciasEvento(+req.params.id)
       .then((data) => {
@@ -78,7 +82,11 @@ export class EventoController {
       .catch((err) => next(err));
   }
 
-  public suspenderInstanciaEvento(req: Request, res: Response, next: NextFunction) {
+  public suspenderInstanciaEvento(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
     const instanciaId = +req.params.instanciaId;
 
     this.eventoService
@@ -87,7 +95,11 @@ export class EventoController {
       .catch((err) => next(err));
   }
 
-  public reactivarInstanciaEvento(req: Request, res: Response, next: NextFunction) {
+  public reactivarInstanciaEvento(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
     const instanciaId = +req.params.instanciaId;
 
     this.eventoService

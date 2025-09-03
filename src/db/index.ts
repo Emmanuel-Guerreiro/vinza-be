@@ -17,9 +17,12 @@ import { RecurrenciaEvento } from '@/evento/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
 import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
 import {
-  EstadoInstanciaEvento,
   HEstadoInstanciaEvento,
+  EstadoInstanciaEvento,
 } from '@/estado-instancia-evento/model';
+import { Recorrido } from '@/recorrido/model';
+import { Reserva } from '@/reserva/model';
+import { EstadoRecorrido, HEstadoRecorrido } from '@/estado-recorrido/model';
 
 export const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -28,7 +31,7 @@ export const sequelize = new Sequelize({
   database: config.DB_NAME,
   host: config.DB_HOST,
   port: Number(config.DB_PORT),
-  ssl: false,  
+  ssl: false,
   sync: { alter: true },
   logging: false,
   models: [
@@ -54,6 +57,10 @@ export const sequelize = new Sequelize({
     HEstadoInstanciaEvento,
     EstadoReserva,
     HEstadoReserva,
+    Reserva,
+    Recorrido,
+    EstadoRecorrido,
+    HEstadoRecorrido,
   ], // or [Player, Team],
 });
 

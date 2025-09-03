@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { hashPassword } from '@/auth/auth';
 import { Bodega } from '@/bodega/model';
 import { categoriaEventoService } from '@/categoria-evento/service';
@@ -12,9 +14,13 @@ import { sucursalService } from '@/sucursal/service';
 import { User } from '@/users/model';
 import { Valoracion } from '@/valoracion/model';
 import { sequelize } from '.';
-import { EstadoInstanciaEvento } from '@/estado-instancia-evento/enum';
+import { EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
 import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
 import { EstadoEvento } from '@/estado-evento/enum';
+import { EstadoRecorridoEnum } from '@/estado-recorrido/enum';
+import { estadoRecorridoService } from '@/estado-recorrido/service';
+import { estadoReservaService } from '@/estado-reserva/service';
+import { EstadoReservaEnum } from '@/estado-reserva/enum';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
 
@@ -27,21 +33,40 @@ async function seed() {
     // 1. CREAR ENTIDADES BÁSICAS
     // ========================================
 
+    // Estados de recorrido
+    await Promise.all(
+      Object.values(EstadoRecorridoEnum).map((nombre) =>
+        estadoRecorridoService.create({
+          nombre,
+        }),
+      ),
+    );
+
     // Create estados de evento
-    const estadosEvento = await Promise.all(
+    await Promise.all(
       Object.values(EstadoEvento).map(async (nombre) => {
         return await estadoEventoService.create({
           nombre,
         });
       }),
     );
-    
+
     // Obtener referencias a los estados creados
-    const activoEstadoEvento = await estadoEventoService.findByName(EstadoEvento.ACTIVO);
-    const suspendidoEstadoEvento = await estadoEventoService.findByName(EstadoEvento.SUSPENDIDO);
-    const finalizadoEstadoEvento = await estadoEventoService.findByName(EstadoEvento.FINALIZADO);
-    
-    if (!activoEstadoEvento || !suspendidoEstadoEvento || !finalizadoEstadoEvento) {
+    const activoEstadoEvento = await estadoEventoService.findByName(
+      EstadoEvento.ACTIVO,
+    );
+    const suspendidoEstadoEvento = await estadoEventoService.findByName(
+      EstadoEvento.SUSPENDIDO,
+    );
+    const finalizadoEstadoEvento = await estadoEventoService.findByName(
+      EstadoEvento.FINALIZADO,
+    );
+
+    if (
+      !activoEstadoEvento ||
+      !suspendidoEstadoEvento ||
+      !finalizadoEstadoEvento
+    ) {
       throw new Error('Error al crear estados de evento');
     }
 
@@ -56,7 +81,7 @@ async function seed() {
 
     // Create estados de instancia evento
     await Promise.all(
-      Object.values(EstadoInstanciaEvento).map(async (nombre) => {
+      Object.values(EstadoInstanciaEventoEnum).map(async (nombre) => {
         return await EstadoInstanciaEventoModel.create({
           nombre,
         });
@@ -151,29 +176,30 @@ async function seed() {
     ]);
 
     // Create sucursales for Trapiche
-    const [sucursalTrapiche1, sucursalTrapiche2, sucursalTrapiche3] = await Promise.all([
-      sucursalService.create({
-        nombre: 'trapiche-central',
-        es_principal: true,
-        direccion: 'Maipú, Mendoza',
-        aclaraciones: 'Sucursal central de Trapiche',
-        bodegaId: bodegaTrapiche.id,
-      }),
-      sucursalService.create({
-        nombre: 'trapiche-norte',
-        es_principal: false,
-        direccion: 'Salta, Argentina',
-        aclaraciones: 'Sucursal norte de Trapiche',
-        bodegaId: bodegaTrapiche.id,
-      }),
-      sucursalService.create({
-        nombre: 'trapiche-sur',
-        es_principal: false,
-        direccion: 'Neuquén, Argentina',
-        aclaraciones: 'Sucursal sur de Trapiche',
-        bodegaId: bodegaTrapiche.id,
-      }),
-    ]);
+    const [sucursalTrapiche1, sucursalTrapiche2, sucursalTrapiche3] =
+      await Promise.all([
+        sucursalService.create({
+          nombre: 'trapiche-central',
+          es_principal: true,
+          direccion: 'Maipú, Mendoza',
+          aclaraciones: 'Sucursal central de Trapiche',
+          bodegaId: bodegaTrapiche.id,
+        }),
+        sucursalService.create({
+          nombre: 'trapiche-norte',
+          es_principal: false,
+          direccion: 'Salta, Argentina',
+          aclaraciones: 'Sucursal norte de Trapiche',
+          bodegaId: bodegaTrapiche.id,
+        }),
+        sucursalService.create({
+          nombre: 'trapiche-sur',
+          es_principal: false,
+          direccion: 'Neuquén, Argentina',
+          aclaraciones: 'Sucursal sur de Trapiche',
+          bodegaId: bodegaTrapiche.id,
+        }),
+      ]);
 
     // Create sucursales for Luigi Bosca
     const [sucursalLuigiBosca1] = await Promise.all([
@@ -566,28 +592,42 @@ async function seed() {
       { valor: 3, comentario: 'Estuvo bien', userId: adminUser.id },
       { valor: 1, comentario: 'No me gustó', userId: adminUser.id },
     ];
-    for (const evento of [evento1, evento2, evento3, evento4, evento5, evento6, evento7, evento8, evento9, evento10, evento11, evento12]) {
+    for (const evento of [
+      evento1,
+      evento2,
+      evento3,
+      evento4,
+      evento5,
+      evento6,
+      evento7,
+      evento8,
+      evento9,
+      evento10,
+      evento11,
+      evento12,
+    ]) {
       for (const val of valoracionesData) {
         await Valoracion.create({ ...val, eventoId: evento.id });
       }
     }
+
+    await maximosDiasAdelanteReservaService.patch({ valor: 30 });
 
     // ========================================
     // 8. ESTADOS DE RESERVA (COMENTADO TEMPORALMENTE)
     // ========================================
 
     // Create all estado reserva - Comentado temporalmente
-    // const estadoReserva = await Promise.all(
-    //  Object.values(EstadoReserva).map(async (nombre) => {
-    //    return await estadoReservaService.create({
-    //      nombre,
-    //    });
-    //  }),
-    // );
+    await Promise.all(
+      Object.values(EstadoReservaEnum).map(async (nombre) => {
+        return await estadoReservaService.create({
+          nombre,
+        });
+      }),
+    );
 
-    // eslint-disable-next-line no-console
     console.log('Database seeded successfully');
-    
+
     // ========================================
     // INFORMACIÓN DE USUARIOS PARA PRUEBAS
     // ========================================
@@ -608,12 +648,13 @@ async function seed() {
     console.log('  Puede acceder a eventos de Luigi Bosca');
     console.log('\n=== PRUEBAS DE AUTORIZACIÓN ===');
     console.log('1. Login con admin@catena.com');
-    console.log('2. Intentar crear evento en sucursal de Zuccardi → Debe fallar (403)');
+    console.log(
+      '2. Intentar crear evento en sucursal de Zuccardi → Debe fallar (403)',
+    );
     console.log('3. Crear evento en sucursal de Catena → Debe funcionar (201)');
     console.log('4. Intentar modificar evento de Trapiche → Debe fallar (403)');
     console.log('5. Modificar evento de Catena → Debe funcionar (200)');
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Error seeding database:', error);
     throw error;
   } finally {
@@ -624,12 +665,10 @@ async function seed() {
 // Run the seed
 seed()
   .then(() => {
-    // eslint-disable-next-line no-console
     console.log('Seed completed');
     process.exit(0);
   })
   .catch((error) => {
-    // eslint-disable-next-line no-console
     console.error('Seed failed:', error);
     process.exit(1);
   });

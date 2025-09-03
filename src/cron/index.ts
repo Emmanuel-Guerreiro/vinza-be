@@ -29,7 +29,8 @@ const generarInstanciasEventoJob = new CronJob(
   () => {
     logger.info('Iniciando generación automática de instancias de eventos');
 
-    instanciaEventoService.generarInstanciasAutomaticamente()
+    instanciaEventoService
+      .generarInstanciasAutomaticamente()
       .then((resultado) => {
         if (resultado) {
           logger.info(

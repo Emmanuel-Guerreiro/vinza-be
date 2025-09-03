@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import { EstadoReservaEnum } from './enum';
 
 export const createEstadoReservaSchema = z.object({
-  nombre: z.string(),
+  nombre: z.nativeEnum(EstadoReservaEnum),
 });
 
 export const updateEstadoReservaSchema = z.object({
-  nombre: z.string().optional(),
+  nombre: z.nativeEnum(EstadoReservaEnum).optional(),
 });
 
 export type EstadoReservaOrderByAttributes = [

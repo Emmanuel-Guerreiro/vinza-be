@@ -6,8 +6,8 @@ import { errors } from '@/error';
 import { EstadoEvento } from '@/estado-evento/model';
 import { estadoEventoService } from '@/estado-evento/service';
 import { Sucursal } from '@/sucursal/model';
+import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { sucursalService } from '@/sucursal/service';
-import { Op, WhereOptions, FindOptions } from 'sequelize';
 import { Evento } from './model';
 import {
   CreateEventoDto,
@@ -56,9 +56,14 @@ class EventoService {
       // Generar instancias automáticamente después de crear el evento
       try {
         await instanciaEventoService.generarInstanciasParaEvento(evento.id);
-        logger.info(`Instancias generadas automáticamente para evento ${evento.id}`);
+        logger.info(
+          `Instancias generadas automáticamente para evento ${evento.id}`,
+        );
       } catch (error) {
-        logger.error(`Error generando instancias automáticamente para evento ${evento.id}:`, error);
+        logger.error(
+          `Error generando instancias automáticamente para evento ${evento.id}:`,
+          error,
+        );
         // No fallar la creación del evento si falla la generación de instancias
       }
 
@@ -250,24 +255,24 @@ class EventoService {
       if (!evento) throw errors.app.evento.not_found;
 
       // Eliminar en cascada las dependencias
-      await RecurrenciaEvento.destroy({ 
-        where: { eventoId: id }, 
-        transaction 
+      await RecurrenciaEvento.destroy({
+        where: { eventoId: id },
+        transaction,
       });
-      
-      await InstanciaEvento.destroy({ 
-        where: { eventoId: id }, 
-        transaction 
+
+      await InstanciaEvento.destroy({
+        where: { eventoId: id },
+        transaction,
       });
-      
-      await Valoracion.destroy({ 
-        where: { eventoId: id }, 
-        transaction 
+
+      await Valoracion.destroy({
+        where: { eventoId: id },
+        transaction,
       });
 
       // Finalmente eliminar el evento
       await evento.destroy({ transaction });
-      
+
       await transaction.commit();
 
       auditEmitter.emitEntry({
@@ -416,11 +421,28 @@ class EventoService {
       orderBy: 'id:asc',
     });
   }
+  async findByInstanciaEvento(
+    instanciaEventoId: number,
+    transaction?: Transaction,
+  ) {
+    return Evento.findOne({
+      transaction,
+      include: [
+        {
+          model: InstanciaEvento,
+          as: 'instancias',
+          where: { id: instanciaEventoId },
+        },
+      ],
+    });
+  }
 
   /**
    * Fuerza la generación de instancias para un evento específico
    */
-  public async generarInstanciasEvento(eventoId: number): Promise<{ totalInstanciasCreadas: number }> {
+  public async generarInstanciasEvento(
+    eventoId: number,
+  ): Promise<{ totalInstanciasCreadas: number }> {
     const evento = await this.findOne(eventoId);
     if (!evento) throw errors.app.evento.not_found;
 
@@ -460,7 +482,7 @@ class EventoService {
    */
   private async validateEventoData(
     dto: CreateEventoDto | UpdateEventoDto,
-    transaction?: any,
+    transaction?: Transaction,
   ) {
     // Validar que estadoId exista si se proporciona
     if (dto.estadoId) {
@@ -477,8 +499,7 @@ class EventoService {
         dto.categoriaId,
         transaction,
       );
-      if (!categoriaEvento)
-        throw errors.app.evento.categoria_evento_not_found;
+      if (!categoriaEvento) throw errors.app.evento.categoria_evento_not_found;
     }
 
     // Validar que sucursalId exista si se proporciona
@@ -488,7 +509,12 @@ class EventoService {
     }
 
     // Validar que el nombre no esté duplicado en la misma bodega (solo para create)
-    if ('nombre' in dto && dto.nombre && 'sucursalId' in dto && dto.sucursalId) {
+    if (
+      'nombre' in dto &&
+      dto.nombre &&
+      'sucursalId' in dto &&
+      dto.sucursalId
+    ) {
       const existingEvento = await Evento.findOne({
         where: {
           nombre: dto.nombre,
