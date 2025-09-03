@@ -100,7 +100,7 @@ class RecorridoService {
     const transaction = await sequelize.transaction();
     try {
       const recorrido = await this.findOneWithReservas(id, transaction);
-      console.log('recorrido', recorrido);
+
       if (
         !recorrido ||
         recorrido.estados?.[0]?.nombre == EstadoRecorridoEnum.CANCELADO

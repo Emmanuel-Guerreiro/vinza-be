@@ -20,9 +20,9 @@ class EstadoEventoService {
   }
 
   public async findByName(nombre: string, transaction?: Transaction) {
-    const estadoEvento = await EstadoEvento.findOne({ 
+    const estadoEvento = await EstadoEvento.findOne({
       where: { nombre },
-      transaction 
+      transaction,
     });
     return estadoEvento;
   }

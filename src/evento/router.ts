@@ -4,7 +4,11 @@ import { eventoService } from './service';
 import { requirePermissions } from '@/rbac/middleware';
 import { Permissions } from '@/rbac/permissions';
 import { authMiddleware } from '@/auth/middleware';
-import { eventoAuthMiddleware, sucursalAuthMiddleware, instanciaEventoAuthMiddleware } from './middleware';
+import {
+  eventoAuthMiddleware,
+  sucursalAuthMiddleware,
+  instanciaEventoAuthMiddleware,
+} from './middleware';
 import logger from '@/logger';
 
 const controller = new EventoController(eventoService);
@@ -138,10 +142,7 @@ const router = Router();
  *       500:
  *         description: Internal server error
  */
-router.get(
-  '',
-  controller.getAll
-);
+router.get('', controller.getAll);
 
 /**
  * @openapi
@@ -201,7 +202,7 @@ router.get(
   '/:id',
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_READ]),
-  controller.getOne
+  controller.getOne,
 );
 
 /**
@@ -325,7 +326,7 @@ router.post(
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
   sucursalAuthMiddleware,
-  controller.create
+  controller.create,
 );
 
 /**
@@ -446,7 +447,7 @@ router.put(
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
   eventoAuthMiddleware,
-  controller.update
+  controller.update,
 );
 
 /**
@@ -491,7 +492,7 @@ router.delete(
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
   eventoAuthMiddleware,
-  controller.delete
+  controller.delete,
 );
 
 /**
@@ -591,7 +592,7 @@ router.post(
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
   eventoAuthMiddleware,
-  controller.generarInstanciasEvento
+  controller.generarInstanciasEvento,
 );
 
 /**

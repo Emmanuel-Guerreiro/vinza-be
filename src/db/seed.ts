@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { hashPassword } from '@/auth/auth';
 import { Bodega } from '@/bodega/model';
 import { categoriaEventoService } from '@/categoria-evento/service';
@@ -624,7 +626,6 @@ async function seed() {
       }),
     );
 
-    // eslint-disable-next-line no-console
     console.log('Database seeded successfully');
 
     // ========================================
@@ -654,7 +655,6 @@ async function seed() {
     console.log('4. Intentar modificar evento de Trapiche → Debe fallar (403)');
     console.log('5. Modificar evento de Catena → Debe funcionar (200)');
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Error seeding database:', error);
     throw error;
   } finally {
@@ -665,12 +665,10 @@ async function seed() {
 // Run the seed
 seed()
   .then(() => {
-    // eslint-disable-next-line no-console
     console.log('Seed completed');
     process.exit(0);
   })
   .catch((error) => {
-    // eslint-disable-next-line no-console
     console.error('Seed failed:', error);
     process.exit(1);
   });

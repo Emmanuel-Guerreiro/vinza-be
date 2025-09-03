@@ -9,7 +9,9 @@ export const createEstadoEventoSchema = z.object({
 });
 
 export const updateEstadoEventoSchema = z.object({
-  nombre: z.nativeEnum(EstadoEvento, {
-    invalid_type_error: 'El estado debe ser un valor válido',
-  }).optional(),
+  nombre: z
+    .nativeEnum(EstadoEvento, {
+      invalid_type_error: 'El estado debe ser un valor válido',
+    })
+    .optional(),
 });
