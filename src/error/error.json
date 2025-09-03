@@ -154,6 +154,12 @@
       }
     },
     "reserva": {
+      "confirmar_error": {
+        "key": "app.reserva.confirmar_error",
+        "message": "Error al confirmar la reserva",
+        "message_eng": "Error confirming the reservation",
+        "status": 500
+      },
       "delete_error": {
         "key": "app.reserva.delete_error",
         "message": "Error al eliminar la reserva",
@@ -204,6 +210,18 @@
       }
     },
     "recorrido": {
+      "empty_recorrido": {
+        "key": "app.recorrido.empty_recorrido",
+        "message": "El recorrido no tiene reservas",
+        "message_eng": "The recorrido has no reservations",
+        "status": 404
+      },
+      "already_confirmed": {
+        "key": "app.recorrido.already_confirmed",
+        "message": "El recorrido ya está confirmado",
+        "message_eng": "The recorrido is already confirmed",
+        "status": 400
+      },
       "not_found": {
         "key": "app.recorrido.not_found",
         "message": "Recorrido not found",
@@ -249,27 +267,27 @@
         "status": 500
       }
     },
-    "estadoRecorrido": {
+    "estado_recorrido": {
       "estado_not_found": {
-        "key": "app.EstadoRecorrido.estado_not_found",
+        "key": "app.estado_recorrido.estado_not_found",
         "message": "Estado recorrido not found",
         "message_eng": "Estado recorrido not found",
         "status": 404
       },
       "create_error": {
-        "key": "app.EstadoRecorrido.create_error",
+        "key": "app.estado_recorrido.create_error",
         "message": "Error al crear estado recorrido",
         "message_eng": "Error creating estado recorrido",
         "status": 500
       },
       "update_error": {
-        "key": "app.EstadoRecorrido.update_error",
+        "key": "app.estado_recorrido.update_error",
         "message": "Error al actualizar estado recorrido",
         "message_eng": "Error updating estado recorrido",
         "status": 500
       },
       "delete_error": {
-        "key": "app.EstadoRecorrido.delete_error",
+        "key": "app.estado_recorrido.delete_error",
         "message": "Error al eliminar estado recorrido",
         "message_eng": "Error deleting estado recorrido",
         "status": 500

@@ -15,6 +15,10 @@ import { sequelize } from '.';
 import { EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
 import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
 import { EstadoEvento } from '@/estado-evento/enum';
+import { EstadoRecorridoEnum } from '@/estado-recorrido/enum';
+import { estadoRecorridoService } from '@/estado-recorrido/service';
+import { estadoReservaService } from '@/estado-reserva/service';
+import { EstadoReservaEnum } from '@/estado-reserva/enum';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
 
@@ -26,6 +30,15 @@ async function seed() {
     // ========================================
     // 1. CREAR ENTIDADES BÁSICAS
     // ========================================
+
+    // Estados de recorrido
+    await Promise.all(
+      Object.values(EstadoRecorridoEnum).map((nombre) =>
+        estadoRecorridoService.create({
+          nombre,
+        }),
+      ),
+    );
 
     // Create estados de evento
     await Promise.all(
@@ -603,13 +616,13 @@ async function seed() {
     // ========================================
 
     // Create all estado reserva - Comentado temporalmente
-    // const estadoReserva = await Promise.all(
-    //  Object.values(EstadoReserva).map(async (nombre) => {
-    //    return await estadoReservaService.create({
-    //      nombre,
-    //    });
-    //  }),
-    // );
+    await Promise.all(
+      Object.values(EstadoReservaEnum).map(async (nombre) => {
+        return await estadoReservaService.create({
+          nombre,
+        });
+      }),
+    );
 
     // eslint-disable-next-line no-console
     console.log('Database seeded successfully');

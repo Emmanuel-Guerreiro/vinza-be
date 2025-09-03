@@ -68,15 +68,24 @@ router.get(
  *     tags:
  *       - Reservas
  *     requestBody:
- *       required: false
+ *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
  *             properties:
- *               id:
- *                 type: string
- *                 example: "123"
+ *               cantidadGente:
+ *                 type: number
+ *                 description: Number of people for the reservation
+ *                 example: 4
+ *               instanciaEventoId:
+ *                 type: number
+ *                 description: ID of the event instance
+ *                 example: 15
+ *               recorridoId:
+ *                 type: number
+ *                 description: ID of the route (optional)
+ *                 example: 8
  *     responses:
  *       201:
  *         description: Reserva created successfully

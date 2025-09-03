@@ -38,12 +38,15 @@ export class ReservaController {
   }
 
   public create(req: Request, res: Response, next: NextFunction) {
-    createReservaSchema.parseAsync(req.body).then((dto) =>
-      this.reservaService
-        .create(dto)
-        .then((data) => res.json(data))
-        .catch((err) => next(err)),
-    );
+    createReservaSchema
+      .parseAsync({ ...req.body, userId: req.user })
+      .then((dto) =>
+        this.reservaService
+          .create(dto)
+          .then((data) => res.json(data))
+          .catch((err) => next(err)),
+      )
+      .catch((err) => next(err));
   }
 
   public update(req: Request, res: Response, next: NextFunction) {

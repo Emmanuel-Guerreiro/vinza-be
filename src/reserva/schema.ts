@@ -3,11 +3,10 @@ import { paginationAndOrderSchema } from '@/pagination/schemas';
 import { z } from 'zod';
 
 export const createReservaSchema = z.object({
-  userId: z.number(),
-  precio: z.number(),
-  cantidadGente: z.number(),
-  instanciaEventoId: z.number(),
-  recorridoId: z.number().optional(),
+  userId: z.coerce.number(),
+  cantidadGente: z.coerce.number(),
+  instanciaEventoId: z.coerce.number(),
+  recorridoId: z.coerce.number().optional(),
 });
 
 export const updateReservaSchema = z.object({

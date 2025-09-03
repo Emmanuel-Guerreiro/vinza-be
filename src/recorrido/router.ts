@@ -5,6 +5,7 @@ import logger from '@/logger';
 import { authMiddleware } from '@/auth/middleware';
 import { Permissions } from '@/rbac/permissions';
 import { requirePermissions } from '@/rbac/middleware';
+import { validateRecorrdidoOwnership } from './middleware';
 
 const controller = new RecorridoController(recorridoService);
 const router = Router();
@@ -22,7 +23,12 @@ const router = Router();
  *       500:
  *         description: Internal server error
  */
-router.get('', controller.getAll);
+router.get(
+  '',
+  authMiddleware,
+  requirePermissions([Permissions.RECORRIDO_READ]),
+  controller.getAll,
+);
 
 /**
  * @openapi
@@ -60,16 +66,6 @@ router.get(
  *     summary: Create a new recorrido
  *     tags:
  *       - Recorridos
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               id:
- *                 type: string
- *                 example: "123"
  *     responses:
  *       201:
  *         description: Recorrido created successfully
@@ -156,6 +152,38 @@ router.delete(
   authMiddleware,
   requirePermissions([Permissions.RECORRIDO_MANAGE]),
   controller.delete,
+);
+
+/**
+ * @openapi
+ * /recorrido/{id}/confirmar:
+ *   post:
+ *     summary: Confirm a recorrido by id
+ *     tags:
+ *       - Recorridos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the recorrido to confirm
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Recorrido confirmed successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Recorrido not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post(
+  '/:id/confirmar',
+  authMiddleware,
+  requirePermissions([Permissions.RECORRIDO_MANAGE]),
+  validateRecorrdidoOwnership,
+  controller.confirmar,
 );
 
 logger.debug('Recorridos router initialized');

@@ -1,5 +1,5 @@
 import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
-import { InstanciaEvento } from '@/instancia-evento';
+import { InstanciaEvento } from '@/instancia-evento/model';
 import { Recorrido } from '@/recorrido/model';
 import {
   BelongsTo,
@@ -34,11 +34,11 @@ export class Reserva extends Model<
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,
-    autoIncrement: false,
+    autoIncrement: true,
   })
   id!: number;
 
-  @Column({ type: DataType.INTEGER, allowNull: false })
+  @Column({ type: DataType.DECIMAL(10, 2), allowNull: false })
   precio!: number;
 
   @Column({ type: DataType.INTEGER, allowNull: false })

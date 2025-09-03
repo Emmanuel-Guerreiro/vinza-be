@@ -4,7 +4,7 @@ import { Evento } from '@/evento/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
 import { RecurrenciaEvento } from '@/evento/model';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
-import { EstadoInstanciaEvento as EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
+import { EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
 import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { InstanciaEvento } from './model';
 import {
@@ -207,10 +207,7 @@ class InstanciaEventoService {
       throw errors.app.instancia_evento.estado_not_found;
     }
 
-    await instancia.update(
-      { estadoId: estadoSuspendida.id },
-      { transaction },
-    );
+    await instancia.update({ estadoId: estadoSuspendida.id }, { transaction });
 
     // Retornar la instancia actualizada con todas las relaciones
     return await this.findOne(id, transaction);
@@ -233,10 +230,7 @@ class InstanciaEventoService {
       throw errors.app.instancia_evento.estado_not_found;
     }
 
-    await instancia.update(
-      { estadoId: estadoActiva.id },
-      { transaction },
-    );
+    await instancia.update({ estadoId: estadoActiva.id }, { transaction });
 
     // Retornar la instancia actualizada con todas las relaciones
     return await this.findOne(id, transaction);
@@ -246,7 +240,9 @@ class InstanciaEventoService {
    * Método principal para generar instancias de eventos automáticamente
    * basado en las recurrencias y la configuración de días máximos
    */
-  public async generarInstanciasAutomaticamente(): Promise<{ totalInstanciasCreadas: number }> {
+  public async generarInstanciasAutomaticamente(): Promise<{
+    totalInstanciasCreadas: number;
+  }> {
     const transaction = await sequelize.transaction();
     try {
       logger.info('Iniciando generación automática de instancias de eventos');
@@ -296,7 +292,10 @@ class InstanciaEventoService {
           );
           totalInstanciasCreadas += instanciasGeneradas.totalInstanciasCreadas;
         } catch (error) {
-          logger.error(`Error generando instancias para evento ${evento.id}:`, error);
+          logger.error(
+            `Error generando instancias para evento ${evento.id}:`,
+            error,
+          );
           // Continuar con el siguiente evento en caso de error
         }
       }
@@ -334,7 +333,7 @@ class InstanciaEventoService {
       // Usar fecha actual si fecha_desde está vacía o es anterior
       let fechaDesde = recurrencia.fecha_desde || new Date();
       const fechaActual = new Date();
-      
+
       if (fechaDesde < fechaActual) {
         fechaDesde = fechaActual;
       }
@@ -426,7 +425,7 @@ class InstanciaEventoService {
     recurrencia: RecurrenciaEvento,
     diasMaximos: number,
     transaction: Transaction,
-  ): Promise<number> {
+  ) {
     const fechaActual = new Date();
     const fechaLimite = new Date();
     fechaLimite.setDate(fechaLimite.getDate() + diasMaximos);
@@ -484,7 +483,7 @@ class InstanciaEventoService {
     // Generar instancias hasta alcanzar el límite de días máximos
     // Si fecha_hasta es null, solo usar fechaLimite
     // Si fecha_hasta tiene valor, usar el mínimo entre fechaLimite y fecha_hasta
-    const fechaFinal = fechaHasta 
+    const fechaFinal = fechaHasta
       ? new Date(Math.min(fechaLimite.getTime(), fechaHasta.getTime()))
       : fechaLimite;
 
@@ -551,7 +550,7 @@ class InstanciaEventoService {
     transaction?: Transaction,
   ): Promise<{ totalInstanciasCreadas: number }> {
     // Si no se proporciona transacción, crear una nueva
-    const useTransaction = transaction || await sequelize.transaction();
+    const useTransaction = transaction || (await sequelize.transaction());
     const shouldCommit = !transaction;
 
     try {
@@ -580,8 +579,8 @@ class InstanciaEventoService {
                 // Recurrencias con fecha_hasta en el futuro
                 { fecha_hasta: { [Op.gt]: new Date() } },
                 // Recurrencias sin fecha_hasta (tiempo ilimitado)
-                { fecha_hasta: null }
-              ]
+                { fecha_hasta: null },
+              ],
             },
             required: true,
           },
@@ -599,12 +598,13 @@ class InstanciaEventoService {
 
       let instanciasCreadas = 0;
 
-             for (const recurrencia of evento.recurrencias) {
-         // Verificar si es un evento único (fecha_desde = fecha_hasta y ambas no son null)
-         const esEventoUnico =
-           recurrencia.fecha_desde !== null && 
-           recurrencia.fecha_hasta !== null && 
-           recurrencia.fecha_desde.getTime() === recurrencia.fecha_hasta.getTime();
+      for (const recurrencia of evento.recurrencias) {
+        // Verificar si es un evento único (fecha_desde = fecha_hasta y ambas no son null)
+        const esEventoUnico =
+          recurrencia.fecha_desde !== null &&
+          recurrencia.fecha_hasta !== null &&
+          recurrencia.fecha_desde.getTime() ===
+            recurrencia.fecha_hasta.getTime();
 
         if (esEventoUnico) {
           // Evento único - crear una sola instancia
@@ -617,12 +617,13 @@ class InstanciaEventoService {
           if (instanciaCreada) instanciasCreadas++;
         } else {
           // Evento recurrente - generar múltiples instancias según el patrón
-          const instanciasGeneradas = await this.generarInstanciasParaRecurrencia(
-            evento,
-            recurrencia,
-            diasMaximos,
-            useTransaction,
-          );
+          const instanciasGeneradas =
+            await this.generarInstanciasParaRecurrencia(
+              evento,
+              recurrencia,
+              diasMaximos,
+              useTransaction,
+            );
           instanciasCreadas += instanciasGeneradas;
         }
       }

@@ -6,7 +6,7 @@ import { EstadoReserva } from '@/estado-reserva/model';
 import { estadoReservaService } from '@/estado-reserva/service';
 import { Evento } from '@/evento/model';
 import { eventoService } from '@/evento/service';
-import { InstanciaEvento } from '@/instancia-evento';
+import { InstanciaEvento } from '@/instancia-evento/model';
 import { Recorrido } from '@/recorrido/model';
 import { recorridoService } from '@/recorrido/service';
 import { Op, Transaction, WhereOptions } from 'sequelize';
@@ -30,7 +30,9 @@ class ReservaService {
         dto.instanciaEventoId,
         transaction,
       );
-      if (!evento) throw errors.app.evento.not_found;
+      if (!evento) {
+        throw errors.app.evento.not_found;
+      }
 
       const reservasConfirmadas =
         await reservaService.countConfirmadasByInstancia(
@@ -50,7 +52,9 @@ class ReservaService {
           transaction,
         );
         // Non valid recorridoId case
-        if (!recorrido) throw errors.app.recorrido.not_found;
+        if (!recorrido) {
+          throw errors.app.recorrido.not_found;
+        }
       } else {
         recorrido = await recorridoService.create(
           { userId: dto.userId },
@@ -72,10 +76,12 @@ class ReservaService {
         EstadoReservaEnum.PENDIENTE,
         transaction,
       );
-      if (!initialEstadoReserva)
+      if (!initialEstadoReserva) {
         throw errors.app.estadoReserva.estado_not_found;
-
-      await reserva.$set('estados', [initialEstadoReserva], { transaction });
+      }
+      await reserva.$set('estados', [initialEstadoReserva.id], {
+        transaction,
+      });
       await reserva.reload({ transaction });
 
       auditEmitter.emitEntry({
@@ -86,9 +92,63 @@ class ReservaService {
       await transaction.commit();
 
       return reserva;
-    } catch {
+    } catch (error) {
       await transaction.rollback();
+      logger.error(`Error creating reserva -> ${JSON.stringify(error)}`);
       throw errors.app.reserva.create_error;
+    }
+  }
+
+  public async confirmarReserva(id: number, t?: Transaction) {
+    const transaction = t || (await sequelize.transaction());
+    try {
+      const reserva = await this.findOne(id, transaction);
+      if (!reserva) throw errors.app.reserva.not_found;
+
+      if (reserva.estados?.[0].nombre !== EstadoReservaEnum.PENDIENTE) {
+        // No se puede confirmar una reserva que no está pendiente
+        throw errors.app.reserva.invalid_state;
+      }
+
+      const evento = await eventoService.findByInstanciaEvento(
+        reserva.instanciaEventoId,
+        transaction,
+      );
+      if (!evento) throw errors.app.evento.not_found;
+
+      const reservasConfirmadas =
+        await reservaService.countConfirmadasByInstancia(
+          reserva.instanciaEventoId,
+          transaction,
+        );
+
+      if (reserva.cantidadGente > evento.cupo - reservasConfirmadas) {
+        throw errors.app.reserva.cupos_not_enough;
+      }
+
+      const reservaEstadoConfirmada = await estadoReservaService.findByName(
+        EstadoReservaEnum.CONFIRMADA,
+        transaction,
+      );
+      if (!reservaEstadoConfirmada) {
+        throw errors.app.estadoReserva.estado_not_found;
+      }
+
+      await reserva.$set('estados', [reservaEstadoConfirmada.id], {
+        transaction,
+      });
+
+      auditEmitter.emitEntry({
+        tipoEvento: 'reserva:update',
+        valor: reserva.dataValues,
+      });
+
+      if (!t) await transaction.commit();
+      return reserva;
+    } catch (error) {
+      logger.error(`Error confirming reserva -> ${JSON.stringify(error)}`);
+      if (!t) await transaction.rollback();
+      throw error;
     }
   }
 
@@ -135,7 +195,7 @@ class ReservaService {
 
       // The cancel status is only to make the state machine history consistent
       // But for ease of use, we will not actually delete the reservation
-      await reserva.$set('estados', [estadoReserva], { transaction });
+      await reserva.$set('estados', [estadoReserva.id], { transaction });
       await reserva.destroy({ transaction });
 
       auditEmitter.emitEntry({
@@ -158,6 +218,22 @@ class ReservaService {
     const { limit, offset } = generatePaginationParams(filter);
 
     return Reserva.findAll({
+      include: [
+        {
+          model: EstadoReserva,
+          as: 'estados',
+        },
+        {
+          model: InstanciaEvento,
+          as: 'instanciaEvento',
+          include: [
+            {
+              model: Evento,
+              as: 'evento',
+            },
+          ],
+        },
+      ],
       where,
       order,
       limit,
@@ -172,6 +248,16 @@ class ReservaService {
         {
           model: EstadoReserva,
           as: 'estados',
+        },
+        {
+          model: InstanciaEvento,
+          as: 'instanciaEvento',
+          include: [
+            {
+              model: Evento,
+              as: 'evento',
+            },
+          ],
         },
       ],
     });
@@ -189,6 +275,7 @@ class ReservaService {
       ],
     });
   }
+
   public async findAllByRecorridoId(recorridoId: number) {
     return Reserva.findAll({
       where: { recorridoId: recorridoId },

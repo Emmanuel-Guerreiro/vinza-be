@@ -17,11 +17,12 @@ export interface RecorridoAttributes {
   deleted_at: Date | null;
   last_optimization: Date | null;
   userId: number;
+  id: number;
 }
 
 export type RecorridoCreationAttributes = Omit<
   RecorridoAttributes,
-  'created_at' | 'deleted_at' | 'last_optimization'
+  'created_at' | 'deleted_at' | 'last_optimization' | 'id'
 >;
 
 @Table({
