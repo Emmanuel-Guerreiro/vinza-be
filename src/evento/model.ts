@@ -136,19 +136,19 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
   @BelongsTo(() => CategoriaEvento)
   categoria?: CategoriaEvento;
 
-  @HasMany(() => RecurrenciaEvento)
+  @HasMany(() => RecurrenciaEvento, { onDelete: 'CASCADE' })
   recurrencias?: RecurrenciaEvento[];
 
-  @HasMany(() => Valoracion)
+  @HasMany(() => Valoracion, { onDelete: 'CASCADE' })
   valoraciones?: Valoracion[];
 
-  @HasMany(() => MultimediaEventos)
+  @HasMany(() => MultimediaEventos, { onDelete: 'CASCADE' })
   multimedia?: MultimediaEventos[];
 
-  @HasMany(() => ValoracionMedia)
+  @HasMany(() => ValoracionMedia, { onDelete: 'CASCADE' })
   valoracionMedia?: ValoracionMedia[];
 
-  @HasMany(() => InstanciaEvento)
+  @HasMany(() => InstanciaEvento, { onDelete: 'CASCADE' })
   instancias?: InstanciaEvento[];
 }
 
