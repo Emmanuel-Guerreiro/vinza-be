@@ -11,6 +11,32 @@ import { TipoMultimediaEnum } from './enum';
 import { Evento } from '@/evento/model';
 import { Bodega } from '@/bodega/model';
 
+@Table({
+  tableName: 'tipo_multimedia',
+  paranoid: true,
+  timestamps: true,
+  createdAt: 'created_at',
+  updatedAt: 'updated_at',
+  deletedAt: 'deleted_at',
+})
+export class TipoMultimedia extends Model {
+  @Column({
+    type: DataType.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  })
+  id!: number;
+
+  @Column({
+    type: DataType.ENUM(...Object.values(TipoMultimediaEnum)),
+    allowNull: false,
+  })
+  nombre!: TipoMultimediaEnum;
+
+  @HasMany(() => MultimediaEventos)
+  multimediaEventos!: MultimediaEventos[];
+}
+
 export interface MultimediaBodegasAttributes {
   id: number;
   url: string;
@@ -31,7 +57,6 @@ export type MultimediaBodegasCreationAttributes = Omit<
   | 'updated_at'
   | 'deleted_at'
   | 'bodega'
-  | 'bodegaId'
   | 'tipo'
   | 'tipoId'
 >;
@@ -55,8 +80,8 @@ export class MultimediaBodegas extends Model<
   })
   id!: number;
 
-  @Column({ type: DataType.INTEGER, allowNull: false })
-  url!: number;
+  @Column({ type: DataType.STRING, allowNull: false })
+  url!: string;
 
   @Column({ type: DataType.DATE })
   es_portada!: Date | null;
@@ -94,7 +119,6 @@ export type MultimediaEventosCreationAttributes = Omit<
   | 'updated_at'
   | 'deleted_at'
   | 'evento'
-  | 'eventoId'
   | 'tipo'
   | 'tipoId'
 >;
@@ -118,8 +142,8 @@ export class MultimediaEventos extends Model<
   })
   id!: number;
 
-  @Column({ type: DataType.INTEGER, allowNull: false })
-  url!: number;
+  @Column({ type: DataType.STRING, allowNull: false })
+  url!: string;
 
   @Column({ type: DataType.DATE })
   es_portada!: Date | null;
@@ -135,30 +159,4 @@ export class MultimediaEventos extends Model<
 
   @BelongsTo(() => Evento)
   evento!: Evento;
-}
-
-@Table({
-  tableName: 'tipo_multimedia',
-  paranoid: true,
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at',
-  deletedAt: 'deleted_at',
-})
-export class TipoMultimedia extends Model {
-  @Column({
-    type: DataType.INTEGER,
-    primaryKey: true,
-    autoIncrement: true,
-  })
-  id!: number;
-
-  @Column({
-    type: DataType.ENUM(...Object.values(TipoMultimediaEnum)),
-    allowNull: false,
-  })
-  nombre!: TipoMultimediaEnum;
-
-  @HasMany(() => MultimediaEventos)
-  multimediaEventos!: MultimediaEventos[];
 }

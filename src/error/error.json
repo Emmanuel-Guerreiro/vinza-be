@@ -94,6 +94,12 @@
         "message": "Bodega not found",
         "message_eng": "Bodega not found",
         "status": 404
+      },
+      "bodega_already_exists": {
+        "key": "app.bodega.bodega_already_exists",
+        "message": "Bodega already exists",
+        "message_eng": "Bodega already exists",
+        "status": 400
       }
     },
     "evento": {
@@ -206,8 +212,8 @@
       },
       "evento_not_found": {
         "key": "app.evento.not_found",
-        "message": "Evento not found",
-        "message_eng": "evento Reserva not found",
+        "message": "Evento reserva not found",
+        "message_eng": "evento reserva not found",
         "status": 404
       },
       "cupos_not_enough": {

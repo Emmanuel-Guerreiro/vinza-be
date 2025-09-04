@@ -42,7 +42,7 @@ export class StorageService {
 
     await this.client.send(command);
 
-    return `https://${this.bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    return `https://${this.bucket}.s3.${config.AWS_REGION}.amazonaws.com/${key}`;
   }
 }
 

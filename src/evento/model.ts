@@ -144,6 +144,7 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
 
   @HasMany(() => MultimediaEventos)
   multimedia?: MultimediaEventos[];
+
   @HasMany(() => ValoracionMedia)
   valoracionMedia?: ValoracionMedia[];
 

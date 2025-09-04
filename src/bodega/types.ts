@@ -1,8 +1,15 @@
 import { z } from 'zod';
 import { BodegaCreationAttributes } from './model';
-import { findAllParamsSchema } from './schema';
+import {
+  createBodegaWithMultimediaSchema,
+  findAllParamsSchema,
+} from './schema';
 
 export type CreateBodegaDto = BodegaCreationAttributes;
+
+export type CreateBodegaWithMultimediaDto = z.infer<
+  typeof createBodegaWithMultimediaSchema
+>;
 
 export type UpdateBodegaDto = Partial<CreateBodegaDto>;
 

@@ -9,7 +9,12 @@ import { Sucursal } from '@/sucursal/model';
 import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { sucursalService } from '@/sucursal/service';
 import { Evento } from './model';
-import { CreateEventoDto, FindAllParams, UpdateEventoDto } from './types';
+import {
+  CreateEventoDto,
+  CreateEventoWithMultimediaDto,
+  FindAllParams,
+  UpdateEventoDto,
+} from './types';
 import logger from '@/logger';
 import { PaginatedResponse } from '@/pagination/types';
 import {
@@ -22,10 +27,45 @@ import { instanciaEventoService } from '@/instancia-evento/service';
 import { InstanciaEvento } from '@/instancia-evento/model';
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { valoracionService } from '@/valoracion/service';
+import { multimediaService } from '@/multimedia/service';
+import { MultimediaEventos } from '@/multimedia/model';
 
 class EventoService {
-  public async create(dto: CreateEventoDto) {
+  public async createWithMultimedia(
+    dto: CreateEventoWithMultimediaDto,
+    files: Express.Multer.File[],
+  ) {
     const transaction = await sequelize.transaction();
+    try {
+      const { multimediaPortada, ...eventoDto } = dto;
+      const evento = await this.create(eventoDto, transaction, true);
+      if (files.length) {
+        await multimediaService.uploadMultipleFilesForEvento(
+          { files, portadaFileName: multimediaPortada, eventoId: evento.id },
+          transaction,
+        );
+      }
+
+      await transaction.commit();
+      auditEmitter.emitEntry({
+        tipoEvento: 'evento:create',
+        valor: evento.dataValues,
+      });
+      return evento;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('error', error);
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  public async create(
+    dto: CreateEventoDto,
+    t?: Transaction,
+    disableAudit: boolean = false,
+  ) {
+    const transaction = t || (await sequelize.transaction());
     try {
       // Validar datos del evento
       await this.validateEventoData(dto, transaction);
@@ -47,30 +87,33 @@ class EventoService {
 
       await valoracionService.initializeValoracionMedia(evento.id, transaction);
 
-      await transaction.commit();
+      // // Generar instancias automáticamente después de crear el evento
+      // try {
+      //   await instanciaEventoService.generarInstanciasParaEvento(evento.id);
+      //   logger.info(
+      //     `Instancias generadas automáticamente para evento ${evento.id}`,
+      //   );
+      // } catch (error) {
+      //   logger.error(
+      //     `Error generando instancias automáticamente para evento ${evento.id}:`,
+      //     error,
+      //   );
+      //   // No fallar la creación del evento si falla la generación de instancias
+      // }
 
-      // Generar instancias automáticamente después de crear el evento
-      try {
-        await instanciaEventoService.generarInstanciasParaEvento(evento.id);
-        logger.info(
-          `Instancias generadas automáticamente para evento ${evento.id}`,
-        );
-      } catch (error) {
-        logger.error(
-          `Error generando instancias automáticamente para evento ${evento.id}:`,
-          error,
-        );
-        // No fallar la creación del evento si falla la generación de instancias
+      const eventoCompleted = await this.findOne(evento.id, transaction);
+      if (!disableAudit) {
+        auditEmitter.emitEntry({
+          tipoEvento: 'evento:create',
+          valor: evento.dataValues,
+        });
       }
-
-      auditEmitter.emitEntry({
-        tipoEvento: 'evento:create',
-        valor: evento.dataValues,
-      });
-
-      return this.findOne(evento.id);
+      if (!t) {
+        await transaction.commit();
+      }
+      return eventoCompleted;
     } catch (error) {
-      await transaction.rollback();
+      if (!t) await transaction.rollback();
       throw error;
     }
   }
@@ -89,6 +132,9 @@ class EventoService {
       limit,
       offset,
       include: [
+        {
+          model: MultimediaEventos,
+        },
         {
           model: CategoriaEvento,
           where: params.categoriaId ? { id: params.categoriaId } : undefined,
@@ -132,7 +178,7 @@ class EventoService {
     };
   }
 
-  public async findOne(id: number) {
+  public async findOne(id: number, transaction?: Transaction) {
     const evento = await Evento.findByPk(id, {
       include: [
         {
@@ -158,8 +204,13 @@ class EventoService {
         {
           model: InstanciaEvento,
         },
+        {
+          model: MultimediaEventos,
+        },
       ],
+      transaction,
     });
+
     if (!evento) throw errors.app.evento.not_found;
 
     return evento;
@@ -427,36 +478,6 @@ class EventoService {
     if (dto.sucursalId) {
       const sucursal = await sucursalService.findOne(dto.sucursalId);
       if (!sucursal) throw errors.app.sucursal.not_found;
-    }
-
-    // Validar que el nombre no esté duplicado en la misma bodega (solo para create)
-    if (
-      'nombre' in dto &&
-      dto.nombre &&
-      'sucursalId' in dto &&
-      dto.sucursalId
-    ) {
-      const existingEvento = await Evento.findOne({
-        where: {
-          nombre: dto.nombre,
-          sucursalId: dto.sucursalId,
-        },
-        include: [
-          {
-            model: Sucursal,
-            include: [
-              {
-                model: Bodega,
-              },
-            ],
-          },
-        ],
-        transaction,
-      });
-
-      if (existingEvento) {
-        throw errors.app.evento.nombre_duplicate;
-      }
     }
   }
 }

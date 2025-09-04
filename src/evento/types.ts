@@ -2,11 +2,17 @@ import { z } from 'zod';
 import { DiaSemana, HoraEvento } from './model';
 import {
   createEventoSchema,
+  createEventoWithMultimediaSchema,
   findAllParamsSchema,
   updateEventoSchema,
 } from './schema';
 
 export type CreateEventoDto = z.infer<typeof createEventoSchema>;
+
+export type CreateEventoWithMultimediaDto = z.infer<
+  typeof createEventoWithMultimediaSchema
+>;
+
 export type UpdateEventoDto = z.infer<typeof updateEventoSchema>;
 export type FindAllParams = z.infer<typeof findAllParamsSchema>;
 

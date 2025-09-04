@@ -10,9 +10,41 @@ import {
   instanciaEventoAuthMiddleware,
 } from './middleware';
 import logger from '@/logger';
+import multer from 'multer';
 
 const controller = new EventoController(eventoService);
 const router = Router();
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit per file
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow images and videos
+    const allowedMimes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'video/mp4',
+      'video/webm',
+      'video/quicktime',
+    ];
+
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error(
+          'Tipo de archivo no permitido. Solo se permiten imágenes y videos.',
+        ),
+      );
+    }
+  },
+});
 
 /**
  * @openapi
@@ -212,112 +244,65 @@ router.get(
  *     - bearerAuth: []
  *   post:
  *     summary: Create an evento [EVENTOS_MANAGE]
- *     description: Create a new evento with recurrences. Requires EVENTOS_MANAGE permission.
+ *     description: Create a new evento with recurrences and multimedia files. Requires EVENTOS_MANAGE permission.
  *     tags:
  *       - Eventos
  *     requestBody:
- *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
  *               nombre:
  *                 type: string
  *                 description: Nombre del evento
- *                 required: true
  *                 example: "Charla de tecnología"
  *               descripcion:
  *                 type: string
  *                 description: Descripción del evento
- *                 required: true
  *                 example: "Evento sobre nuevas tecnologías."
  *               cupo:
- *                 type: number
+ *                 type: string
  *                 description: Cupo del evento debe ser un número mayor a 0
- *                 required: true
- *                 example: 50
+ *                 example: "50"
  *               sucursalId:
- *                 type: number
+ *                 type: string
  *                 description: ID de la sucursal a la que pertenece
- *                 required: true
- *                 example: 1
+ *                 example: "1"
  *               estadoId:
- *                 type: number
+ *                 type: string
  *                 description: ID del estado del evento
- *                 required: false
- *                 example: 1
+ *                 example: "1"
  *               categoriaId:
- *                 type: number
+ *                 type: string
  *                 description: ID de la categoría del evento
- *                 required: false
- *                 example: 1
+ *                 example: "1"
  *               precio:
- *                 type: number
+ *                 type: string
  *                 description: Precio del evento
- *                 required: true
- *                 example: 25.50
+ *                 example: "25.50"
  *               recurrencias:
+ *                 type: string
+ *                 description: JSON string con array de recurrencias del evento mínimo 1 recurrencia
+ *                 example: '[{"dia":"Lunes","hora":"18:00","fecha_desde":"2026-01-01","fecha_hasta":"2026-12-31"}]'
+ *               multimediaPortada:
+ *                 type: string
+ *                 description: Nombre del archivo multimedia que será la portada del evento
+ *                 example: "portada.jpg"
+ *               multimedia:
  *                 type: array
- *                 description: Array de recurrencias del evento mínimo 1 recurrencia
- *                 required: true
- *                 minItems: 1
+ *                 description: Array de archivos multimedia (imágenes y videos)
  *                 items:
- *                   type: object
- *                   properties:
- *                     dia:
- *                       type: string
- *                       description: Día de la semana Lunes Martes Miércoles Jueves Viernes Sábado Domingo
- *                       enum: ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
- *                       example: "Lunes"
- *                     hora:
- *                       type: string
- *                       description: Hora del evento formato HH:MM desde 08:00 hasta 23:30
- *                       enum: ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30"]
- *                       example: "18:00"
- *                     fecha_desde:
- *                       type: string
- *                       format: date
- *                       description: Fecha desde la cual comienza la recurrencia
- *                       example: "2026-01-01"
- *                     fecha_hasta:
- *                       type: string
- *                       format: date
- *                       description: Fecha hasta la cual termina la recurrencia
- *                       example: "2026-12-31"
+ *                   type: string
+ *                   format: binary
+ *                 maxItems: 10
  *     responses:
  *       201:
  *         description: Evento created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: number
- *                 nombre:
- *                   type: string
- *                 descripcion:
- *                   type: string
- *                 cupo:
- *                   type: number
- *                 precio:
- *                   type: number
- *                 sucursalId:
- *                   type: number
- *                 estadoId:
- *                   type: number
- *                 categoriaId:
- *                   type: number
- *                 createdAt:
- *                   type: string
- *                   format: date-time
- *       401:
- *         description: Unauthorized - Invalid or missing token
- *       403:
- *         description: Forbidden - Insufficient permissions. EVENTOS_MANAGE required.
  *       400:
- *         description: Bad request
+ *         description: Bad request - Invalid form data or file validation failed
+ *       413:
+ *         description: Payload too large - File size exceeds limit
  *       500:
  *         description: Internal server error
  */
@@ -325,6 +310,7 @@ router.post(
   '',
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),
+  upload.array('multimedia', 10), // Handle up to 10 multimedia files
   sucursalAuthMiddleware,
   controller.create,
 );

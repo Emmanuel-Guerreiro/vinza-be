@@ -3,19 +3,61 @@ import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { sucursalService } from '@/sucursal/service';
 import { Bodega } from './model';
-import { CreateBodegaDto, FindAllParams, UpdateBodegaDto } from './types';
+import {
+  CreateBodegaDto,
+  CreateBodegaWithMultimediaDto,
+  FindAllParams,
+  UpdateBodegaDto,
+} from './types';
 import logger from '@/logger';
 import { PaginatedResponse } from '@/pagination/types';
 import {
   generatePaginationParams,
   generateOrderConditions,
 } from '@/pagination';
-import { Op, WhereOptions } from 'sequelize';
+import { Op, Transaction, WhereOptions } from 'sequelize';
 import { Sucursal } from '@/sucursal/model';
+import { multimediaService } from '@/multimedia/service';
+import { MultimediaBodegas } from '@/multimedia/model';
 
 class BodegaService {
-  public async create(dto: CreateBodegaDto) {
+  public async createWithMultimedia(
+    dto: CreateBodegaWithMultimediaDto,
+    files: Express.Multer.File[],
+  ) {
     const transaction = await sequelize.transaction();
+    try {
+      const bodega = await this.create(dto, true, transaction);
+      if (files.length) {
+        await multimediaService.uploadMultipleFilesForBodega(
+          {
+            files,
+            portadaFileName: dto.multimediaPortada,
+            bodegaId: bodega.id,
+          },
+          transaction,
+        );
+      }
+
+      await transaction.commit();
+
+      auditEmitter.emitEntry({
+        tipoEvento: 'bodega:create',
+        valor: bodega.dataValues,
+      });
+      return bodega;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  public async create(
+    dto: CreateBodegaDto,
+    disableAudit: boolean = false,
+    t?: Transaction,
+  ) {
+    const transaction = t || (await sequelize.transaction());
     try {
       const bodega = await Bodega.create(dto, { transaction });
       // Create the first sucursal as main
@@ -29,15 +71,17 @@ class BodegaService {
         transaction,
       );
 
-      await transaction.commit();
-
-      auditEmitter.emitEntry({
-        tipoEvento: 'bodega:create',
-        valor: bodega.dataValues,
-      });
-      return bodega;
+      if (!disableAudit) {
+        auditEmitter.emitEntry({
+          tipoEvento: 'bodega:create',
+          valor: bodega.dataValues,
+        });
+      }
+      const bodegaCompleted = await this.findOne(bodega.id, transaction);
+      if (!t) await transaction.commit();
+      return bodegaCompleted;
     } catch (error) {
-      await transaction.rollback();
+      if (!t) await transaction.rollback();
       throw error;
     }
   }
@@ -57,6 +101,11 @@ class BodegaService {
         order,
         limit,
         offset,
+        include: [
+          {
+            model: MultimediaBodegas,
+          },
+        ],
       }),
     ]);
 
@@ -66,13 +115,17 @@ class BodegaService {
     };
   }
 
-  public async findOne(id: number) {
+  public async findOne(id: number, transaction?: Transaction) {
     const bodega = await Bodega.findByPk(id, {
       include: [
         {
           model: Sucursal,
         },
+        {
+          model: MultimediaBodegas,
+        },
       ],
+      transaction,
     });
     if (!bodega) {
       throw errors.app.bodega.not_found;

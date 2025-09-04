@@ -11,6 +11,10 @@ export const createBodegaSchema = z.object({
   descripcion: z.string(),
 });
 
+export const createBodegaWithMultimediaSchema = createBodegaSchema.extend({
+  multimediaPortada: z.string().optional(),
+});
+
 const bodegaOrderByAttributes = [
   'id',
   'nombre',

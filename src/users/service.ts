@@ -6,6 +6,7 @@ import { Permiso, Rol } from '@/rbac/model';
 import { Op, Transaction } from 'sequelize';
 import { User } from './model';
 import { CreateUserDto, UpdateUserDto } from './types';
+import { Bodega } from '@/bodega/model';
 
 class UsersService {
   public async create(dto: CreateUserDto) {
@@ -66,6 +67,14 @@ class UsersService {
       logger.debug(`User not found with id ${id}`);
       throw errors.app.user.not_found;
     }
+    return user;
+  }
+
+  public async findWithBodega(id: number, transaction?: Transaction) {
+    const user = await User.findByPk(id, {
+      transaction,
+      include: [{ model: Bodega }],
+    });
     return user;
   }
 

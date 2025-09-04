@@ -54,14 +54,18 @@ const recurrenciaSchema = z
 export const createEventoSchema = z.object({
   nombre: z.string().min(1, 'El nombre no puede estar vacío'),
   descripcion: z.string().min(1, 'La descripción no puede estar vacía'),
-  cupo: z.number().positive('El cupo debe ser un número mayor a 0'),
-  sucursalId: z.number(),
-  estadoId: z.number().optional(),
-  categoriaId: z.number().optional(),
-  precio: z.number().positive('El precio debe ser un número mayor a 0'),
+  cupo: z.coerce.number().positive('El cupo debe ser un número mayor a 0'),
+  sucursalId: z.coerce.number(),
+  estadoId: z.coerce.number().optional(),
+  categoriaId: z.coerce.number().optional(),
+  precio: z.coerce.number().positive('El precio debe ser un número mayor a 0'),
   recurrencias: z
     .array(recurrenciaSchema)
     .min(1, 'Debe proporcionar al menos una recurrencia para el evento'),
+});
+
+export const createEventoWithMultimediaSchema = createEventoSchema.extend({
+  multimediaPortada: z.string().optional(), // If present, will match the name of the file to make it portada
 });
 
 export const updateEventoSchema = z.object({
@@ -70,11 +74,14 @@ export const updateEventoSchema = z.object({
     .string()
     .min(1, 'La descripción no puede estar vacía')
     .optional(),
-  cupo: z.number().positive('El cupo debe ser un número mayor a 0').optional(),
-  sucursalId: z.number().optional(),
-  estadoId: z.number().optional(),
-  categoriaId: z.number().optional(),
-  precio: z
+  cupo: z.coerce
+    .number()
+    .positive('El cupo debe ser un número mayor a 0')
+    .optional(),
+  sucursalId: z.coerce.number().optional(),
+  estadoId: z.coerce.number().optional(),
+  categoriaId: z.coerce.number().optional(),
+  precio: z.coerce
     .number()
     .positive('El precio debe ser un número mayor a 0')
     .optional(),

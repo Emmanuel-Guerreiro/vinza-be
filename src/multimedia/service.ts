@@ -1,42 +1,76 @@
 import { IStorageService, storageService } from '@/storage/service';
-import { CreateMultimediaFromFileSchema } from './schema';
 import { MultimediaBodegas, MultimediaEventos } from './model';
-import { MultimediaTargetEnum } from './enum';
+import { Transaction } from 'sequelize';
 
 export class MultimediaService {
   constructor(private readonly storageService: IStorageService) {}
 
-  public async uploadFile(
-    file: Express.Multer.File,
-    dto: CreateMultimediaFromFileSchema,
+  public async uploadMultipleFilesForEvento(
+    {
+      files,
+      eventoId,
+      portadaFileName,
+    }: {
+      files: Express.Multer.File[];
+      eventoId: number;
+      portadaFileName?: string | null;
+    },
+    transaction?: Transaction,
   ) {
-    const { buffer, originalname, mimetype } = file;
-    const url = await this.storageService.createItem(
-      originalname,
-      buffer,
-      mimetype,
-    );
+    const uploadPromises = files.map(async (file) => {
+      const { buffer, originalname, mimetype } = file;
+      const parsedName = originalname.replace(/ /g, '_');
+      const url = await this.storageService.createItem(
+        parsedName + '-' + Date.now(),
+        buffer,
+        mimetype,
+      );
 
-    let createdMultimedia: MultimediaBodegas | MultimediaEventos;
-    switch (dto.multimediaTarget) {
-      case MultimediaTargetEnum.BODEDEA:
-        createdMultimedia = await MultimediaBodegas.create({
+      return MultimediaEventos.create(
+        {
           url,
-          es_portada: dto.es_portada ? new Date() : null,
-        });
-        break;
-      case MultimediaTargetEnum.EVENTO:
-        createdMultimedia = await MultimediaEventos.create({
-          url,
-          es_portada: dto.es_portada ? new Date() : null,
-        });
-        break;
-    }
+          es_portada: portadaFileName === originalname ? new Date() : null,
+          eventoId,
+        },
+        { transaction },
+      );
+    });
 
-    return {
-      ...createdMultimedia.dataValues,
-      target: dto.multimediaTarget,
-    };
+    return await Promise.all(uploadPromises);
+  }
+
+  public async uploadMultipleFilesForBodega(
+    {
+      files,
+      bodegaId,
+      portadaFileName,
+    }: {
+      files: Express.Multer.File[];
+      bodegaId: number;
+      portadaFileName?: string | null;
+    },
+    transaction?: Transaction,
+  ) {
+    const uploadPromises = files.map(async (file) => {
+      const { buffer, originalname, mimetype } = file;
+      const parsedName = originalname.replace(/ /g, '_');
+      const url = await this.storageService.createItem(
+        parsedName + '-' + Date.now(),
+        buffer,
+        mimetype,
+      );
+
+      return MultimediaBodegas.create(
+        {
+          url,
+          es_portada: portadaFileName === originalname ? new Date() : null,
+          bodegaId,
+        },
+        { transaction },
+      );
+    });
+
+    return await Promise.all(uploadPromises);
   }
 }
 
