@@ -25,3 +25,7 @@ export const findAllParamsSchema = paginationAndOrderSchema(
 ).extend({
   nombre: z.string().optional(),
 });
+
+export const validateBodegaSchema = z.object({
+  es_valida: z.boolean(),
+});

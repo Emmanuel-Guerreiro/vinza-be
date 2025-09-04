@@ -3,7 +3,12 @@ import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { sucursalService } from '@/sucursal/service';
 import { Bodega } from './model';
-import { CreateBodegaDto, FindAllParams, UpdateBodegaDto } from './types';
+import {
+  CreateBodegaDto,
+  FindAllParams,
+  UpdateBodegaDto,
+  ValidateBodegaDto,
+} from './types';
 import logger from '@/logger';
 import { PaginatedResponse } from '@/pagination/types';
 import {
@@ -115,6 +120,15 @@ class BodegaService {
       tipoEvento: 'bodega:delete',
       valor: bodega.dataValues,
     });
+    return bodega;
+  }
+
+  public async validate(id: number, dto: ValidateBodegaDto) {
+    const bodega = await Bodega.findByPk(id);
+    if (!bodega) {
+      throw errors.app.bodega.not_found;
+    }
+    await bodega.update({ validada: dto.es_valida ? new Date() : null });
     return bodega;
   }
 

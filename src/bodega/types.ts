@@ -1,9 +1,11 @@
 import { z } from 'zod';
 import { BodegaCreationAttributes } from './model';
-import { findAllParamsSchema } from './schema';
+import { findAllParamsSchema, validateBodegaSchema } from './schema';
 
 export type CreateBodegaDto = BodegaCreationAttributes;
 
 export type UpdateBodegaDto = Partial<CreateBodegaDto>;
 
 export type FindAllParams = z.infer<typeof findAllParamsSchema>;
+
+export type ValidateBodegaDto = z.infer<typeof validateBodegaSchema>;

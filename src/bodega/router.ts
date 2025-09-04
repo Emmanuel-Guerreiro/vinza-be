@@ -2,6 +2,9 @@ import { Router } from 'express';
 import { BodegaController } from './controller';
 import { bodegaService } from './service';
 import logger from '@/logger';
+import { authMiddleware } from '@/auth/middleware';
+import { requirePermissions } from '@/rbac/middleware';
+import { Permissions } from '@/rbac/permissions';
 
 const controller = new BodegaController(bodegaService);
 const router = Router();
@@ -157,6 +160,45 @@ router.put('/:id', controller.update);
  *         description: Internal server error
  */
 router.delete('/:id', controller.delete);
+
+/**
+ * @openapi
+ * /bodegas/{id}/validate:
+ *   post:
+ *     summary: Validate a bodega
+ *     tags:
+ *       - Bodegas
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the bodega
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               es_valida:
+ *                 type: boolean
+ *                 description: Whether the bodega is valid
+ *                 required: true
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Bodega validated successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.post(
+  '/:id/validate',
+  authMiddleware,
+  requirePermissions([Permissions.BODEGAS_VALIDATE]),
+  controller.validate,
+);
 
 logger.debug('Bodega router initialized');
 
