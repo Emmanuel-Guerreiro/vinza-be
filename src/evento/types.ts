@@ -13,7 +13,9 @@ export type CreateEventoWithMultimediaDto = z.infer<
   typeof createEventoWithMultimediaSchema
 >;
 
-export type UpdateEventoDto = z.infer<typeof updateEventoSchema>;
+export type UpdateEventoDto = z.infer<typeof updateEventoSchema> & {
+  addMultimedia?: Express.Multer.File[];
+};
 export type FindAllParams = z.infer<typeof findAllParamsSchema>;
 
 export type RecurrenciaDto = {

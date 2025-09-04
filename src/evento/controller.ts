@@ -50,12 +50,28 @@ export class EventoController {
     }
   }
 
-  public update(req: Request, res: Response, next: NextFunction) {
-    const dto = updateEventoSchema.parse(req.body);
-    this.eventoService
-      .update(+req.params.id, dto)
-      .then((data) => res.json(data))
-      .catch((err) => next(err));
+  public async update(req: Request, res: Response, next: NextFunction) {
+    try {
+      const dto = updateEventoSchema.parse({
+        ...req.body,
+        // Parse JSON fields from form data
+        recurrencias: req.body.recurrencias
+          ? JSON.parse(req.body.recurrencias)
+          : undefined,
+        removeMultimedia: req.body.removeMultimedia
+          ? JSON.parse(req.body.removeMultimedia)
+          : undefined,
+      });
+      const files = req.files as Express.Multer.File[];
+      // Update the evento
+      const evento = await this.eventoService.update(+req.params.id, {
+        ...dto,
+        addMultimedia: files ?? [],
+      });
+      res.json(evento);
+    } catch (err) {
+      next(err);
+    }
   }
 
   public delete(req: Request, res: Response) {

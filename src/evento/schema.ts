@@ -89,6 +89,8 @@ export const updateEventoSchema = z.object({
     .array(recurrenciaSchema)
     .min(1, 'Debe proporcionar al menos una recurrencia para el evento')
     .optional(),
+  removeMultimedia: z.array(z.number()).optional(),
+  multimediaPortada: z.string().optional(),
 });
 
 // Valid attributes from the Evento model for ordering

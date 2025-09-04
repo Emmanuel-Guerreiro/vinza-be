@@ -224,9 +224,15 @@ class EventoService {
 
       // Validar datos del evento
       await this.validateEventoData(dto, transaction);
+      const {
+        recurrencias,
+        addMultimedia,
+        removeMultimedia,
+        multimediaPortada,
+        ...eventoData
+      } = dto;
 
-      // Manejar recurrencias si se proporcionan
-      if (dto.recurrencias !== undefined) {
+      if (recurrencias !== undefined) {
         // Eliminar recurrencias existentes
         await RecurrenciaEvento.destroy({
           where: { eventoId: id },
@@ -234,8 +240,8 @@ class EventoService {
         });
 
         // Crear nuevas recurrencias si se proporcionan
-        if (dto.recurrencias.length > 0) {
-          const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
+        if (recurrencias.length > 0) {
+          const recurrenciasData = recurrencias.map((recurrencia) => ({
             ...recurrencia,
             eventoId: id,
           }));
@@ -244,14 +250,20 @@ class EventoService {
         }
       }
 
-      // Filtrar campos que no pertenecen al modelo Evento
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { recurrencias, ...eventoData } = dto;
+      if (addMultimedia || removeMultimedia || multimediaPortada) {
+        await multimediaService.updateMultimediaForEvento(
+          {
+            files: addMultimedia || [],
+            eventoId: id,
+            portadaFileName: multimediaPortada,
+            removeMultimediaIds: removeMultimedia,
+          },
+          transaction,
+        );
+      }
 
-      // Actualizar el evento usando la transacción
       await evento.update(eventoData, { transaction });
 
-      // Recargar el evento para obtener los datos actualizados
       await evento.reload({ transaction });
 
       await transaction.commit();
