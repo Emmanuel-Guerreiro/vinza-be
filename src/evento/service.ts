@@ -9,12 +9,7 @@ import { Sucursal } from '@/sucursal/model';
 import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { sucursalService } from '@/sucursal/service';
 import { Evento } from './model';
-import {
-  CreateEventoDto,
-  FindAllParams,
-  UpdateEventoDto,
-  EventoWithRating,
-} from './types';
+import { CreateEventoDto, FindAllParams, UpdateEventoDto } from './types';
 import logger from '@/logger';
 import { PaginatedResponse } from '@/pagination/types';
 import {
@@ -25,7 +20,8 @@ import { RecurrenciaEvento } from './model';
 import { Bodega } from '@/bodega/model';
 import { instanciaEventoService } from '@/instancia-evento/service';
 import { InstanciaEvento } from '@/instancia-evento/model';
-import { Valoracion } from '@/valoracion/model';
+import { Valoracion, ValoracionMedia } from '@/valoracion/model';
+import { valoracionService } from '@/valoracion/service';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
@@ -39,7 +35,7 @@ class EventoService {
         throw errors.app.evento.recurrencias_required;
       }
 
-      let evento = await Evento.create(dto, { transaction });
+      const evento = await Evento.create(dto, { transaction });
 
       // Crear las recurrencias obligatorias
       const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
@@ -49,7 +45,7 @@ class EventoService {
 
       await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
 
-      evento = await evento.save({ transaction, returning: true });
+      await valoracionService.initializeValoracionMedia(evento.id, transaction);
 
       await transaction.commit();
 
@@ -72,7 +68,7 @@ class EventoService {
         valor: evento.dataValues,
       });
 
-      return evento;
+      return this.findOne(evento.id);
     } catch (error) {
       await transaction.rollback();
       throw error;
@@ -81,31 +77,17 @@ class EventoService {
 
   public async findAll(
     params: FindAllParams,
-  ): Promise<PaginatedResponse<EventoWithRating>> {
+  ): Promise<PaginatedResponse<Evento>> {
     logger.debug(`evento findAll params ${JSON.stringify(params)}`);
     const where = this.generateWhereConditions(params);
     const order = generateOrderConditions(params);
     const { limit, offset } = generatePaginationParams(params);
 
-    // Build the query with potential rating filter
     const queryOptions: FindOptions = {
       where,
       order,
       limit,
       offset,
-      attributes: {
-        include: [
-          [
-            sequelize.literal(`(
-              SELECT COALESCE(AVG(v.valor), 0)
-              FROM valoraciones v
-              WHERE v."eventoId" = "Evento".id
-              AND v.deleted_at IS NULL
-            )`),
-            'promedioValoracion',
-          ],
-        ],
-      },
       include: [
         {
           model: CategoriaEvento,
@@ -125,28 +107,23 @@ class EventoService {
         {
           model: RecurrenciaEvento,
         },
+        {
+          model: ValoracionMedia,
+          where: params.puntuacionMinima
+            ? {
+                valor_medio: {
+                  [Op.gte]: params.puntuacionMinima,
+                },
+              }
+            : undefined,
+          required: !!params.puntuacionMinima,
+        },
       ],
     };
 
-    // Add rating filter using a subquery in WHERE clause if specified
-    if (params.puntuacionMinima) {
-      const existingWhere = queryOptions.where || {};
-      queryOptions.where = {
-        [Op.and]: [
-          existingWhere,
-          sequelize.literal(`(
-            SELECT COALESCE(AVG(v.valor), 0)
-            FROM valoraciones v
-            WHERE v."eventoId" = "Evento".id
-            AND v.deleted_at IS NULL
-          ) >= ${params.puntuacionMinima}`),
-        ],
-      };
-    }
-
     const [meta, items] = await Promise.all([
-      this.getCountAndMetadata(params, where, limit),
-      Evento.findAll(queryOptions) as Promise<EventoWithRating[]>,
+      this.getCountAndMetadata(queryOptions, params.page, limit),
+      Evento.findAll(queryOptions),
     ]);
 
     return {
@@ -155,21 +132,8 @@ class EventoService {
     };
   }
 
-  public async findOne(id: number): Promise<EventoWithRating> {
-    const evento = (await Evento.findByPk(id, {
-      attributes: {
-        include: [
-          [
-            sequelize.literal(`(
-              SELECT COALESCE(AVG(v.valor), 0)
-              FROM valoraciones v
-              WHERE v."eventoId" = "Evento".id
-              AND v.deleted_at IS NULL
-            )`),
-            'promedioValoracion',
-          ],
-        ],
-      },
+  public async findOne(id: number) {
+    const evento = await Evento.findByPk(id, {
       include: [
         {
           model: CategoriaEvento,
@@ -188,9 +152,14 @@ class EventoService {
         {
           model: RecurrenciaEvento,
         },
-        // TODO: Add the relation with instancia-evento
+        {
+          model: ValoracionMedia,
+        },
+        {
+          model: InstanciaEvento,
+        },
       ],
-    })) as EventoWithRating | null;
+    });
     if (!evento) throw errors.app.evento.not_found;
 
     return evento;
@@ -294,7 +263,7 @@ class EventoService {
    * - Fechas bien implementado
    */
   private generateWhereConditions(params: FindAllParams): WhereOptions {
-    const where: WhereOptions = {};
+    const where: WhereOptions<Evento> = {};
 
     if (params.sucursalId) {
       where.sucursalId = params.sucursalId;
@@ -302,7 +271,7 @@ class EventoService {
 
     // Es horrible pero funciona
     if (params.fechaDesde && params.fechaHasta) {
-      where.created_at = {
+      where.createdAt = {
         [Op.and]: [
           {
             [Op.gte]: params.fechaDesde,
@@ -315,13 +284,13 @@ class EventoService {
     }
 
     if (params.fechaDesde && !params.fechaHasta) {
-      where.created_at = {
+      where.createdAt = {
         [Op.gte]: params.fechaDesde,
       };
     }
 
     if (params.fechaHasta && !params.fechaDesde) {
-      where.created_at = {
+      where.createdAt = {
         [Op.lte]: params.fechaHasta,
       };
     }
@@ -345,64 +314,16 @@ class EventoService {
    * Get total count of items and generate complete pagination metadata
    */
   private async getCountAndMetadata(
-    params: FindAllParams,
-    where: WhereOptions,
+    queryOptions: FindOptions,
+    page: number,
     limit: number,
   ) {
-    let countQuery: FindOptions = {
-      where,
-      include: [
-        {
-          model: CategoriaEvento,
-          where: params.categoriaId ? { id: params.categoriaId } : undefined,
-          required: !!params.categoriaId,
-        },
-        {
-          model: EstadoEvento,
-          where: params.estadoId ? { id: params.estadoId } : undefined,
-          required: !!params.estadoId,
-        },
-        {
-          model: Sucursal,
-          where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
-          required: !!params.bodegaId,
-        },
-      ],
-    };
-
-    // If rating filter is applied, we need to use a different approach for counting
-    if (params.puntuacionMinima) {
-      // For rating filtering, we'll use a simpler approach by counting all events first
-      // and then applying the rating filter in the main query
-      // This is less efficient but avoids complex SQL generation issues
-      countQuery = {
-        where,
-        include: [
-          {
-            model: CategoriaEvento,
-            where: params.categoriaId ? { id: params.categoriaId } : undefined,
-            required: !!params.categoriaId,
-          },
-          {
-            model: EstadoEvento,
-            where: params.estadoId ? { id: params.estadoId } : undefined,
-            required: !!params.estadoId,
-          },
-          {
-            model: Sucursal,
-            where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
-            required: !!params.bodegaId,
-          },
-        ],
-      };
-    }
-
-    const totalItems = await Evento.count(countQuery);
+    const totalItems = await Evento.count(queryOptions);
 
     return {
       totalItems,
       totalPages: Math.ceil(totalItems / limit),
-      currentPage: params.page || 1,
+      currentPage: page || 1,
       itemsPerPage: limit,
     };
   }

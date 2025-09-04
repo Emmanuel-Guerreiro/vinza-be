@@ -11,7 +11,7 @@ import { EstadoEvento, HEstadoEvento } from '@/estado-evento/model';
 import { Evento } from '@/evento/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
 import { HCategoriaEvento } from '@/categoria-evento/model';
-import { Valoracion } from '@/valoracion/model';
+import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
 import { RecurrenciaEvento } from '@/evento/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
@@ -49,6 +49,7 @@ export const sequelize = new Sequelize({
     CategoriaEvento,
     HCategoriaEvento,
     Valoracion,
+    ValoracionMedia,
     CodigoRecuperarContra,
     MaximosDiasAdelanteReserva,
     RecurrenciaEvento,

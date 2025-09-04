@@ -11,7 +11,7 @@ import { Sucursal } from '@/sucursal/model';
 import { EstadoEvento } from '@/estado-evento/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
 
-import { Valoracion } from '@/valoracion/model';
+import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
 
 // Enums para recurrencia de eventos
@@ -71,11 +71,20 @@ export interface EventoAttributes {
   categoriaId?: number;
   recurrencias?: RecurrenciaEvento[];
   instancias?: InstanciaEvento[];
+  valoracionMedia?: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
 }
 
 export type EventoCreationAttributes = Omit<
   EventoAttributes,
-  'id' | 'recurrencias'
+  | 'id'
+  | 'recurrencias'
+  | 'valoracionMedia'
+  | 'created_at'
+  | 'updated_at'
+  | 'deleted_at'
 >;
 
 @Table({
@@ -131,6 +140,9 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
 
   @HasMany(() => Valoracion)
   valoraciones?: Valoracion[];
+
+  @HasMany(() => ValoracionMedia)
+  valoracionMedia?: ValoracionMedia[];
 
   @HasMany(() => InstanciaEvento)
   instancias?: InstanciaEvento[];

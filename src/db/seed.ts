@@ -4,23 +4,23 @@ import { hashPassword } from '@/auth/auth';
 import { Bodega } from '@/bodega/model';
 import { categoriaEventoService } from '@/categoria-evento/service';
 import config from '@/config';
+import { EstadoEvento } from '@/estado-evento/enum';
 import { estadoEventoService } from '@/estado-evento/service';
+import { EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
+import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
+import { EstadoRecorridoEnum } from '@/estado-recorrido/enum';
+import { estadoRecorridoService } from '@/estado-recorrido/service';
+import { EstadoReservaEnum } from '@/estado-reserva/enum';
+import { estadoReservaService } from '@/estado-reserva/service';
+import { DiaSemana, HoraEvento } from '@/evento/model';
 import { eventoService } from '@/evento/service';
 import { maximosDiasAdelanteReservaService } from '@/maximos-dias-adelante-reserva/service';
 import { Permissions } from '@/rbac/permissions';
 import { permissionsService, rolesService } from '@/rbac/service';
-import { DiaSemana, HoraEvento } from '@/evento/model';
 import { sucursalService } from '@/sucursal/service';
 import { User } from '@/users/model';
-import { Valoracion } from '@/valoracion/model';
+import { valoracionService } from '@/valoracion/service';
 import { sequelize } from '.';
-import { EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
-import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
-import { EstadoEvento } from '@/estado-evento/enum';
-import { EstadoRecorridoEnum } from '@/estado-recorrido/enum';
-import { estadoRecorridoService } from '@/estado-recorrido/service';
-import { estadoReservaService } from '@/estado-reserva/service';
-import { EstadoReservaEnum } from '@/estado-reserva/enum';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
 
@@ -591,6 +591,7 @@ async function seed() {
       { valor: 5, comentario: 'Excelente evento', userId: adminUser.id },
       { valor: 3, comentario: 'Estuvo bien', userId: adminUser.id },
       { valor: 1, comentario: 'No me gustó', userId: adminUser.id },
+      { valor: 4, comentario: 'Me gustó', userId: adminUser.id },
     ];
     for (const evento of [
       evento1,
@@ -607,7 +608,12 @@ async function seed() {
       evento12,
     ]) {
       for (const val of valoracionesData) {
-        await Valoracion.create({ ...val, eventoId: evento.id });
+        if (Math.random() < 0.5) {
+          await valoracionService.create({
+            ...val,
+            eventoId: evento.id,
+          });
+        }
       }
     }
 

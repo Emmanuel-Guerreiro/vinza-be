@@ -106,56 +106,6 @@ router.post(
 /**
  * @openapi
  * /valoraciones/{id}:
- *   put:
- *     summary: Update a valoracion
- *     tags:
- *       - Valoraciones
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         description: The id of the valoracion
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               valor:
- *                 type: number
- *                 description: Valor de la valoración (1-5)
- *                 example: 4
- *               comentario:
- *                 type: string
- *                 description: Comentario de la valoración
- *                 example: "Muy buen evento"
- *               userId:
- *                 type: number
- *                 description: ID del usuario que escribe la valoración
- *                 example: 1
- *               eventoId:
- *                 type: number
- *                 description: ID del evento valorado
- *                 example: 2
- *     responses:
- *       200:
- *         description: Valoracion updated successfully
- *       400:
- *         description: Bad request
- *       500:
- *         description: Internal server error
- */
-router.put(
-  '/:id',
-  authMiddleware,
-  requirePermissions([Permissions.VALORACIONES_MANAGE]),
-  controller.update,
-);
-
-/**
- * @openapi
- * /valoraciones/{id}:
  *   delete:
  *     summary: Delete a valoracion
  *     tags:
