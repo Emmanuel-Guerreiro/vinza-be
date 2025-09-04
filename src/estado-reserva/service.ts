@@ -1,7 +1,9 @@
+import { errors } from '@/error';
 import { Transaction } from 'sequelize';
 import { EstadoReserva } from './model';
 import { CreateEstadoReservaDto, UpdateEstadoReservaDto } from './types';
-import { errors } from '@/error';
+import { PaginationParams } from '@/pagination/schemas';
+import { generatePaginationParams } from '@/pagination';
 
 class EstadoReservaService {
   public async create(dto: CreateEstadoReservaDto) {
@@ -9,14 +11,28 @@ class EstadoReservaService {
     return estadoReserva;
   }
 
-  public findAll() {
-    return EstadoReserva.findAll();
+  public async findAll(params: PaginationParams) {
+    const { limit, offset } = generatePaginationParams(params);
+    const [meta, items] = await Promise.all([
+      this.getCountAndMetadata(params, limit),
+      EstadoReserva.findAll({
+        limit,
+        offset,
+      }),
+    ]);
+
+    return {
+      items,
+      meta,
+    };
   }
 
   public async findOne(id: number, transaction?: Transaction) {
-    const estadoReserva = await EstadoReserva.findByPk(id, { transaction });
-    if (!estadoReserva) throw errors.app.reserva.estado_not_found;
-    return estadoReserva;
+    return EstadoReserva.findByPk(id, { transaction });
+  }
+
+  public async findByName(nombre: string, transaction?: Transaction) {
+    return EstadoReserva.findOne({ where: { nombre }, transaction });
   }
 
   public async update(id: number, dto: UpdateEstadoReservaDto) {
@@ -33,6 +49,16 @@ class EstadoReservaService {
     if (!estadoReserva) throw errors.app.reserva.estado_not_found;
     await estadoReserva.destroy();
     return estadoReserva;
+  }
+
+  private async getCountAndMetadata(params: PaginationParams, limit: number) {
+    const totalItems = await EstadoReserva.count();
+    return {
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: params.page || 1,
+      itemsPerPage: limit,
+    };
   }
 }
 

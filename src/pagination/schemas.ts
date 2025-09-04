@@ -33,3 +33,5 @@ export const paginationAndOrderSchema = <T extends string[]>(
 export type PaginationAndOrderParams<T extends string[]> = z.infer<
   ReturnType<typeof paginationAndOrderSchema<T>>
 >;
+
+export type PaginationParams = z.infer<typeof paginationSchema>;

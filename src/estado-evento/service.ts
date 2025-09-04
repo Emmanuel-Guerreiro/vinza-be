@@ -19,6 +19,14 @@ class EstadoEventoService {
     return estadoEvento;
   }
 
+  public async findByName(nombre: string, transaction?: Transaction) {
+    const estadoEvento = await EstadoEvento.findOne({
+      where: { nombre },
+      transaction,
+    });
+    return estadoEvento;
+  }
+
   public async update(id: number, dto: UpdateEstadoEventoDto) {
     const estadoEvento = await EstadoEvento.findByPk(id);
     if (!estadoEvento) throw errors.app.evento.estado_not_found;

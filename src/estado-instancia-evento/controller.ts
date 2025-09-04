@@ -1,9 +1,10 @@
 import { IEstadoInstanciaEventoService } from './service';
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import {
   createEstadoInstanciaEventoSchema,
   updateEstadoInstanciaEventoSchema,
 } from './schema';
+import { paginationSchema } from '@/pagination/schemas';
 
 export class EstadoInstanciaEventoController {
   readonly estadoInstanciaEventoService;
@@ -17,8 +18,12 @@ export class EstadoInstanciaEventoController {
     this.delete = this.delete.bind(this);
   }
 
-  public getAll(_req: Request, res: Response) {
-    this.estadoInstanciaEventoService.findAll().then((data) => res.json(data));
+  public getAll(req: Request, res: Response) {
+    paginationSchema.parseAsync(req.query).then((query) => {
+      this.estadoInstanciaEventoService
+        .findAll(query)
+        .then((data) => res.json(data));
+    });
   }
 
   public getOne(req: Request, res: Response) {
@@ -27,24 +32,20 @@ export class EstadoInstanciaEventoController {
       .then((data) => res.json(data));
   }
 
-  public create(req: Request, res: Response) {
-    createEstadoInstanciaEventoSchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.estadoInstanciaEventoService
-          .create(dto)
-          .then((data) => res.json(data)),
-      );
+  public create(req: Request, res: Response, next: NextFunction) {
+    const dto = createEstadoInstanciaEventoSchema.parse(req.body);
+    this.estadoInstanciaEventoService
+      .create(dto)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
   }
 
-  public update(req: Request, res: Response) {
-    updateEstadoInstanciaEventoSchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.estadoInstanciaEventoService
-          .update(+req.params.id, dto)
-          .then((data) => res.json(data)),
-      );
+  public update(req: Request, res: Response, next: NextFunction) {
+    const dto = updateEstadoInstanciaEventoSchema.parse(req.body);
+    this.estadoInstanciaEventoService
+      .update(+req.params.id, dto)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
   }
 
   public delete(req: Request, res: Response) {

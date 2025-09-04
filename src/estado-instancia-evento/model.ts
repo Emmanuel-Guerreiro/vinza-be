@@ -7,7 +7,9 @@ import {
   Model,
   Table,
   UpdatedAt,
+  BelongsTo,
 } from 'sequelize-typescript';
+import { InstanciaEvento } from '@/instancia-evento/model';
 
 export interface EstadoInstanciaEventoAttributes {
   id: number;
@@ -62,11 +64,17 @@ export interface HEstadoInstanciaEventoAttributes {
   estadoInstanciaEventoId: number;
   created_at: Date;
   deleted_at: Date | null;
+  instanciaEvento?: InstanciaEvento;
+  estadoInstanciaEvento?: EstadoInstanciaEvento;
 }
 
 export type HEstadoInstanciaEventoCreationAttributes = Omit<
   HEstadoInstanciaEventoAttributes,
-  'id' | 'created_at' | 'deleted_at'
+  | 'id'
+  | 'created_at'
+  | 'deleted_at'
+  | 'instanciaEvento'
+  | 'estadoInstanciaEvento'
 >;
 
 @Table({
@@ -87,18 +95,17 @@ export class HEstadoInstanciaEvento extends Model<
   })
   id!: number;
 
+  @ForeignKey(() => InstanciaEvento)
   @Column({ type: DataType.INTEGER, allowNull: false })
   instanciaeventoId!: number;
+
+  @BelongsTo(() => InstanciaEvento)
+  instanciaEvento?: InstanciaEvento;
 
   @ForeignKey(() => EstadoInstanciaEvento)
   @Column({ type: DataType.INTEGER, allowNull: false })
   estadoInstanciaEventoId!: number;
 
-  @CreatedAt
-  @Column({ type: DataType.DATE })
-  created_at!: Date;
-
-  @DeletedAt
-  @Column({ type: DataType.DATE })
-  deleted_at!: Date | null;
+  @BelongsTo(() => EstadoInstanciaEvento)
+  estadoInstanciaEvento?: EstadoInstanciaEvento;
 }

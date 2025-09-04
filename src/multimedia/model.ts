@@ -16,6 +16,9 @@ export interface MultimediaBodegasAttributes {
   url: string;
   es_portada: Date | null;
   bodegaId: number;
+  bodega: Bodega;
+  tipo: TipoMultimedia;
+  tipoId: number;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
@@ -23,7 +26,14 @@ export interface MultimediaBodegasAttributes {
 
 export type MultimediaBodegasCreationAttributes = Omit<
   MultimediaBodegasAttributes,
-  'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'bodegaId'
+  | 'id'
+  | 'created_at'
+  | 'updated_at'
+  | 'deleted_at'
+  | 'bodega'
+  | 'bodegaId'
+  | 'tipo'
+  | 'tipoId'
 >;
 
 @Table({
@@ -56,6 +66,12 @@ export class MultimediaBodegas extends Model<
 
   @BelongsTo(() => Bodega)
   bodega!: Bodega;
+
+  @ForeignKey(() => TipoMultimedia)
+  tipoId!: number;
+
+  @BelongsTo(() => TipoMultimedia)
+  tipo!: TipoMultimedia;
 }
 
 export interface MultimediaEventosAttributes {
@@ -63,6 +79,9 @@ export interface MultimediaEventosAttributes {
   url: string;
   es_portada: Date | null;
   eventoId: number;
+  evento: Evento;
+  tipo: TipoMultimedia;
+  tipoId: number;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
@@ -70,7 +89,14 @@ export interface MultimediaEventosAttributes {
 
 export type MultimediaEventosCreationAttributes = Omit<
   MultimediaEventosAttributes,
-  'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'bodegaId'
+  | 'id'
+  | 'created_at'
+  | 'updated_at'
+  | 'deleted_at'
+  | 'evento'
+  | 'eventoId'
+  | 'tipo'
+  | 'tipoId'
 >;
 
 @Table({
@@ -97,6 +123,12 @@ export class MultimediaEventos extends Model<
 
   @Column({ type: DataType.DATE })
   es_portada!: Date | null;
+
+  @ForeignKey(() => TipoMultimedia)
+  tipoId!: number;
+
+  @BelongsTo(() => TipoMultimedia)
+  tipo!: TipoMultimedia;
 
   @ForeignKey(() => Evento)
   eventoId!: number;

@@ -47,11 +47,11 @@ export class UsersController {
   }
 
   public getMe(req: Request, res: Response) {
-    this.usersService.findOne(+req.user!).then((data) => res.json(data));
+    this.usersService.findOne(req.user!).then((data) => res.json(data));
   }
 
   public updateMe(req: Request, res: Response) {
     const dto = UpdateUserSchema.parse(req.body);
-    this.usersService.update(+req.user!, dto).then((data) => res.json(data));
+    this.usersService.update(req.user!, dto).then((data) => res.json(data));
   }
 }

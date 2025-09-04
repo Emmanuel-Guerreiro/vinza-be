@@ -3,7 +3,7 @@ import { sequelize } from '@/db';
 import { errors } from '@/error';
 import logger from '@/logger';
 import { Permiso, Rol } from '@/rbac/model';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { User } from './model';
 import { CreateUserDto, UpdateUserDto } from './types';
 
@@ -48,8 +48,9 @@ class UsersService {
     return users;
   }
 
-  public async findOne(id: number) {
+  public async findOne(id: number, transaction?: Transaction) {
     const user = await User.findByPk(id, {
+      transaction,
       attributes: {
         exclude: ['contrasena'],
       },

@@ -8,19 +8,26 @@ import 'dotenv/config';
 import { Audit } from '@/audit/model';
 import { CategoriaEvento, HCategoriaEvento } from '@/categoria-evento/model';
 import { EstadoEvento, HEstadoEvento } from '@/estado-evento/model';
-import { Evento } from '@/evento/model';
+import { Evento, RecurrenciaEvento } from '@/evento/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
 import {
   MultimediaBodegas,
   MultimediaEventos,
   TipoMultimedia,
 } from '@/multimedia/model';
-import { RecurrenciaEvento } from '@/recurrencia-evento/model';
 import { Sucursal } from '@/sucursal/model';
-import { Valoracion } from '@/valoracion/model';
 import { Sequelize } from 'sequelize-typescript';
-// import { EstadoReserva } from '@/estado-reserva/model'; // Comentado temporalmente
-// import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model'; // Comentado temporalmente
+import { Valoracion, ValoracionMedia } from '@/valoracion/model';
+import { InstanciaEvento } from '@/instancia-evento/model';
+import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
+import {
+  HEstadoInstanciaEvento,
+  EstadoInstanciaEvento,
+} from '@/estado-instancia-evento/model';
+import { Recorrido } from '@/recorrido/model';
+import { Reserva } from '@/reserva/model';
+
+import { EstadoRecorrido, HEstadoRecorrido } from '@/estado-recorrido/model';
 
 export const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -47,14 +54,22 @@ export const sequelize = new Sequelize({
     CategoriaEvento,
     HCategoriaEvento,
     Valoracion,
+    ValoracionMedia,
     CodigoRecuperarContra,
     MaximosDiasAdelanteReserva,
     RecurrenciaEvento,
     MultimediaBodegas,
     MultimediaEventos,
     TipoMultimedia,
-    // EstadoReserva, // Comentado temporalmente
-    // EstadoInstanciaEvento, // Comentado temporalmente
+    InstanciaEvento,
+    EstadoInstanciaEvento,
+    HEstadoInstanciaEvento,
+    EstadoReserva,
+    HEstadoReserva,
+    Reserva,
+    Recorrido,
+    EstadoRecorrido,
+    HEstadoRecorrido,
   ], // or [Player, Team],
 });
 

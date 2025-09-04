@@ -1,4 +1,4 @@
-export enum EstadoReserva {
+export enum EstadoReservaEnum {
   PENDIENTE = 'PENDIENTE',
   CONFIRMADA = 'CONFIRMADA',
   CANCELADA = 'CANCELADA',

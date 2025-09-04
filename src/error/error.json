@@ -114,6 +114,42 @@
         "message": "Categoria evento not found",
         "message_eng": "Categoria evento not found",
         "status": 404
+      },
+      "recurrencias_not_found": {
+        "key": "app.evento.recurrencias_not_found",
+        "message": "El evento no tiene recurrencias configuradas",
+        "message_eng": "Event has no recurrences configured",
+        "status": 404
+      },
+      "instancia_not_belongs_to_evento": {
+        "key": "app.evento.instancia_not_belongs_to_evento",
+        "message": "La instancia no pertenece al evento especificado",
+        "message_eng": "Instance does not belong to the specified event",
+        "status": 400
+      },
+      "recurrencias_required": {
+        "key": "app.evento.recurrencias_required",
+        "message": "Debe proporcionar al menos una recurrencia para el evento",
+        "message_eng": "You must provide at least one recurrence for the event",
+        "status": 400
+      },
+      "nombre_duplicate": {
+        "key": "app.evento.nombre_duplicate",
+        "message": "Ya existe un evento con este nombre en la misma bodega",
+        "message_eng": "An event with this name already exists in the same bodega",
+        "status": 400
+      },
+      "forbidden": {
+        "key": "app.evento.forbidden",
+        "message": "No tienes permisos para acceder a este evento",
+        "message_eng": "You don't have permission to access this event",
+        "status": 403
+      },
+      "sucursal_forbidden": {
+        "key": "app.evento.sucursal_forbidden",
+        "message": "No tienes permisos para crear eventos en esta sucursal",
+        "message_eng": "You don't have permission to create events in this branch",
+        "status": 403
       }
     },
 
@@ -126,6 +162,24 @@
       }
     },
     "reserva": {
+      "confirmar_error": {
+        "key": "app.reserva.confirmar_error",
+        "message": "Error al confirmar la reserva",
+        "message_eng": "Error confirming the reservation",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.reserva.delete_error",
+        "message": "Error al eliminar la reserva",
+        "message_eng": "Error deleting the reservation",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.reserva.update_error",
+        "message": "Error al actualizar la reserva",
+        "message_eng": "Error updating the reservation",
+        "status": 500
+      },
       "not_found": {
         "key": "app.reserva.not_found",
         "message": "Reserva not found",
@@ -137,9 +191,175 @@
         "message": "Estado not found",
         "message_eng": "Estado not found",
         "status": 404
+      },
+      "invalid_state": {
+        "key": "app.reserva.invalid_state",
+        "message": "El estado de la reserva no es válido",
+        "message_eng": "The reservation status is not valid",
+        "status": 400
+      },
+      "create_error": {
+        "key": "app.reserva.create_error",
+        "message": "Error al crear la reserva",
+        "message_eng": "Error creating the reservation",
+        "status": 500
+      },
+      "evento_not_found": {
+        "key": "app.evento.not_found",
+        "message": "Evento not found",
+        "message_eng": "evento Reserva not found",
+        "status": 404
+      },
+      "cupos_not_enough": {
+        "key": "app.reserva.cupos_not_found",
+        "message": "No hay cupos suficientes",
+        "message_eng": "No tickets enough",
+        "status": 404
+      }
+    },
+    "recorrido": {
+      "empty_recorrido": {
+        "key": "app.recorrido.empty_recorrido",
+        "message": "El recorrido no tiene reservas",
+        "message_eng": "The recorrido has no reservations",
+        "status": 404
+      },
+      "already_confirmed": {
+        "key": "app.recorrido.already_confirmed",
+        "message": "El recorrido ya está confirmado",
+        "message_eng": "The recorrido is already confirmed",
+        "status": 400
+      },
+      "not_found": {
+        "key": "app.recorrido.not_found",
+        "message": "Recorrido not found",
+        "message_eng": "Recorrido not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.recorrido.create_error",
+        "message": "Error al crear el recorrido",
+        "message_eng": "Error creating the recorrido",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.recorrido.update_error",
+        "message": "Error al actualizar el recorrido",
+        "message_eng": "Error updating the recorrido",
+        "status": 500
+      }
+    },
+    "hEstadoRecorrido": {
+      "H_estado_not_found": {
+        "key": "app.HEstadoRecorrido.estado_not_found",
+        "message": "Estado recorrido not found",
+        "message_eng": "Estado recorrido not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.HEstadoRecorrido.create_error",
+        "message": "Error al crear estado recorrido",
+        "message_eng": "Error creating estado recorrido",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.HEstadoRecorrido.update_error",
+        "message": "Error al actualizar estado recorrido",
+        "message_eng": "Error updating estado recorrido",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.HEstadoRecorrido.delete_error",
+        "message": "Error al eliminar estado recorrido",
+        "message_eng": "Error deleting estado recorrido",
+        "status": 500
+      }
+    },
+    "estado_recorrido": {
+      "estado_not_found": {
+        "key": "app.estado_recorrido.estado_not_found",
+        "message": "Estado recorrido not found",
+        "message_eng": "Estado recorrido not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.estado_recorrido.create_error",
+        "message": "Error al crear estado recorrido",
+        "message_eng": "Error creating estado recorrido",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.estado_recorrido.update_error",
+        "message": "Error al actualizar estado recorrido",
+        "message_eng": "Error updating estado recorrido",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.estado_recorrido.delete_error",
+        "message": "Error al eliminar estado recorrido",
+        "message_eng": "Error deleting estado recorrido",
+        "status": 500
+      }
+    },
+    "estadoReserva": {
+      "estado_not_found": {
+        "key": "app.EstadoReserva.estado_not_found",
+        "message": "Estado reserva not found",
+        "message_eng": "Estado reserva not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.EstadoReserva.create_error",
+        "message": "Error al crear estado reserva",
+        "message_eng": "Error creating estado reserva",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.EstadoReserva.update_error",
+        "message": "Error al actualizar estado reserva",
+        "message_eng": "Error updating estado reserva",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.EstadoReserva.delete_error",
+        "message": "Error al eliminar estado reserva",
+        "message_eng": "Error deleting estado reserva",
+        "status": 500
+      }
+    },
+    "hEstadoReserva": {
+      "H_estado_not_found": {
+        "key": "app.HEstadoReserva.estado_not_found",
+        "message": "Estado reserva not found",
+        "message_eng": "Estado reserva not found",
+        "status": 404
+      },
+      "create_error": {
+        "key": "app.HEstadoReserva.create_error",
+        "message": "Error al crear estado reserva",
+        "message_eng": "Error creating estado reserva",
+        "status": 500
+      },
+      "update_error": {
+        "key": "app.HEstadoReserva.update_error",
+        "message": "Error al actualizar estado reserva",
+        "message_eng": "Error updating estado reserva",
+        "status": 500
+      },
+      "delete_error": {
+        "key": "app.HEstadoReserva.delete_error",
+        "message": "Error al eliminar estado reserva",
+        "message_eng": "Error deleting estado reserva",
+        "status": 500
       }
     },
     "instancia_evento": {
+      "not_found": {
+        "key": "app.instancia_evento.not_found",
+        "message": "Instancia evento not found",
+        "message_eng": "Instancia evento not found",
+        "status": 404
+      },
       "estado_not_found": {
         "key": "app.instancia_evento.estado_not_found",
         "message": "Estado instancia evento not found",

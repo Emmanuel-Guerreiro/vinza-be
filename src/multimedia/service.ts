@@ -22,13 +22,13 @@ export class MultimediaService {
       case MultimediaTargetEnum.BODEDEA:
         createdMultimedia = await MultimediaBodegas.create({
           url,
-          tipo: dto.tipo,
+          es_portada: dto.es_portada ? new Date() : null,
         });
         break;
       case MultimediaTargetEnum.EVENTO:
         createdMultimedia = await MultimediaEventos.create({
           url,
-          tipo: dto.tipo,
+          es_portada: dto.es_portada ? new Date() : null,
         });
         break;
     }
