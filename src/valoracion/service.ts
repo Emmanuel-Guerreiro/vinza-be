@@ -1,29 +1,39 @@
-import { Valoracion } from './model';
-import { CreateValoracionDto, UpdateValoracionDto } from './types';
-import { errors } from '@/error';
-import { User } from '@/users/model';
-import { Evento } from '@/evento/model';
 import { sequelize } from '@/db';
-import redisClient from '@/redis';
-import logger from '@/logger';
+import { errors } from '@/error';
+import { Evento } from '@/evento/model';
+import { User } from '@/users/model';
+import { Valoracion, ValoracionMedia } from './model';
+import { CreateValoracionDto } from './types';
+import { Transaction } from 'sequelize';
 
 class ValoracionService {
-  private getCacheKey(eventoId: number) {
-    return `valoracion:average:${eventoId}`;
-  }
+  public async initializeValoracionMedia(
+    eventoId: number,
+    transaction: Transaction,
+  ) {
+    const [valoracionMedia] = await ValoracionMedia.findOrCreate({
+      where: { eventoId },
+      defaults: { eventoId, valor_medio: 0, cantidad_valoraciones: 0 },
+      transaction,
+    });
 
-  private async invalidateCache(eventoId: number) {
-    const key = this.getCacheKey(eventoId);
-    await redisClient.del(key);
-    logger.info(`Invalidated cache for ${this.getCacheKey(eventoId)}`);
+    return valoracionMedia;
   }
 
   public async create(dto: CreateValoracionDto) {
-    const valoracion = await Valoracion.create(dto);
+    const transaction = await sequelize.transaction();
+    try {
+      const valoracion = await Valoracion.create(dto, { transaction });
 
-    await this.invalidateCache(dto.eventoId);
+      await this.revalidateValoracionMedia(dto.eventoId, transaction);
 
-    return valoracion;
+      await transaction.commit();
+
+      return valoracion;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   public async findAll() {
@@ -39,54 +49,56 @@ class ValoracionService {
     return valoracion;
   }
 
-  public async update(id: number, dto: UpdateValoracionDto) {
-    const valoracion = await Valoracion.findByPk(id);
-    if (!valoracion) throw errors.app.valoracion.not_found;
-
-    await valoracion.update(dto);
-
-    await this.invalidateCache(valoracion.eventoId);
-
-    return valoracion;
-  }
-
   public async delete(id: number) {
-    const valoracion = await Valoracion.findByPk(id);
-    if (!valoracion) throw errors.app.valoracion.not_found;
+    const transaction = await sequelize.transaction();
+    try {
+      const valoracion = await Valoracion.findByPk(id);
+      if (!valoracion) throw errors.app.valoracion.not_found;
 
-    await valoracion.destroy();
+      await valoracion.destroy({ transaction });
 
-    await this.invalidateCache(valoracion.eventoId);
+      await this.revalidateValoracionMedia(valoracion.eventoId, transaction);
 
-    return valoracion;
+      await transaction.commit();
+
+      return valoracion;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   }
 
   public async getAverageByEvento(eventoId: number) {
-    const cacheKey = this.getCacheKey(eventoId);
-
-    // Try to get from cache first
-    const cachedValue = await redisClient.get(cacheKey);
-    if (cachedValue !== null && !isNaN(Number(cachedValue))) {
-      logger.info(`Cache hit for ${cacheKey}`);
-      return Number(cachedValue);
-    }
-
-    logger.info(`Cache miss for ${cacheKey}`);
-    // If not in cache, calculate and store
-    const result = await Valoracion.findAll({
+    const valoracionMedia = await ValoracionMedia.findOne({
       where: { eventoId },
-      attributes: [[sequelize.fn('AVG', sequelize.col('valor')), 'avgValor']],
-      raw: true,
     });
-    const avgValor = (result[0] as { avgValor?: string | number })?.avgValor;
-    const finalValue = avgValor ? Number(avgValor) : null;
+    return valoracionMedia?.valor_medio;
+  }
 
-    // Store in cache if we have a value
-    if (finalValue !== null) {
-      await redisClient.set(cacheKey, finalValue.toString());
-    }
+  private async revalidateValoracionMedia(
+    eventoId: number,
+    transaction: Transaction,
+  ) {
+    const valoraciones = await Valoracion.findAll({
+      where: { eventoId },
+      transaction,
+    });
 
-    return finalValue;
+    const [valoracionMedia] = await ValoracionMedia.findOrCreate({
+      where: { eventoId },
+      defaults: {
+        eventoId,
+        valor_medio:
+          valoraciones.length > 0
+            ? valoraciones.reduce((acc, curr) => acc + curr.valor, 0) /
+              valoraciones.length
+            : 0,
+        cantidad_valoraciones: valoraciones.length,
+      },
+      transaction,
+    });
+
+    return valoracionMedia;
   }
 }
 
