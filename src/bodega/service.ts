@@ -22,13 +22,20 @@ class BodegaService {
   public async create(dto: CreateBodegaDto) {
     const transaction = await sequelize.transaction();
     try {
-      const bodega = await Bodega.create(dto, { transaction });
-      // Create the first sucursal as main
-      sucursalService.create(
+      const bodega = await Bodega.create(
         {
           nombre: dto.nombre,
-          direccion: 'Principal',
+          descripcion: dto.descripcion,
+        },
+        { transaction },
+      );
+      // Create the first sucursal as main
+      await sucursalService.create(
+        {
+          nombre: dto.nombre,
           es_principal: true,
+          direccion: dto.direccion,
+          aclaraciones: dto.aclaraciones,
           bodegaId: bodega.id,
         },
         transaction,

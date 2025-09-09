@@ -9,6 +9,9 @@ export const UpdateBodegaSchema = z.object({
 export const createBodegaSchema = z.object({
   nombre: z.string(),
   descripcion: z.string(),
+  direccion: z.string(),
+  telefono: z.string(),
+  aclaraciones: z.string().optional(),
 });
 
 const bodegaOrderByAttributes = [
