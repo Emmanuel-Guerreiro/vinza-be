@@ -18,9 +18,9 @@ export class RecorridoController {
     this.confirmar = this.confirmar.bind(this);
   }
 
-  public getAll(_req: Request, res: Response, next: NextFunction) {
+  public getAll(req: Request, res: Response, next: NextFunction) {
     findAllRecorridosParamsSchema
-      .parseAsync({ ..._req.query, userId: _req.user }) // Always force to use the one from the token
+      .parseAsync({ ...req.query, userId: req.user }) // Always force to use the one from the token
       .then((params) => {
         this.recorridoService
           .findAll(params)
@@ -83,8 +83,11 @@ export class RecorridoController {
       });
   }
 
-  public delete(req: Request, res: Response) {
-    this.recorridoService.delete(+req.params.id).then((data) => res.json(data));
+  public delete(req: Request, res: Response, next: NextFunction) {
+    this.recorridoService
+      .delete(+req.params.id)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
   }
 
   public confirmar(req: Request, res: Response, next: NextFunction) {

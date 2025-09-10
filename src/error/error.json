@@ -154,6 +154,12 @@
       }
     },
     "reserva": {
+      "duplicated_event_for_recorrido": {
+        "key": "app.reserva.duplicated_event_for_recorrido",
+        "message": "El evento ya está asociado a este recorrido",
+        "message_eng": "The event is already associated with this recorrido",
+        "status": 400
+      },
       "confirmar_error": {
         "key": "app.reserva.confirmar_error",
         "message": "Error al confirmar la reserva",

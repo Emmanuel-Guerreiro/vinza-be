@@ -4,7 +4,7 @@ import { hashPassword } from '@/auth/auth';
 import { Bodega } from '@/bodega/model';
 import { categoriaEventoService } from '@/categoria-evento/service';
 import config from '@/config';
-import { EstadoEvento } from '@/estado-evento/enum';
+import { EstadoEventoEnum } from '@/estado-evento/enum';
 import { estadoEventoService } from '@/estado-evento/service';
 import { EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
 import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
@@ -44,7 +44,7 @@ async function seed() {
 
     // Create estados de evento
     await Promise.all(
-      Object.values(EstadoEvento).map(async (nombre) => {
+      Object.values(EstadoEventoEnum).map(async (nombre) => {
         return await estadoEventoService.create({
           nombre,
         });
@@ -53,13 +53,13 @@ async function seed() {
 
     // Obtener referencias a los estados creados
     const activoEstadoEvento = await estadoEventoService.findByName(
-      EstadoEvento.ACTIVO,
+      EstadoEventoEnum.ACTIVO,
     );
     const suspendidoEstadoEvento = await estadoEventoService.findByName(
-      EstadoEvento.SUSPENDIDO,
+      EstadoEventoEnum.SUSPENDIDO,
     );
     const finalizadoEstadoEvento = await estadoEventoService.findByName(
-      EstadoEvento.FINALIZADO,
+      EstadoEventoEnum.FINALIZADO,
     );
 
     if (

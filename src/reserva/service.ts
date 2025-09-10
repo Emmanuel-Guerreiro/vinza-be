@@ -55,6 +55,18 @@ class ReservaService {
         if (!recorrido) {
           throw errors.app.recorrido.not_found;
         }
+
+        // Cant add the same instancia to the same recorrido twice
+        if (
+          recorrido.reservas
+            .flatMap((reserva) => reserva.instanciaEventoId)
+            .some(
+              (instanciaEventoId) =>
+                instanciaEventoId === dto.instanciaEventoId,
+            )
+        ) {
+          throw errors.app.reserva.duplicated_event_for_recorrido;
+        }
       } else {
         recorrido = await recorridoService.create(
           { userId: dto.userId },
@@ -95,7 +107,7 @@ class ReservaService {
     } catch (error) {
       await transaction.rollback();
       logger.error(`Error creating reserva -> ${JSON.stringify(error)}`);
-      throw errors.app.reserva.create_error;
+      throw error;
     }
   }
 
@@ -177,8 +189,8 @@ class ReservaService {
     }
   }
 
-  public async delete(id: number) {
-    const transaction = await sequelize.transaction();
+  public async delete(id: number, t?: Transaction) {
+    const transaction = t || (await sequelize.transaction());
     try {
       const reserva = await this.findOne(id, transaction);
       if (!reserva) throw errors.app.reserva.not_found;
@@ -203,10 +215,10 @@ class ReservaService {
         valor: reserva.dataValues,
       });
 
-      await transaction.commit();
+      if (!t) await transaction.commit();
       return reserva;
     } catch (error) {
-      await transaction.rollback();
+      if (!t) await transaction.rollback();
       logger.error(JSON.stringify(error));
       throw error;
     }

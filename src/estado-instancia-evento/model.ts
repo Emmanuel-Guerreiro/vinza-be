@@ -10,10 +10,11 @@ import {
   BelongsTo,
 } from 'sequelize-typescript';
 import { InstanciaEvento } from '@/instancia-evento/model';
+import { EstadoInstanciaEventoEnum } from './enum';
 
 export interface EstadoInstanciaEventoAttributes {
   id: number;
-  nombre: string;
+  nombre: EstadoInstanciaEventoEnum;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
@@ -42,8 +43,11 @@ export class EstadoInstanciaEvento extends Model<
   })
   id!: number;
 
-  @Column({ type: DataType.STRING, allowNull: false })
-  nombre!: string;
+  @Column({
+    type: DataType.ENUM(...Object.values(EstadoInstanciaEventoEnum)),
+    allowNull: false,
+  })
+  nombre!: EstadoInstanciaEventoEnum;
 
   @CreatedAt
   @Column({ type: DataType.DATE })

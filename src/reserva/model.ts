@@ -17,9 +17,13 @@ export interface ReservaAttributes {
   instanciaEventoId: number;
   recorridoId: number;
   estados?: EstadoReserva[];
+  instanciaEvento: InstanciaEvento;
 }
 
-export type ReservaCreationAttributes = Omit<ReservaAttributes, 'id'>;
+export type ReservaCreationAttributes = Omit<
+  ReservaAttributes,
+  'id' | 'instanciaEvento'
+>;
 @Table({
   tableName: 'reservas',
   paranoid: true,

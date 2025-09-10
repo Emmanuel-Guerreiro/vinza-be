@@ -9,8 +9,18 @@ class EstadoEventoService {
     return estadoEvento;
   }
 
-  public findAll() {
-    return EstadoEvento.findAll();
+  public async findAll() {
+    const estadoEventos = await EstadoEvento.findAll();
+
+    return {
+      items: estadoEventos,
+      meta: {
+        totalItems: estadoEventos.length,
+        totalPages: 1,
+        currentPage: 1,
+        itemsPerPage: estadoEventos.length,
+      },
+    };
   }
 
   public async findOne(id: number, transaction?: Transaction) {
