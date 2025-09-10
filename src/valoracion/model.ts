@@ -15,7 +15,7 @@ import { Evento } from '@/evento/model';
 export interface ValoracionAttributes {
   id: number;
   valor: number;
-  comentario: string;
+  comentario?: string | null;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
@@ -25,8 +25,10 @@ export interface ValoracionAttributes {
 
 export type ValoracionCreationAttributes = Omit<
   ValoracionAttributes,
-  'id' | 'created_at' | 'updated_at' | 'deleted_at'
->;
+  'id' | 'created_at' | 'updated_at' | 'deleted_at' | 'comentario'
+> & {
+  comentario?: string;
+};
 
 @Table({
   tableName: 'valoraciones',
@@ -49,7 +51,7 @@ export class Valoracion extends Model<
   @Column({ type: DataType.INTEGER, allowNull: false })
   valor!: number;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: true })
   comentario!: string;
 
   @CreatedAt

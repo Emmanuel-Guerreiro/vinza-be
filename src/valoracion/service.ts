@@ -88,17 +88,29 @@ class ValoracionService {
       where: { eventoId },
       defaults: {
         eventoId,
-        valor_medio:
-          valoraciones.length > 0
-            ? valoraciones.reduce((acc, curr) => acc + curr.valor, 0) /
-              valoraciones.length
-            : 0,
-        cantidad_valoraciones: valoraciones.length,
+        valor_medio: 0,
+        cantidad_valoraciones: 0,
       },
       transaction,
     });
 
+    await valoracionMedia.update(
+      {
+        valor_medio: this.calculateValoracionMedia(valoraciones),
+        cantidad_valoraciones: valoraciones.length || 0,
+      },
+      { transaction },
+    );
+
     return valoracionMedia;
+  }
+
+  private calculateValoracionMedia(valoraciones: Valoracion[]) {
+    if (!valoraciones || valoraciones.length === 0) return 0;
+    return (
+      valoraciones.reduce((acc, curr) => acc + curr.valor, 0) /
+      valoraciones.length
+    );
   }
 }
 
