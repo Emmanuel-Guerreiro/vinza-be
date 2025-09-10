@@ -22,6 +22,7 @@ import { instanciaEventoService } from '@/instancia-evento/service';
 import { InstanciaEvento } from '@/instancia-evento/model';
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { valoracionService } from '@/valoracion/service';
+import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
@@ -157,6 +158,11 @@ class EventoService {
         },
         {
           model: InstanciaEvento,
+          include: [
+            {
+              model: EstadoInstanciaEvento,
+            },
+          ],
         },
       ],
     });
@@ -349,6 +355,7 @@ class EventoService {
     return Evento.findOne({
       transaction,
       include: [
+        { model: Sucursal, as: 'sucursal' },
         {
           model: InstanciaEvento,
           as: 'instancias',

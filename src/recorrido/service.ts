@@ -8,7 +8,7 @@ import {
   UpdateRecorridoDto,
 } from './types';
 import { usersService } from '@/users/service';
-import { Op, Transaction, WhereOptions } from 'sequelize';
+import { FindOptions, Transaction, WhereOptions } from 'sequelize';
 import { reservaService } from '@/reserva/service';
 import { Reserva } from '@/reserva/model';
 import { EstadoRecorrido } from '@/estado-recorrido/model';
@@ -19,6 +19,9 @@ import {
 } from '@/pagination';
 import { estadoRecorridoService } from '@/estado-recorrido/service';
 import logger from '@/logger';
+import { InstanciaEvento } from '@/instancia-evento/model';
+import { Evento } from '@/evento/model';
+import { Sucursal } from '@/sucursal/model';
 
 class RecorridoService {
   public async create(dto: CreateRecorridoDto, t?: Transaction) {
@@ -75,7 +78,10 @@ class RecorridoService {
   public async update(id: number, dto: UpdateRecorridoDto) {
     const transaction = await sequelize.transaction();
     try {
-      const recorrido = await Recorrido.findByPk(id, { transaction });
+      const recorrido = await Recorrido.findByPk(id, {
+        transaction,
+      });
+
       if (!recorrido) throw errors.app.recorrido.not_found;
 
       const updatedRecorrido = await recorrido.update(dto, {
@@ -138,27 +144,50 @@ class RecorridoService {
   }
 
   public async findAll(params: FindAllRecorridosParams) {
+    logger.debug(`recorrido findAll params ${JSON.stringify(params)}`);
     const where = this.generateWhereConditions(params);
     const order = generateOrderConditions(params);
     const { limit, offset } = generatePaginationParams(params);
-    const recorridos = await Recorrido.findAll({
+
+    const include = this.generateIncludeConditions(params);
+
+    const queryOptions: FindOptions = {
       where,
       order,
       limit,
       offset,
-      include: [
-        { model: EstadoRecorrido, as: 'estados' },
-        { model: Reserva, as: 'reservas' },
-      ],
-    });
-    return recorridos;
+      include,
+    };
+
+    const [meta, items] = await Promise.all([
+      this.getCountAndMetadata(queryOptions, params.page, limit),
+      Recorrido.findAll(queryOptions),
+    ]);
+
+    return { items, meta };
   }
 
   public async findById(id: number, transaction?: Transaction) {
     return Recorrido.findByPk(id, {
       include: [
         { model: EstadoRecorrido, as: 'estados' },
-        { model: Reserva, as: 'reservas' },
+        {
+          model: Reserva,
+          as: 'reservas',
+          include: [
+            {
+              model: InstanciaEvento,
+              as: 'instanciaEvento',
+              include: [
+                {
+                  model: Evento,
+                  as: 'evento',
+                  include: [{ model: Sucursal, as: 'sucursal' }],
+                },
+              ],
+            },
+          ],
+        },
       ],
       transaction,
     });
@@ -189,6 +218,13 @@ class RecorridoService {
       if (!recorrido) throw errors.app.recorrido.not_found;
       await recorrido.destroy({ transaction });
 
+      // Cascade with its custom delete logic (status + soft delete)
+      await Promise.all(
+        recorrido.reservas.map(async (reserva) => {
+          await reservaService.delete(reserva.id, transaction);
+        }),
+      );
+
       auditEmitter.emitEntry({
         tipoEvento: 'recorrido:delete',
         valor: recorrido.dataValues,
@@ -207,8 +243,79 @@ class RecorridoService {
   private generateWhereConditions(params: FindAllRecorridosParams) {
     const where: WhereOptions<Recorrido> = {};
     if (params.userId) where.userId = params.userId;
-    if (params.estados) where.estados = { nombre: { [Op.in]: params.estados } };
     return where;
+  }
+
+  private generateIncludeConditions(params: FindAllRecorridosParams) {
+    const include: FindOptions['include'] = [
+      { model: EstadoRecorrido, as: 'estados' },
+      {
+        model: Reserva,
+        as: 'reservas',
+        include: [
+          {
+            model: InstanciaEvento,
+            as: 'instanciaEvento',
+            include: [
+              {
+                model: Evento,
+                as: 'evento',
+                include: [{ model: Sucursal, as: 'sucursal' }],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    // If filtering by estados, add where condition to the estados include
+    if (params.estados) {
+      include[0] = {
+        model: EstadoRecorrido,
+        as: 'estados',
+        where: {
+          nombre: params.estados,
+        },
+        required: true, // This makes it an INNER JOIN, filtering out recorridos without this estado
+      };
+    }
+
+    return include;
+  }
+
+  private async getCountAndMetadata(
+    queryOptions: FindOptions,
+    page: number,
+    limit: number,
+  ) {
+    // For count queries, we need to include the estados filter if present
+    const { include, ...rest } = queryOptions;
+    const countOptions: FindOptions = { ...rest };
+
+    // If there's an estados filter in the include, we need to add it to the count query
+    if (include && Array.isArray(include)) {
+      const estadosInclude = include.find(
+        (inc) =>
+          typeof inc === 'object' &&
+          inc !== null &&
+          'as' in inc &&
+          inc.as === 'estados' &&
+          'where' in inc &&
+          inc.where,
+      );
+      if (estadosInclude) {
+        countOptions.include = [estadosInclude];
+      }
+    }
+
+    const totalItems = await Recorrido.count(countOptions);
+
+    return {
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: page || 1,
+      itemsPerPage: limit,
+    };
   }
 }
 export const recorridoService = new RecorridoService();

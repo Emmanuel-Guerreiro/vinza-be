@@ -142,7 +142,34 @@ const router = Router();
  *       500:
  *         description: Internal server error
  */
-router.get('', controller.getAll);
+router.get('', authMiddleware, controller.getAll);
+
+/**
+ * @openapi
+ * /eventos/instancia/{instanciaId}:
+ *   get:
+ *     summary: Get an evento by instanciaId
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: instanciaId
+ *         in: path
+ *         required: true
+ *         description: The id of the instancia
+ *     responses:
+ *       200:
+ *         description: Evento found successfully
+ *       400:
+ *         description: Bad request - Invalid filter parameters
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/instancia/:instanciaId',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_READ]),
+  controller.getInstanciaEvento,
+);
 
 /**
  * @openapi
@@ -550,7 +577,7 @@ router.delete(
  *       500:
  *         description: Internal server error
  */
-router.get('/:id/instancias', controller.getInstanciasEvento);
+router.get('/:id/instancias', authMiddleware, controller.getInstanciasEvento);
 
 /**
  * @openapi
