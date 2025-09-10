@@ -104,6 +104,12 @@ class EventoService {
           model: Sucursal,
           where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
           required: !!params.bodegaId,
+          include: [
+            {
+              model: Bodega,
+              as: 'bodega',
+            },
+          ],
         },
         {
           model: RecurrenciaEvento,
