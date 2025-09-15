@@ -9,7 +9,7 @@ import { eventoService } from '@/evento/service';
 import { InstanciaEvento } from '@/instancia-evento/model';
 import { Recorrido } from '@/recorrido/model';
 import { recorridoService } from '@/recorrido/service';
-import { Op, Transaction, WhereOptions } from 'sequelize';
+import { Op, Transaction, WhereOptions, FindOptions } from 'sequelize';
 import { Reserva } from './model';
 import {
   CreateReservaDto,
@@ -20,6 +20,7 @@ import {
   generateOrderConditions,
   generatePaginationParams,
 } from '@/pagination';
+import { PaginatedResponse } from '@/pagination/types';
 import logger from '@/logger';
 
 class ReservaService {
@@ -224,12 +225,14 @@ class ReservaService {
     }
   }
 
-  public async findAll(filter: ReservaFilterParams) {
+  public async findAll(
+    filter: ReservaFilterParams,
+  ): Promise<PaginatedResponse<Reserva>> {
     const where = this.generateWhereConditions(filter);
     const order = generateOrderConditions(filter);
     const { limit, offset } = generatePaginationParams(filter);
 
-    return Reserva.findAll({
+    const queryOptions = {
       include: [
         {
           model: EstadoReserva,
@@ -250,7 +253,17 @@ class ReservaService {
       order,
       limit,
       offset,
-    });
+    };
+
+    const [meta, items] = await Promise.all([
+      this.getCountAndMetadata(queryOptions, filter.page, limit),
+      Reserva.findAll(queryOptions),
+    ]);
+
+    return {
+      items,
+      meta,
+    };
   }
 
   public async findOne(id: number, transaction?: Transaction) {
@@ -325,6 +338,27 @@ class ReservaService {
       ],
       distinct: true,
     });
+  }
+
+  /**
+   * Get total count of items and generate complete pagination metadata
+   */
+  private async getCountAndMetadata(
+    queryOptions: FindOptions,
+    page: number,
+    limit: number,
+  ) {
+    const countResult = await Reserva.count(queryOptions);
+    const totalItems = Array.isArray(countResult)
+      ? countResult.length
+      : countResult;
+
+    return {
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: page || 1,
+      itemsPerPage: limit,
+    };
   }
 
   private generateWhereConditions(filter: ReservaFilterParams) {
