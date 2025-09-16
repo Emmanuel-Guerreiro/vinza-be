@@ -23,6 +23,7 @@ import { InstanciaEvento } from '@/instancia-evento/model';
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { valoracionService } from '@/valoracion/service';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
+import { isRestrictedContext } from '@/context';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
@@ -77,11 +78,22 @@ class EventoService {
 
   public async findAll(
     params: FindAllParams,
+    userBodegaId?: number,
   ): Promise<PaginatedResponse<Evento>> {
     logger.debug(`evento findAll params ${JSON.stringify(params)}`);
-    const where = this.generateWhereConditions(params);
-    const order = generateOrderConditions(params);
-    const { limit, offset } = generatePaginationParams(params);
+
+    // Si estamos en contexto restricted, forzar filtrado por bodegaId del usuario
+    const modifiedParams = { ...params };
+    if (isRestrictedContext() && userBodegaId) {
+      modifiedParams.bodegaId = userBodegaId.toString();
+      logger.debug(
+        `Aplicando filtro de bodegaId ${userBodegaId} en contexto restricted`,
+      );
+    }
+
+    const where = this.generateWhereConditions(modifiedParams);
+    const order = generateOrderConditions(modifiedParams);
+    const { limit, offset } = generatePaginationParams(modifiedParams);
 
     const queryOptions: FindOptions = {
       where,
@@ -92,20 +104,26 @@ class EventoService {
         {
           as: 'categoria',
           model: CategoriaEvento,
-          where: params.categoriaId ? { id: params.categoriaId } : undefined,
-          required: !!params.categoriaId,
+          where: modifiedParams.categoriaId
+            ? { id: modifiedParams.categoriaId }
+            : undefined,
+          required: !!modifiedParams.categoriaId,
         },
         {
           as: 'estado',
           model: EstadoEvento,
-          where: params.estadoId ? { id: params.estadoId } : undefined,
-          required: !!params.estadoId,
+          where: modifiedParams.estadoId
+            ? { id: modifiedParams.estadoId }
+            : undefined,
+          required: !!modifiedParams.estadoId,
         },
         {
           as: 'sucursal',
           model: Sucursal,
-          where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
-          required: !!params.bodegaId,
+          where: modifiedParams.bodegaId
+            ? { bodegaId: modifiedParams.bodegaId }
+            : undefined,
+          required: !!modifiedParams.bodegaId,
           include: [
             {
               model: Bodega,
@@ -120,14 +138,14 @@ class EventoService {
         {
           as: 'valoracionMedia',
           model: ValoracionMedia,
-          where: params.puntuacionMinima
+          where: modifiedParams.puntuacionMinima
             ? {
                 valor_medio: {
-                  [Op.gte]: params.puntuacionMinima,
+                  [Op.gte]: modifiedParams.puntuacionMinima,
                 },
               }
             : undefined,
-          required: !!params.puntuacionMinima,
+          required: !!modifiedParams.puntuacionMinima,
         },
         {
           model: InstanciaEvento,
@@ -143,7 +161,7 @@ class EventoService {
     };
 
     const [meta, items] = await Promise.all([
-      this.getCountAndMetadata(queryOptions, params.page, limit),
+      this.getCountAndMetadata(queryOptions, modifiedParams.page, limit),
       Evento.findAll(queryOptions),
     ]);
 

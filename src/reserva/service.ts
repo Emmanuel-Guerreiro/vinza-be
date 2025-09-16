@@ -22,6 +22,8 @@ import {
 } from '@/pagination';
 import { PaginatedResponse } from '@/pagination/types';
 import logger from '@/logger';
+import { isRestrictedContext } from '@/context';
+import { Sucursal } from '@/sucursal/model';
 
 class ReservaService {
   public async create(dto: CreateReservaDto) {
@@ -227,13 +229,46 @@ class ReservaService {
 
   public async findAll(
     filter: ReservaFilterParams,
+    userBodegaId?: number,
   ): Promise<PaginatedResponse<Reserva>> {
     const where = this.generateWhereConditions(filter);
     const order = generateOrderConditions(filter);
     const { limit, offset } = generatePaginationParams(filter);
 
-    const queryOptions = {
-      include: [
+    // Configurar include dependiendo del contexto
+    let includeOptions: unknown[];
+
+    if (isRestrictedContext() && userBodegaId) {
+      logger.debug(
+        `Aplicando filtro de bodegaId ${userBodegaId} en contexto restricted para reservas`,
+      );
+
+      includeOptions = [
+        {
+          model: EstadoReserva,
+          as: 'estados',
+        },
+        {
+          model: InstanciaEvento,
+          as: 'instanciaEvento',
+          include: [
+            {
+              model: Evento,
+              as: 'evento',
+              include: [
+                {
+                  model: Sucursal,
+                  as: 'sucursal',
+                  where: { bodegaId: userBodegaId },
+                  required: true,
+                },
+              ],
+            },
+          ],
+        },
+      ];
+    } else {
+      includeOptions = [
         {
           model: EstadoReserva,
           as: 'estados',
@@ -248,7 +283,11 @@ class ReservaService {
             },
           ],
         },
-      ],
+      ];
+    }
+
+    const queryOptions = {
+      include: includeOptions,
       where,
       order,
       limit,
@@ -256,8 +295,10 @@ class ReservaService {
     };
 
     const [meta, items] = await Promise.all([
-      this.getCountAndMetadata(queryOptions, filter.page, limit),
-      Reserva.findAll(queryOptions),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this.getCountAndMetadata(queryOptions as any, filter.page, limit),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      Reserva.findAll(queryOptions as any),
     ]);
 
     return {

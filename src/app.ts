@@ -78,6 +78,7 @@ export default async function () {
   app.use(contextMiddleware);
 
   app.use(`/api/${config.API_VERSION}`, initializeRouter());
+  app.use(`/api/${config.API_VERSION}/restricted`, initializeRouter());
 
   setupDocs(app);
 

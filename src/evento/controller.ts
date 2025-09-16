@@ -25,7 +25,9 @@ export class EventoController {
 
   public getAll(req: Request, res: Response) {
     const query = findAllParamsSchema.parse(req.query);
-    this.eventoService.findAll(query).then((data) => res.json(data));
+    this.eventoService
+      .findAll(query, req.bodegaId)
+      .then((data) => res.json(data));
   }
 
   public getOne(req: Request, res: Response) {

@@ -23,7 +23,7 @@ export class ReservaController {
       .parseAsync(req.query)
       .then((filter) =>
         this.reservaService
-          .findAll(filter)
+          .findAll(filter, req.bodegaId)
           .then((data) => res.json(data))
           .catch((err) => next(err)),
       )

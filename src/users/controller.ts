@@ -18,8 +18,8 @@ export class UsersController {
     this.updateMe = this.updateMe.bind(this);
   }
 
-  public getAll(_req: Request, res: Response) {
-    this.usersService.findAll().then((data) => res.json(data));
+  public getAll(req: Request, res: Response) {
+    this.usersService.findAll(req.bodegaId).then((data) => res.json(data));
   }
 
   public getOne(req: Request, res: Response) {

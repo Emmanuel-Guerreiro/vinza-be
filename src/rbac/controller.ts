@@ -20,7 +20,7 @@ export class RolesController {
 
   public async findAll(req: Request, res: Response) {
     this.rolesService
-      .findAll()
+      .findAll(req.bodegaId)
       .then((roles) => res.json(roles))
       .catch((e) => res.json(e));
   }

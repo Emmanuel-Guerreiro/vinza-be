@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { SucursalController } from './controller';
 import { sucursalService } from './service';
 import logger from '@/logger';
+import { authMiddleware } from '@/auth/middleware';
 
 const controller = new SucursalController(sucursalService);
 const router = Router();
@@ -17,7 +18,7 @@ const router = Router();
  *       200:
  *         description: Success
  */
-router.get('', controller.getAll);
+router.get('', authMiddleware, controller.getAll);
 
 /**
  * @openapi

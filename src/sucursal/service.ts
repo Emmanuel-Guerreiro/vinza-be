@@ -4,6 +4,8 @@ import { CreateSucursalDto, UpdateSucursalDto } from './types';
 import { sequelize } from '@/db';
 import { auditEmitter } from '@/audit/event';
 import { Transaction } from 'sequelize';
+import { isRestrictedContext } from '@/context';
+import logger from '@/logger';
 
 class SucursalService {
   public async create(dto: CreateSucursalDto, transaction?: Transaction) {
@@ -39,8 +41,20 @@ class SucursalService {
     return sucursal;
   }
 
-  public findAll() {
-    return Sucursal.findAll();
+  public findAll(userBodegaId?: number) {
+    const whereConditions: Record<string, unknown> = {};
+
+    // Si estamos en contexto restricted, filtrar por bodegaId del usuario
+    if (isRestrictedContext() && userBodegaId) {
+      whereConditions.bodegaId = userBodegaId;
+      logger.debug(
+        `Aplicando filtro de bodegaId ${userBodegaId} en contexto restricted para sucursales`,
+      );
+    }
+
+    return Sucursal.findAll({
+      where: whereConditions,
+    });
   }
 
   public async findOne(id: number) {

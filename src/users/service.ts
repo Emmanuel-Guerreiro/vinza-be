@@ -7,6 +7,7 @@ import { Permiso, Rol } from '@/rbac/model';
 import { Op, Transaction } from 'sequelize';
 import { User } from './model';
 import { CreateUserDto, UpdateUserDto } from './types';
+import { isRestrictedContext } from '@/context';
 
 class UsersService {
   public async create(dto: CreateUserDto) {
@@ -33,8 +34,19 @@ class UsersService {
     }
   }
 
-  public async findAll() {
+  public async findAll(userBodegaId?: number) {
+    const whereConditions: Record<string, unknown> = {};
+
+    // Si estamos en contexto restricted, filtrar por bodegaId del usuario
+    if (isRestrictedContext() && userBodegaId) {
+      whereConditions.bodegaId = userBodegaId;
+      logger.debug(
+        `Aplicando filtro de bodegaId ${userBodegaId} en contexto restricted para usuarios`,
+      );
+    }
+
     const users = await User.findAll({
+      where: whereConditions,
       attributes: {
         exclude: ['contrasena'],
       },

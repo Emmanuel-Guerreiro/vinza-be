@@ -7,6 +7,8 @@ import {
   UpdateRoleDto,
 } from './types';
 import { sequelize } from '@/db';
+import { isRestrictedContext } from '@/context';
+import logger from '@/logger';
 
 export class RolesService {
   public async create(dto: CreateRolDto) {
@@ -38,8 +40,19 @@ export class RolesService {
     }
   }
 
-  public async findAll() {
+  public async findAll(userBodegaId?: number) {
+    const whereConditions: Record<string, unknown> = {};
+
+    // Si estamos en contexto restricted, filtrar por bodegaId del usuario
+    if (isRestrictedContext() && userBodegaId) {
+      whereConditions.bodegaId = userBodegaId;
+      logger.debug(
+        `Aplicando filtro de bodegaId ${userBodegaId} en contexto restricted para roles`,
+      );
+    }
+
     const roles = await Rol.findAll({
+      where: whereConditions,
       include: [{ model: Permiso, as: 'permisos' }],
     });
     return roles;

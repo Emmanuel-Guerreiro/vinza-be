@@ -14,8 +14,8 @@ export class SucursalController {
     this.delete = this.delete.bind(this);
   }
 
-  public getAll(_req: Request, res: Response) {
-    this.sucursalService.findAll().then((data) => res.json(data));
+  public getAll(req: Request, res: Response) {
+    this.sucursalService.findAll(req.bodegaId).then((data) => res.json(data));
   }
 
   public getOne(req: Request, res: Response) {
