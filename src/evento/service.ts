@@ -48,21 +48,19 @@ class EventoService {
 
       await valoracionService.initializeValoracionMedia(evento.id, transaction);
 
-      await transaction.commit();
-
       // Generar instancias automáticamente después de crear el evento
-      try {
-        await instanciaEventoService.generarInstanciasParaEvento(evento.id);
-        logger.info(
-          `Instancias generadas automáticamente para evento ${evento.id}`,
-        );
-      } catch (error) {
-        logger.error(
-          `Error generando instancias automáticamente para evento ${evento.id}:`,
-          error,
-        );
-        // No fallar la creación del evento si falla la generación de instancias
-      }
+
+      await instanciaEventoService.generarInstanciasParaEvento(
+        {
+          eventoId: evento.id,
+        },
+        transaction,
+      );
+      logger.info(
+        `Instancias generadas automáticamente para evento ${evento.id}`,
+      );
+
+      await transaction.commit();
 
       auditEmitter.emitEntry({
         tipoEvento: 'evento:create',
@@ -71,6 +69,7 @@ class EventoService {
 
       return this.findOne(evento.id);
     } catch (error) {
+      logger.error(`error create evento ${JSON.stringify(error)}`);
       await transaction.rollback();
       throw error;
     }
@@ -91,16 +90,19 @@ class EventoService {
       offset,
       include: [
         {
+          as: 'categoria',
           model: CategoriaEvento,
           where: params.categoriaId ? { id: params.categoriaId } : undefined,
           required: !!params.categoriaId,
         },
         {
+          as: 'estado',
           model: EstadoEvento,
           where: params.estadoId ? { id: params.estadoId } : undefined,
           required: !!params.estadoId,
         },
         {
+          as: 'sucursal',
           model: Sucursal,
           where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
           required: !!params.bodegaId,
@@ -113,8 +115,10 @@ class EventoService {
         },
         {
           model: RecurrenciaEvento,
+          as: 'recurrencias',
         },
         {
+          as: 'valoracionMedia',
           model: ValoracionMedia,
           where: params.puntuacionMinima
             ? {
@@ -124,6 +128,16 @@ class EventoService {
               }
             : undefined,
           required: !!params.puntuacionMinima,
+        },
+        {
+          model: InstanciaEvento,
+          as: 'instancias',
+          include: [
+            {
+              as: 'estado',
+              model: EstadoInstanciaEvento,
+            },
+          ],
         },
       ],
     };
@@ -143,29 +157,37 @@ class EventoService {
     const evento = await Evento.findByPk(id, {
       include: [
         {
+          as: 'categoria',
           model: CategoriaEvento,
         },
         {
+          as: 'estado',
           model: EstadoEvento,
         },
         {
+          as: 'sucursal',
           model: Sucursal,
           include: [
             {
+              as: 'bodega',
               model: Bodega,
             },
           ],
         },
         {
+          as: 'recurrencias',
           model: RecurrenciaEvento,
         },
         {
+          as: 'valoracionMedia',
           model: ValoracionMedia,
         },
         {
           model: InstanciaEvento,
+          as: 'instancias',
           include: [
             {
+              as: 'estado',
               model: EstadoInstanciaEvento,
             },
           ],
@@ -386,7 +408,9 @@ class EventoService {
     }
 
     // Llamar al servicio de instancia-evento para generar instancias del evento específico
-    return await instanciaEventoService.generarInstanciasParaEvento(eventoId);
+    return await instanciaEventoService.generarInstanciasParaEvento({
+      eventoId,
+    });
   }
 
   /**

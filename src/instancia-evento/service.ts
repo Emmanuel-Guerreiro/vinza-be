@@ -286,8 +286,10 @@ class InstanciaEventoService {
       for (const evento of eventosConRecurrencias) {
         try {
           const instanciasGeneradas = await this.generarInstanciasParaEvento(
-            evento.id,
-            diasMaximos,
+            {
+              eventoId: evento.id,
+              diasMaximos,
+            },
             transaction,
           );
           totalInstanciasCreadas += instanciasGeneradas.totalInstanciasCreadas;
@@ -388,9 +390,8 @@ class InstanciaEventoService {
       });
 
       if (!estadoActiva) {
-        logger.warn(
-          'No se encontró el estado ACTIVA, creando instancia sin estado',
-        );
+        logger.warn('No se encontró el estado ACTIVA bd mal inicializada.');
+        throw errors.app.instancia_evento.estado_not_found;
       }
 
       // Crear la instancia única
@@ -428,6 +429,7 @@ class InstanciaEventoService {
   ) {
     const fechaActual = new Date();
     const fechaLimite = new Date();
+
     fechaLimite.setDate(fechaLimite.getDate() + diasMaximos);
 
     // Convertir el día de la semana a número (0 = Domingo, 1 = Lunes, etc.)
@@ -442,6 +444,7 @@ class InstanciaEventoService {
     };
 
     const diaSemana = diaSemanaMap[recurrencia.dia];
+
     if (diaSemana === undefined) {
       logger.warn(`Día de semana no válido: ${recurrencia.dia}`);
       return 0;
@@ -487,6 +490,15 @@ class InstanciaEventoService {
       ? new Date(Math.min(fechaLimite.getTime(), fechaHasta.getTime()))
       : fechaLimite;
 
+    const estadoActiva = await EstadoInstanciaEvento.findOne({
+      where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
+    });
+
+    if (!estadoActiva) {
+      logger.warn('No se encontró el estado ACTIVA bd mal inicializada.');
+      throw errors.app.instancia_evento.estado_not_found;
+    }
+
     while (fechaInicio <= fechaFinal) {
       // Verificar que la fecha esté en el futuro
       if (fechaInicio <= fechaActual) {
@@ -504,34 +516,26 @@ class InstanciaEventoService {
         transaction,
       });
 
-      if (!instanciaExistente) {
-        // Buscar el estado ACTIVA por nombre
-        const estadoActiva = await EstadoInstanciaEvento.findOne({
-          where: { nombre: EstadoInstanciaEventoEnum.ACTIVA },
-        });
-
-        if (!estadoActiva) {
-          logger.warn(
-            'No se encontró el estado ACTIVA, creando instancia sin estado',
-          );
-        }
-
-        // Crear nueva instancia
-        await InstanciaEvento.create(
-          {
-            fecha: fechaInicio,
-            eventoId: evento.id,
-            recurrenciaEventoId: recurrencia.id,
-            estadoId: estadoActiva?.id,
-          },
-          { transaction },
-        );
-
-        instanciasCreadas++;
-        logger.debug(
-          `Instancia creada para evento ${evento.nombre} en ${fechaInicio.toISOString()}`,
-        );
+      if (instanciaExistente) {
+        continue;
       }
+      // Buscar el estado ACTIVA por nombre
+
+      // Crear nueva instancia
+      await InstanciaEvento.create(
+        {
+          fecha: fechaInicio,
+          eventoId: evento.id,
+          recurrenciaEventoId: recurrencia.id,
+          estadoId: estadoActiva?.id,
+        },
+        { transaction },
+      );
+
+      instanciasCreadas++;
+      logger.debug(
+        `Instancia creada para evento ${evento.nombre} en ${fechaInicio.toISOString()}`,
+      );
 
       // Ir al próximo día de la semana
       fechaInicio = new Date(fechaInicio.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -545,8 +549,7 @@ class InstanciaEventoService {
    * Método unificado que maneja tanto eventos únicos como recurrentes
    */
   public async generarInstanciasParaEvento(
-    eventoId: number,
-    diasMaximos?: number,
+    { eventoId, diasMaximos }: { eventoId: number; diasMaximos?: number },
     transaction?: Transaction,
   ): Promise<{ totalInstanciasCreadas: number }> {
     // Si no se proporciona transacción, crear una nueva
@@ -587,7 +590,6 @@ class InstanciaEventoService {
         ],
         transaction: useTransaction,
       });
-
       if (!evento) {
         throw errors.app.evento.not_found;
       }
@@ -614,7 +616,9 @@ class InstanciaEventoService {
             diasMaximos,
             useTransaction,
           );
-          if (instanciaCreada) instanciasCreadas++;
+          if (instanciaCreada) {
+            instanciasCreadas++;
+          }
         } else {
           // Evento recurrente - generar múltiples instancias según el patrón
           const instanciasGeneradas =
