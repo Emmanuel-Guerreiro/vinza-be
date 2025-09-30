@@ -39,7 +39,10 @@ export const authMiddleware = (
       if (err.message === 'jwt expired') {
         throw errors.app.auth.invalid_or_expired_code;
       }
+      // Handle all JWT errors (malformed, invalid signature, etc.)
+      throw errors.app.auth.unauthorized;
     }
-    throw err;
+    // Handle other errors (like JSON parsing errors)
+    throw errors.app.auth.unauthorized;
   }
 };

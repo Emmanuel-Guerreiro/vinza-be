@@ -230,6 +230,28 @@ async function seed() {
       permisos: adminPermissions.map((p) => p.id),
     });
 
+    // Create operador role (limited permissions - no event management)
+    const operadorRole = await rolesService.create({
+      nombre: 'OPERADOR',
+      bodegaId: zuccardi.id,
+    });
+
+    // Limited permissions for operador: read permissions + reservations management
+    const operadorPermissions = permissions.filter(
+      (p) =>
+        p.nombre === Permissions.EVENTOS_READ ||
+        p.nombre === Permissions.RESERVAS_READ ||
+        p.nombre === Permissions.RESERVAS_MANAGE ||
+        p.nombre === Permissions.INSTANCIA_EVENTOS_READ ||
+        p.nombre === Permissions.VALORACIONES_READ ||
+        p.nombre === Permissions.BODEGAS_READ ||
+        p.nombre === Permissions.USERS_READ,
+    );
+
+    await rolesService.update(operadorRole.id, {
+      permisos: operadorPermissions.map((p) => p.id),
+    });
+
     // ========================================
     // 5. CREAR USUARIOS
     // ========================================
@@ -246,6 +268,19 @@ async function seed() {
       validado: new Date(),
     });
     await adminUser.$set('roles', [adminRole.id]);
+
+    // Create operador user with limited permissions
+    const operadorPassword = await hashPassword('operador123');
+    const operadorUser = await User.create({
+      nombre: 'Operador',
+      apellido: 'Zuccardi',
+      email: 'operador@zuccardi.com',
+      contrasena: operadorPassword,
+      roles: [operadorRole.id],
+      bodegaId: zuccardi.id,
+      validado: new Date(),
+    });
+    await operadorUser.$set('roles', [operadorRole.id]);
 
     // Create sudoer user with SUDO role and no bodega
     const sudoPassword = await hashPassword('sudo123');
@@ -412,8 +447,8 @@ async function seed() {
         {
           dia: DiaSemana.VIERNES,
           hora: HoraEvento.HORA_18_00,
-          fecha_desde: new Date('2025-09-15'),
-          fecha_hasta: new Date('2025-09-15'),
+          fecha_desde: new Date('2025-10-15'),
+          fecha_hasta: new Date('2025-10-15'),
         },
       ],
     });
@@ -643,6 +678,9 @@ async function seed() {
     console.log('\nADMIN ZUCCARDI (Bodega 1):');
     console.log('  Email: admin@example.com | Password: admin123');
     console.log('  Puede acceder a eventos de Zuccardi');
+    console.log('\nOPERADOR ZUCCARDI (Bodega 1):');
+    console.log('  Email: operador@zuccardi.com | Password: operador123');
+    console.log('  Solo lectura de eventos y gestión de reservas');
     console.log('\nADMIN CATENA ZAPATA (Bodega 2):');
     console.log('  Email: admin@catena.com | Password: catena123');
     console.log('  Puede acceder a eventos de Catena Zapata');

@@ -13,14 +13,14 @@ export function requirePermissions(requiredPermissions: Permissions[]) {
       req.logger.error(
         'User not authenticated. Ensure authMiddleware is used before rbacMiddleware.',
       );
-      throw errors.app.general.not_found;
+      throw errors.app.auth.unauthorized;
     }
 
     // Fetch user with role and permissions
     const user = await usersService.findOne(req.user);
     if (!user) {
       req.logger.error('User not found in database.');
-      throw errors.app.general.not_found;
+      throw errors.app.user.not_found;
     }
 
     // Collect all permission names for the user's role
@@ -39,7 +39,7 @@ export function requirePermissions(requiredPermissions: Permissions[]) {
           .filter((perm) => !userPermissions.includes(perm))
           .join(', ')}`,
       );
-      throw errors.app.general.not_found;
+      throw errors.app.auth.forbidden;
     }
     next();
   };
