@@ -12,6 +12,7 @@ export const createBodegaSchema = z.object({
   direccion: z.string(),
   telefono: z.string(),
   aclaraciones: z.string().optional(),
+  firstUserId: z.coerce.number(),
 });
 
 const bodegaOrderByAttributes = [

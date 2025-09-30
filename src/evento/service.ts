@@ -1,28 +1,27 @@
 import { auditEmitter } from '@/audit/event';
+import { Bodega } from '@/bodega/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
 import { categoriaEventoService } from '@/categoria-evento/service';
 import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { EstadoEvento } from '@/estado-evento/model';
 import { estadoEventoService } from '@/estado-evento/service';
-import { Sucursal } from '@/sucursal/model';
-import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
-import { sucursalService } from '@/sucursal/service';
-import { Evento } from './model';
-import { CreateEventoDto, FindAllParams, UpdateEventoDto } from './types';
-import logger from '@/logger';
-import { PaginatedResponse } from '@/pagination/types';
-import {
-  generatePaginationParams,
-  generateOrderConditions,
-} from '@/pagination';
-import { RecurrenciaEvento } from './model';
-import { Bodega } from '@/bodega/model';
-import { instanciaEventoService } from '@/instancia-evento/service';
+import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
+import { instanciaEventoService } from '@/instancia-evento/service';
+import logger from '@/logger';
+import {
+  generateOrderConditions,
+  generatePaginationParams,
+} from '@/pagination';
+import { PaginatedResponse } from '@/pagination/types';
+import { Sucursal } from '@/sucursal/model';
+import { sucursalService } from '@/sucursal/service';
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { valoracionService } from '@/valoracion/service';
-import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
+import { FindOptions, Op, Transaction, WhereOptions } from 'sequelize';
+import { Evento, RecurrenciaEvento } from './model';
+import { CreateEventoDto, FindAllParams, UpdateEventoDto } from './types';
 
 class EventoService {
   public async create(dto: CreateEventoDto) {
@@ -466,13 +465,8 @@ class EventoService {
       if (!sucursal) throw errors.app.sucursal.not_found;
     }
 
-    // Validar que el nombre no esté duplicado en la misma bodega (solo para create)
-    if (
-      'nombre' in dto &&
-      dto.nombre &&
-      'sucursalId' in dto &&
-      dto.sucursalId
-    ) {
+    // Validar que no hayan 2 eventos activos con el mismo nombre en la misma bodega
+    if (dto.nombre && dto.sucursalId) {
       const existingEvento = await Evento.findOne({
         where: {
           nombre: dto.nombre,

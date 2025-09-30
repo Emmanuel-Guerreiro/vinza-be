@@ -28,8 +28,11 @@ export class EventoController {
     this.eventoService.findAll(query).then((data) => res.json(data));
   }
 
-  public getOne(req: Request, res: Response) {
-    this.eventoService.findOne(+req.params.id).then((data) => res.json(data));
+  public getOne(req: Request, res: Response, next: NextFunction) {
+    this.eventoService
+      .findOne(+req.params.id)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
   }
 
   public create(req: Request, res: Response, next: NextFunction) {

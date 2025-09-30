@@ -7,21 +7,21 @@ import { estadoReservaService } from '@/estado-reserva/service';
 import { Evento } from '@/evento/model';
 import { eventoService } from '@/evento/service';
 import { InstanciaEvento } from '@/instancia-evento/model';
+import logger from '@/logger';
+import {
+  generateOrderConditions,
+  generatePaginationParams,
+} from '@/pagination';
+import { PaginatedResponse } from '@/pagination/types';
 import { Recorrido } from '@/recorrido/model';
 import { recorridoService } from '@/recorrido/service';
-import { Op, Transaction, WhereOptions, FindOptions } from 'sequelize';
+import { FindOptions, Op, Transaction, WhereOptions } from 'sequelize';
 import { Reserva } from './model';
 import {
   CreateReservaDto,
   ReservaFilterParams,
   UpdateReservaDto,
 } from './types';
-import {
-  generateOrderConditions,
-  generatePaginationParams,
-} from '@/pagination';
-import { PaginatedResponse } from '@/pagination/types';
-import logger from '@/logger';
 
 class ReservaService {
   public async create(dto: CreateReservaDto) {
@@ -90,7 +90,8 @@ class ReservaService {
         transaction,
       );
       if (!initialEstadoReserva) {
-        throw errors.app.estadoReserva.estado_not_found;
+        logger.error('Estado reserva not found en ReservaService.create');
+        throw errors.app.estado_reserva.estado_not_found;
       }
       await reserva.$set('estados', [initialEstadoReserva.id], {
         transaction,
@@ -144,7 +145,8 @@ class ReservaService {
         transaction,
       );
       if (!reservaEstadoConfirmada) {
-        throw errors.app.estadoReserva.estado_not_found;
+        logger.error('Estado reserva not found en ReservaService.confirmar');
+        throw errors.app.estado_reserva.estado_not_found;
       }
 
       await reserva.$set('estados', [reservaEstadoConfirmada.id], {
@@ -204,7 +206,10 @@ class ReservaService {
         EstadoReservaEnum.CANCELADA,
         transaction,
       );
-      if (!estadoReserva) throw errors.app.estadoReserva.estado_not_found;
+      if (!estadoReserva) {
+        logger.error('Estado reserva not found en ReservaService.delete');
+        throw errors.app.estado_reserva.estado_not_found;
+      }
 
       // The cancel status is only to make the state machine history consistent
       // But for ease of use, we will not actually delete the reservation

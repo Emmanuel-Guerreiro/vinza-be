@@ -336,6 +336,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 1 creado');
 
     // Evento 2: Taller de cocina mensual
     const evento2 = await eventoService.create({
@@ -361,6 +362,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 2 creado');
 
     // Evento 3: Charlas de tecnología (múltiples horarios por día)
     const evento3 = await eventoService.create({
@@ -398,26 +400,27 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 3 creado');
+    // // Evento 4: Evento único con fecha específica
+    // const evento4 = await eventoService.create({
+    //   nombre: 'Conferencia Única',
+    //   descripcion: 'Conferencia especial sobre innovación',
+    //   cupo: 100,
+    //   sucursalId: mainSucursal.id,
+    //   estadoId: activoEstadoEvento.id,
+    //   categoriaId: categoriaEvento2.id,
+    //   precio: 500,
+    //   recurrencias: [
+    //     {
+    //       dia: DiaSemana.VIERNES,
+    //       hora: HoraEvento.HORA_18_00,
+    //       fecha_desde: new Date('2025-09-15'),
+    //       fecha_hasta: new Date('2025-09-15'),
+    //     },
+    //   ],
+    // });
 
-    // Evento 4: Evento único con fecha específica
-    const evento4 = await eventoService.create({
-      nombre: 'Conferencia Única',
-      descripcion: 'Conferencia especial sobre innovación',
-      cupo: 100,
-      sucursalId: mainSucursal.id,
-      estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento2.id,
-      precio: 500,
-      recurrencias: [
-        {
-          dia: DiaSemana.VIERNES,
-          hora: HoraEvento.HORA_18_00,
-          fecha_desde: new Date('2025-09-15'),
-          fecha_hasta: new Date('2025-09-15'),
-        },
-      ],
-    });
-
+    console.log('Evento 4 creado');
     // Evento 5: Cata de vinos en Catena Zapata (Mendoza)
     const evento5 = await eventoService.create({
       nombre: 'Cata de Vinos Premium',
@@ -436,6 +439,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 5 creado');
 
     // Evento 6: Tour gastronómico en Catena (Buenos Aires)
     const evento6 = await eventoService.create({
@@ -455,6 +459,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 6 creado');
 
     // Evento 7: Clases de cocina regional en Trapiche Central
     const evento7 = await eventoService.create({
@@ -481,6 +486,8 @@ async function seed() {
       ],
     });
 
+    console.log('Evento 7 creado');
+
     // Evento 8: Festival de vinos del norte en Trapiche Norte
     const evento8 = await eventoService.create({
       nombre: 'Festival de Vinos del Norte',
@@ -499,6 +506,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 8 creado');
 
     // Evento 9: Enología para principiantes en Trapiche Sur
     const evento9 = await eventoService.create({
@@ -518,6 +526,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 9 creado');
 
     // Evento 10: Maridaje de vinos en Luigi Bosca
     const evento10 = await eventoService.create({
@@ -543,6 +552,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 10 creado');
 
     // Evento 11: Evento especial en Zuccardi segunda sucursal
     const evento11 = await eventoService.create({
@@ -562,6 +572,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 11 creado');
 
     // Evento 12: Evento único en Luigi Bosca
     const evento12 = await eventoService.create({
@@ -581,6 +592,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 12 creado');
 
     // ========================================
     // 7. CREAR VALORACIONES
@@ -597,7 +609,7 @@ async function seed() {
       evento1,
       evento2,
       evento3,
-      evento4,
+      // evento4,
       evento5,
       evento6,
       evento7,

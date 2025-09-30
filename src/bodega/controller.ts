@@ -32,7 +32,7 @@ export class BodegaController {
 
   public create(req: Request, res: Response) {
     createBodegaSchema
-      .parseAsync(req.body)
+      .parseAsync({ ...req.body, firstUserId: req.user })
       .then((dto) =>
         this.bodegaService.create(dto).then((data) => res.json(data)),
       );

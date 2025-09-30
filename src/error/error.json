@@ -299,9 +299,9 @@
         "status": 500
       }
     },
-    "estadoReserva": {
+    "estado_reserva": {
       "estado_not_found": {
-        "key": "app.EstadoReserva.estado_not_found",
+        "key": "app.estado_reserva.estado_not_found",
         "message": "Estado reserva not found",
         "message_eng": "Estado reserva not found",
         "status": 404
