@@ -17,6 +17,7 @@ import {
 } from '@/pagination';
 import { Op, WhereOptions } from 'sequelize';
 import { Sucursal } from '@/sucursal/model';
+import { usersService } from '@/users/service';
 
 class BodegaService {
   public async create(dto: CreateBodegaDto) {
@@ -40,6 +41,10 @@ class BodegaService {
         },
         transaction,
       );
+
+      const user = await usersService.findOne(dto.firstUserId, transaction);
+      if (!user) throw errors.app.user.not_found;
+      await user.update({ bodegaId: bodega.id }, { transaction });
 
       await transaction.commit();
 

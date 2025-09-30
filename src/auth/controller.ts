@@ -19,9 +19,12 @@ export class AuthController {
     this.requestValidationCode = this.requestValidationCode.bind(this);
   }
 
-  public register(req: Request, res: Response) {
+  public register(req: Request, res: Response, next: NextFunction) {
     const dto = registerSchema.parse(req.body);
-    this.authService.register(dto).then((user) => res.json(user));
+    this.authService
+      .register(dto)
+      .then((user) => res.json(user))
+      .catch((err) => next(err));
   }
 
   public login(req: Request, res: Response, next: NextFunction) {

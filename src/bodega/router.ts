@@ -91,7 +91,7 @@ router.get('/:id', controller.getOne);
  *       500:
  *         description: Internal server error
  */
-router.post('', controller.create);
+router.post('', authMiddleware, controller.create);
 
 /**
  * @openapi
