@@ -44,6 +44,10 @@ class UsersService {
           as: 'roles',
           include: [{ model: Permiso, as: 'permisos' }],
         },
+        {
+          model: Bodega,
+          as: 'bodega',
+        },
       ],
     });
     return users;
@@ -60,6 +64,10 @@ class UsersService {
           model: Rol,
           as: 'roles',
           include: [{ model: Permiso, as: 'permisos' }],
+        },
+        {
+          model: Bodega,
+          as: 'bodega',
         },
       ],
     });
