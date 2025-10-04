@@ -199,7 +199,7 @@ router.delete('/:id', controller.delete);
 router.post(
   '/:id/validate',
   authMiddleware,
-  requirePermissions([Permissions.BODEGAS_VALIDATE]),
+  requirePermissions([Permissions.SUPERVISOR_BODEGA]),
   controller.validate,
 );
 

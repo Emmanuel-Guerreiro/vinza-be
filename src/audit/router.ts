@@ -88,7 +88,7 @@ const auditController = new AuditController(auditService);
 router.get(
   '',
   authMiddleware,
-  requirePermissions([Permissions.SUDO]),
+  requirePermissions([Permissions.ADMINISTRADOR_SISTEMA]),
   auditController.findAll,
 );
 

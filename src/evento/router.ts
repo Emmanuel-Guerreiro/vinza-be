@@ -362,8 +362,8 @@ router.get(
  *   security:
  *     - bearerAuth: []
  *   post:
- *     summary: Create an evento [EVENTOS_MANAGE]
- *     description: Create a new evento with recurrences. Requires EVENTOS_MANAGE permission.
+ *     summary: Create an evento [GESTOR_EVENTOS]
+ *     description: Create a new evento with recurrences. Requires GESTOR_EVENTOS permission.
  *     tags:
  *       - Eventos
  *     requestBody:
@@ -466,7 +466,7 @@ router.get(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions. EVENTOS_MANAGE required.
+ *         description: Forbidden - Insufficient permissions. GESTOR_EVENTOS required.
  *       400:
  *         description: Bad request
  *       500:
@@ -475,7 +475,7 @@ router.get(
 router.post(
   '',
   authMiddleware,
-  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  requirePermissions([Permissions.GESTOR_EVENTOS]),
   sucursalAuthMiddleware,
   controller.create,
 );
@@ -486,8 +486,8 @@ router.post(
  *   security:
  *     - bearerAuth: []
  *   put:
- *     summary: Update an evento [EVENTOS_MANAGE]
- *     description: Update an existing evento . Requires EVENTOS_MANAGE permission.
+ *     summary: Update an evento [GESTOR_EVENTOS]
+ *     description: Update an existing evento . Requires GESTOR_EVENTOS permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -587,7 +587,7 @@ router.post(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
+ *         description: Forbidden - Insufficient permissions . GESTOR_EVENTOS required.
  *       400:
  *         description: Bad request
  *       500:
@@ -596,7 +596,7 @@ router.post(
 router.put(
   '/:id',
   authMiddleware,
-  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  requirePermissions([Permissions.GESTOR_EVENTOS]),
   eventoAuthMiddleware,
   controller.update,
 );
@@ -607,8 +607,8 @@ router.put(
  *   security:
  *     - bearerAuth: []
  *   delete:
- *     summary: Delete an evento [EVENTOS_MANAGE]
- *     description: Delete an existing evento . Requires EVENTOS_MANAGE permission.
+ *     summary: Delete an evento [GESTOR_EVENTOS]
+ *     description: Delete an existing evento . Requires GESTOR_EVENTOS permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -632,7 +632,7 @@ router.put(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
+ *         description: Forbidden - Insufficient permissions . GESTOR_EVENTOS required.
  *       400:
  *         description: Bad request
  *       500:
@@ -641,7 +641,7 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
-  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  requirePermissions([Permissions.GESTOR_EVENTOS]),
   eventoAuthMiddleware,
   controller.delete,
 );
@@ -709,8 +709,8 @@ router.get('/:id/instancias', authMiddleware, controller.getInstanciasEvento);
  *   security:
  *     - bearerAuth: []
  *   post:
- *     summary: Force generation of instances for a specific event [EVENTOS_MANAGE]
- *     description: Force generation of instances for a specific event . Requires EVENTOS_MANAGE permission.
+ *     summary: Force generation of instances for a specific event [GESTOR_EVENTOS]
+ *     description: Force generation of instances for a specific event . Requires GESTOR_EVENTOS permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -732,7 +732,7 @@ router.get('/:id/instancias', authMiddleware, controller.getInstanciasEvento);
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
+ *         description: Forbidden - Insufficient permissions . GESTOR_EVENTOS required.
  *       404:
  *         description: Event not found or event has no recurrences
  *       500:
@@ -741,7 +741,7 @@ router.get('/:id/instancias', authMiddleware, controller.getInstanciasEvento);
 router.post(
   '/:id/generar-instancias',
   authMiddleware,
-  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  requirePermissions([Permissions.GESTOR_EVENTOS]),
   eventoAuthMiddleware,
   controller.generarInstanciasEvento,
 );
@@ -752,8 +752,8 @@ router.post(
  *   security:
  *     - bearerAuth: []
  *   put:
- *     summary: Suspend a specific instance of an event [EVENTOS_MANAGE]
- *     description: Suspend a specific instance of an event. Requires EVENTOS_MANAGE permission.
+ *     summary: Suspend a specific instance of an event [GESTOR_EVENTOS]
+ *     description: Suspend a specific instance of an event. Requires GESTOR_EVENTOS permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -782,7 +782,7 @@ router.post(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
+ *         description: Forbidden - Insufficient permissions . GESTOR_EVENTOS required.
  *       404:
  *         description: Instance not found
  *       500:
@@ -791,7 +791,7 @@ router.post(
 router.put(
   '/instancias/:instanciaId/suspender',
   authMiddleware,
-  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  requirePermissions([Permissions.GESTOR_EVENTOS]),
   instanciaEventoAuthMiddleware,
   controller.suspenderInstanciaEvento,
 );
@@ -802,8 +802,8 @@ router.put(
  *   security:
  *     - bearerAuth: []
  *   put:
- *     summary: Reactivate a specific instance of an event [EVENTOS_MANAGE]
- *     description: Reactivate a specific instance of an event. Requires EVENTOS_MANAGE permission.
+ *     summary: Reactivate a specific instance of an event [GESTOR_EVENTOS]
+ *     description: Reactivate a specific instance of an event. Requires GESTOR_EVENTOS permission.
  *     tags:
  *       - Eventos
  *     parameters:
@@ -832,7 +832,7 @@ router.put(
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *       403:
- *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
+ *         description: Forbidden - Insufficient permissions . GESTOR_EVENTOS required.
  *       404:
  *         description: Instance not found
  *       500:
@@ -841,7 +841,7 @@ router.put(
 router.put(
   '/instancias/:instanciaId/reactivar',
   authMiddleware,
-  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  requirePermissions([Permissions.GESTOR_EVENTOS]),
   instanciaEventoAuthMiddleware,
   controller.reactivarInstanciaEvento,
 );

@@ -22,7 +22,7 @@ const controller = new MaximosDiasAdelanteReservaController();
 router.get(
   '/',
   authMiddleware,
-  requirePermissions([Permissions.SUDO]),
+  requirePermissions([Permissions.ADMINISTRADOR_SISTEMA]),
   controller.findAll,
 );
 
@@ -52,7 +52,7 @@ router.get(
 router.put(
   '/',
   authMiddleware,
-  requirePermissions([Permissions.SUDO]),
+  requirePermissions([Permissions.ADMINISTRADOR_SISTEMA]),
   controller.patch,
 );
 

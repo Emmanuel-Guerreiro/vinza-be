@@ -53,6 +53,27 @@ class UsersService {
     return users;
   }
 
+  public async findAllByBodega(bodegaId: number) {
+    const users = await User.findAll({
+      where: { bodegaId },
+      attributes: {
+        exclude: ['contrasena'],
+      },
+      include: [
+        {
+          model: Rol,
+          as: 'roles',
+          include: [{ model: Permiso, as: 'permisos' }],
+        },
+        {
+          model: Bodega,
+          as: 'bodega',
+        },
+      ],
+    });
+    return users;
+  }
+
   public async findOne(id: number, transaction?: Transaction) {
     const user = await User.findByPk(id, {
       transaction,

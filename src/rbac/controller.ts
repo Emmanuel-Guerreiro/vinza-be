@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import { IPermissionsService, IRolesService } from './service';
+import { usersService } from '@/users/service';
 
 export class RolesController {
   constructor(private readonly rolesService: IRolesService) {
     this.create = this.create.bind(this);
     this.findAll = this.findAll.bind(this);
+    this.findByUserBodega = this.findByUserBodega.bind(this);
     this.findOne = this.findOne.bind(this);
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
@@ -23,6 +25,19 @@ export class RolesController {
       .findAll()
       .then((roles) => res.json(roles))
       .catch((e) => res.json(e));
+  }
+
+  public async findByUserBodega(req: Request, res: Response) {
+    try {
+      // Obtener información completa del usuario desde la base de datos
+      const user = await usersService.findOne(req.user!);
+      const userBodegaId = user?.bodegaId || null;
+
+      const roles = await this.rolesService.findByUserBodega(userBodegaId);
+      res.json(roles);
+    } catch (error) {
+      res.status(500).json(error);
+    }
   }
 
   public async findOne(req: Request, res: Response) {

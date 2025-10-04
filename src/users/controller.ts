@@ -10,6 +10,7 @@ export class UsersController {
     // Keep binding this to the methods to avoid problems with
     // the this reference inside callbacks
     this.getAll = this.getAll.bind(this);
+    this.getAllByBodega = this.getAllByBodega.bind(this);
     this.getOne = this.getOne.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
@@ -20,6 +21,11 @@ export class UsersController {
 
   public getAll(_req: Request, res: Response) {
     this.usersService.findAll().then((data) => res.json(data));
+  }
+
+  public getAllByBodega(req: Request, res: Response) {
+    const bodegaId = req.bodegaId!;
+    this.usersService.findAllByBodega(bodegaId).then((data) => res.json(data));
   }
 
   public getOne(req: Request, res: Response) {

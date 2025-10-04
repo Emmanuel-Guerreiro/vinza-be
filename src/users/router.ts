@@ -31,6 +31,172 @@ router.get(
 
 /**
  * @openapi
+ * /users/mi-bodega:
+ *   security:
+ *     - bearerAuth: []
+ *   get:
+ *     summary: Get all users from the authenticated user's bodega [USERS_READ]
+ *     description: Retorna todos los usuarios que pertenecen a la misma bodega que el usuario autenticado. Requiere permiso USERS_READ.
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: Usuarios de la bodega obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             type: array
+ *             items:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: number
+ *                   description: ID único del usuario
+ *                   example: 1
+ *                 nombre:
+ *                   type: string
+ *                   description: Nombre del usuario
+ *                   example: "Laura"
+ *                 apellido:
+ *                   type: string
+ *                   description: Apellido del usuario
+ *                   example: "Catena"
+ *                 email:
+ *                   type: string
+ *                   format: email
+ *                   description: Email del usuario
+ *                   example: "laura.catena@bodegacatenazapata.com"
+ *                 edad:
+ *                   type: number
+ *                   description: Edad del usuario
+ *                   example: 35
+ *                 validado:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Fecha de validación del usuario
+ *                   example: "2025-01-15T10:30:00.000Z"
+ *                 bodegaId:
+ *                   type: number
+ *                   description: ID de la bodega a la que pertenece el usuario
+ *                   example: 2
+ *                 roles:
+ *                   type: array
+ *                   description: Roles asignados al usuario
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: number
+ *                         example: 2
+ *                       nombre:
+ *                         type: string
+ *                         example: "ADMIN"
+ *                       permisos:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                         example: ["EVENTOS_READ", "GESTOR_EVENTOS", "USERS_READ"]
+ *                 bodega:
+ *                   type: object
+ *                   description: Información de la bodega del usuario
+ *                   properties:
+ *                     id:
+ *                       type: number
+ *                       example: 2
+ *                     nombre:
+ *                       type: string
+ *                       example: "catena-zapata"
+ *                     descripcion:
+ *                       type: string
+ *                       example: "Bodega Catena Zapata"
+ *                 created_at:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Fecha de creación del usuario
+ *                   example: "2025-01-15T10:30:00.000Z"
+ *                 updated_at:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Fecha de última actualización del usuario
+ *                   example: "2025-01-15T10:30:00.000Z"
+ *             examples:
+ *               catena_users:
+ *                 summary: Usuarios de Catena Zapata
+ *                 description: Lista de usuarios de la bodega Catena Zapata
+ *                 value:
+ *                   - id: 4
+ *                     nombre: "Laura"
+ *                     apellido: "Catena"
+ *                     email: "laura.catena@bodegacatenazapata.com"
+ *                     edad: 35
+ *                     validado: "2025-01-15T10:30:00.000Z"
+ *                     bodegaId: 2
+ *                     roles:
+ *                       - id: 2
+ *                         nombre: "ADMIN"
+ *                         permisos: ["EVENTOS_READ", "GESTOR_EVENTOS", "USERS_READ", "USERS_MANAGE"]
+ *                     bodega:
+ *                       id: 2
+ *                       nombre: "catena-zapata"
+ *                       descripcion: "Bodega Catena Zapata"
+ *                     created_at: "2025-01-15T10:30:00.000Z"
+ *                     updated_at: "2025-01-15T10:30:00.000Z"
+ *                   - id: 5
+ *                     nombre: "Carlos"
+ *                     apellido: "Mendoza"
+ *                     email: "carlos.mendoza@bodegacatenazapata.com"
+ *                     edad: 28
+ *                     validado: "2025-01-15T10:30:00.000Z"
+ *                     bodegaId: 2
+ *                     roles:
+ *                       - id: 3
+ *                         nombre: "OPERADOR"
+ *                         permisos: ["EVENTOS_READ", "RESERVAS_READ", "GESTOR_RESERVAS"]
+ *                     bodega:
+ *                       id: 2
+ *                       nombre: "catena-zapata"
+ *                       descripcion: "Bodega Catena Zapata"
+ *                     created_at: "2025-01-15T10:30:00.000Z"
+ *                     updated_at: "2025-01-15T10:30:00.000Z"
+ *       401:
+ *         description: No autorizado - Token inválido o faltante
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Token inválido o faltante"
+ *       403:
+ *         description: Prohibido - Permisos insuficientes. Se requiere USERS_READ.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "No tienes permisos para acceder a este recurso"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error interno del servidor"
+ */
+router.get(
+  '/mi-bodega',
+  authMiddleware,
+  requirePermissions([Permissions.USERS_READ]),
+  controller.getAllByBodega,
+);
+
+/**
+ * @openapi
  * /users/me:
  *   security:
  *     - bearerAuth: []
