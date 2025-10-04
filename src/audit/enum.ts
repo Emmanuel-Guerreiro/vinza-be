@@ -20,6 +20,8 @@ export enum AuditModel {
   MAXIMOS_DIAS_ADELANTE_RESERVA = 'maximos-dias-adelante-reserva',
   RECORRIDO = 'recorrido',
   RESERVA = 'reserva',
+  FAQ_RECIPIENT = 'faq-recipient',
+  FAQ = 'faq',
 }
 // Define the type for the audit events
 export type AuditEventType = `${AuditModel}:${AuditEvent}`;
