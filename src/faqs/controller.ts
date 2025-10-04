@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import {
   createFaqRecipientSchema,
-  updateFaqRecipientSchema,
   createFaqSchema,
+  findAllFaqsSchema,
+  updateFaqRecipientSchema,
   updateFaqSchema,
 } from './schema';
 import { faqService } from './service';
@@ -66,10 +67,15 @@ export class FaqController {
   }
 
   // Faq endpoints
-  async findAllFaqs(_req: Request, res: Response, next: NextFunction) {
-    faqService
-      .findAllFaqs()
-      .then((faqs) => res.json(faqs))
+  async findAllFaqs(req: Request, res: Response, next: NextFunction) {
+    findAllFaqsSchema
+      .parseAsync(req.query)
+      .then((data) =>
+        faqService
+          .findAllFaqs(data)
+          .then((faqs) => res.json(faqs))
+          .catch((err) => next(err)),
+      )
       .catch((err) => next(err));
   }
 

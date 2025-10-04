@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { FaqRecipientsEnum } from './enums';
+import { paginationAndOrderSchema } from '@/pagination/schemas';
 
 export const createFaqRecipientSchema = z.object({
   name: z.nativeEnum(FaqRecipientsEnum),
@@ -15,3 +16,9 @@ export const createFaqSchema = z.object({
 });
 
 export const updateFaqSchema = createFaqSchema.partial();
+
+export const findAllFaqsSchema = paginationAndOrderSchema([
+  'created_at',
+]).extend({
+  recipient: z.nativeEnum(FaqRecipientsEnum),
+});

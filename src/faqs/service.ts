@@ -5,9 +5,14 @@ import { Faq, FaqRecipient } from './model';
 import {
   CreateFaqDto,
   CreateFaqRecipientDto,
+  FindAllFaqsParams,
   UpdateFaqDto,
   UpdateFaqRecipientDto,
 } from './types';
+import {
+  generateOrderConditions,
+  generatePaginationParams,
+} from '@/pagination';
 
 export class FaqService {
   // FaqRecipient methods
@@ -97,12 +102,32 @@ export class FaqService {
   }
 
   // Faq methods
-  async findAllFaqs() {
-    return Faq.findAll({
-      where: { deleted_at: { [Op.is]: null } },
-      include: [{ model: FaqRecipient, as: 'recipient' }],
-      order: [['created_at', 'ASC']],
+  async findAllFaqs(params: FindAllFaqsParams) {
+    const order = generateOrderConditions(params);
+    const { limit, offset } = generatePaginationParams(params);
+
+    const items = await Faq.findAll({
+      order,
+      limit,
+      offset,
+      include: [
+        {
+          model: FaqRecipient,
+          as: 'recipient',
+          where: { name: params.recipient },
+          required: true,
+        },
+      ],
     });
+    return {
+      items,
+      meta: {
+        totalItems: items.length,
+        totalPages: 1,
+        currentPage: 1,
+        itemsPerPage: items.length,
+      },
+    };
   }
 
   async findFaqById(id: number) {
