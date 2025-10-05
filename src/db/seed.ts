@@ -241,10 +241,8 @@ async function seed() {
       bodegaId: zuccardi.id,
     });
 
-    // All permissions except ADMINISTRADOR_SISTEMA for admin
-    const adminPermissions = permissions.filter(
-      (p) => p.nombre !== Permissions.ADMINISTRADOR_SISTEMA,
-    );
+    // All permissions for admin (no restrictions)
+    const adminPermissions = permissions;
     await rolesService.update(adminRole.id, {
       permisos: adminPermissions.map((p) => p.id),
     });
@@ -260,7 +258,7 @@ async function seed() {
       (p) =>
         p.nombre === Permissions.EVENTOS_READ ||
         p.nombre === Permissions.RESERVAS_READ ||
-        p.nombre === Permissions.GESTOR_RESERVAS ||
+        p.nombre === Permissions.RESERVAS_MANAGE ||
         p.nombre === Permissions.INSTANCIA_EVENTOS_READ ||
         p.nombre === Permissions.VALORACIONES_READ ||
         p.nombre === Permissions.BODEGAS_READ ||

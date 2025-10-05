@@ -84,7 +84,7 @@ router.get(
 router.post(
   '',
   authMiddleware,
-  requirePermissions([Permissions.ADMINISTRADOR_SISTEMA]),
+  requirePermissions([Permissions.SUDO]),
   controller.create,
 );
 
@@ -122,7 +122,7 @@ router.post(
 router.put(
   '/:id',
   authMiddleware,
-  requirePermissions([Permissions.ADMINISTRADOR_SISTEMA]),
+  requirePermissions([Permissions.SUDO]),
   controller.update,
 );
 
@@ -149,7 +149,7 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
-  requirePermissions([Permissions.ADMINISTRADOR_SISTEMA]),
+  requirePermissions([Permissions.SUDO]),
   controller.delete,
 );
 

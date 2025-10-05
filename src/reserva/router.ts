@@ -98,7 +98,7 @@ router.get(
 router.post(
   '',
   authMiddleware,
-  requirePermissions([Permissions.GESTOR_RESERVAS]),
+  requirePermissions([Permissions.RESERVAS_MANAGE]),
   controller.create,
 );
 
@@ -143,7 +143,7 @@ router.post(
 router.put(
   '/:id',
   authMiddleware,
-  requirePermissions([Permissions.GESTOR_RESERVAS]),
+  requirePermissions([Permissions.RESERVAS_MANAGE]),
   controller.update,
 );
 
@@ -172,7 +172,7 @@ router.put(
 router.delete(
   '/:id',
   authMiddleware,
-  requirePermissions([Permissions.GESTOR_RESERVAS]),
+  requirePermissions([Permissions.RESERVAS_MANAGE]),
   controller.delete,
 );
 logger.debug('Reservas router initialized');

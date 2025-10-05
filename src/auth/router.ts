@@ -192,7 +192,7 @@ router.post('/register', controller.register);
  *                     roles:
  *                       - id: 2
  *                         nombre: "ADMIN"
- *                         permisos: ["EVENTOS_READ", "GESTOR_EVENTOS", "RESERVAS_READ", "GESTOR_RESERVAS"]
+ *                         permisos: ["EVENTOS_READ", "EVENTOS_MANAGE", "RESERVAS_READ", "RESERVAS_MANAGE"]
  *       400:
  *         description: Credenciales inválidas o datos faltantes
  *         content:

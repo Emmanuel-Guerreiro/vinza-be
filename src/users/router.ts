@@ -94,7 +94,7 @@ router.get(
  *                         type: array
  *                         items:
  *                           type: string
- *                         example: ["EVENTOS_READ", "GESTOR_EVENTOS", "USERS_READ"]
+ *                         example: ["EVENTOS_READ", "EVENTOS_MANAGE", "USERS_READ"]
  *                 bodega:
  *                   type: object
  *                   description: Información de la bodega del usuario
@@ -133,7 +133,7 @@ router.get(
  *                     roles:
  *                       - id: 2
  *                         nombre: "ADMIN"
- *                         permisos: ["EVENTOS_READ", "GESTOR_EVENTOS", "USERS_READ", "USERS_MANAGE"]
+ *                         permisos: ["EVENTOS_READ", "EVENTOS_MANAGE", "USERS_READ", "USERS_MANAGE"]
  *                     bodega:
  *                       id: 2
  *                       nombre: "catena-zapata"
@@ -150,7 +150,7 @@ router.get(
  *                     roles:
  *                       - id: 3
  *                         nombre: "OPERADOR"
- *                         permisos: ["EVENTOS_READ", "RESERVAS_READ", "GESTOR_RESERVAS"]
+ *                         permisos: ["EVENTOS_READ", "RESERVAS_READ", "RESERVAS_MANAGE"]
  *                     bodega:
  *                       id: 2
  *                       nombre: "catena-zapata"

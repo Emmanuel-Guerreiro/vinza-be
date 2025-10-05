@@ -275,7 +275,7 @@ router.get(
 router.post(
   '/permissions',
   authMiddleware,
-  requirePermissions([Permissions.ADMINISTRADOR_SISTEMA]),
+  requirePermissions([Permissions.SUDO]),
   permissionsController.create,
 );
 
@@ -313,7 +313,7 @@ router.post(
 router.put(
   '/permissions/:id',
   authMiddleware,
-  requirePermissions([Permissions.ADMINISTRADOR_SISTEMA]),
+  requirePermissions([Permissions.SUDO]),
   permissionsController.update,
 );
 
