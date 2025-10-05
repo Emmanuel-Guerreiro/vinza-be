@@ -261,6 +261,16 @@ router.put(
   permissionsController.update,
 );
 
+/**
+ * @openapi
+ * /rbac/me:
+ *   get:
+ *     summary: Get my permissions
+ *     tags:
+ *       - rbac
+ */
+router.get('/me', authMiddleware, permissionsController.findMyPermissions);
+
 logger.debug('Rbac router initialized');
 
 export default router;

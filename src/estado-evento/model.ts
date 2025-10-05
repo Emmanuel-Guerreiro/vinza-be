@@ -10,7 +10,6 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { EstadoEventoEnum } from './enum';
 
 export interface EstadoEventoAttributes {
   id: number;
@@ -43,11 +42,8 @@ export class EstadoEvento extends Model<
   })
   id!: number;
 
-  @Column({
-    type: DataType.ENUM(...Object.values(EstadoEventoEnum)),
-    allowNull: false,
-  })
-  nombre!: EstadoEventoEnum;
+  @Column({ type: DataType.STRING, allowNull: false, unique: true })
+  nombre!: string;
 
   @CreatedAt
   @Column({ type: DataType.DATE })

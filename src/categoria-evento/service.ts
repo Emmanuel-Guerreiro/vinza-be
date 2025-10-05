@@ -2,6 +2,7 @@ import { errors } from '@/error';
 import { CategoriaEvento } from './model';
 import { CreateCategoriaEventoDto, UpdateCategoriaEventoDto } from './types';
 import { Transaction } from 'sequelize';
+import { Evento } from '@/evento/model';
 
 class CategoriaEventoService {
   public async create(dto: CreateCategoriaEventoDto) {
@@ -36,6 +37,17 @@ class CategoriaEventoService {
 
     await categoriaEvento.destroy();
     return categoriaEvento;
+  }
+
+  public async canDelete(id: number) {
+    const categoriaEvento = await CategoriaEvento.findByPk(id);
+    if (!categoriaEvento) throw errors.app.evento.categoria_evento_not_found;
+
+    const eventosWithCategory = await Evento.count({
+      where: { categoriaId: id },
+    });
+
+    return eventosWithCategory === 0;
   }
 }
 

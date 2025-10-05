@@ -7,6 +7,7 @@ import {
   UpdateRoleDto,
 } from './types';
 import { sequelize } from '@/db';
+import { usersService } from '@/users/service';
 
 export class RolesService {
   public async create(dto: CreateRolDto) {
@@ -122,6 +123,13 @@ export class PermissionsService {
   public async create(dto: CreatePermissionDto) {
     const permission = await Permiso.create(dto);
     return permission;
+  }
+
+  public async findMyPermissions(userId: number) {
+    const user = await usersService.findOne(userId);
+    return user?.roles
+      .flatMap((role) => role.permisos.map((permiso) => permiso.clave))
+      .reduce((acc, permiso) => ({ ...acc, [permiso]: permiso }), {});
   }
 }
 

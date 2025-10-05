@@ -50,12 +50,15 @@ export class ReservaController {
   }
 
   public update(req: Request, res: Response, next: NextFunction) {
-    updateReservaSchema.parseAsync(req.body).then((dto) =>
-      this.reservaService
-        .update(+req.params.id, dto)
-        .then((data) => res.json(data))
-        .catch((err) => next(err)),
-    );
+    updateReservaSchema
+      .parseAsync(req.body)
+      .then((dto) =>
+        this.reservaService
+          .update(+req.params.id, dto)
+          .then((data) => res.json(data))
+          .catch((err) => next(err)),
+      )
+      .catch((err) => next(err));
   }
 
   public delete(req: Request, res: Response, next: NextFunction) {

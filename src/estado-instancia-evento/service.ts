@@ -1,12 +1,13 @@
+import { errors } from '@/error';
+import { InstanciaEvento } from '@/instancia-evento/model';
+import { generatePaginationParams } from '@/pagination';
+import { PaginationParams } from '@/pagination/schemas';
 import { Transaction } from 'sequelize';
 import { EstadoInstanciaEvento } from './model';
 import {
   CreateEstadoInstanciaEventoDto,
   UpdateEstadoInstanciaEventoDto,
 } from './types';
-import { errors } from '@/error';
-import { PaginationParams } from '@/pagination/schemas';
-import { generatePaginationParams } from '@/pagination';
 
 class EstadoInstanciaEventoService {
   public async create(dto: CreateEstadoInstanciaEventoDto) {
@@ -58,6 +59,18 @@ class EstadoInstanciaEventoService {
       throw errors.app.instancia_evento.estado_not_found;
     await estadoInstanciaEvento.destroy();
     return estadoInstanciaEvento;
+  }
+
+  public async canDelete(id: number) {
+    const estadoInstanciaEvento = await EstadoInstanciaEvento.findByPk(id);
+    if (!estadoInstanciaEvento)
+      throw errors.app.instancia_evento.estado_not_found;
+
+    const instanciasWithStatus = await InstanciaEvento.count({
+      where: { estadoId: id },
+    });
+
+    return instanciasWithStatus === 0;
   }
 
   private async getCountAndMetadata(params: PaginationParams, limit: number) {

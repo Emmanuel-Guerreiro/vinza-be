@@ -165,6 +165,35 @@ router.delete(
   controller.delete,
 );
 
+/**
+ * @openapi
+ * /estado-eventos/{id}/can-delete:
+ *   get:
+ *     summary: Check if an estado evento can be deleted
+ *     tags:
+ *       - EstadoEventos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the estado evento
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Success
+ *       404:
+ *         description: Estado evento not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/:id/can-delete',
+  authMiddleware,
+  requirePermissions([Permissions.SUDO]),
+  controller.canDelete,
+);
+
 logger.debug('EstadoEvento router initialized');
 
 export default router;
