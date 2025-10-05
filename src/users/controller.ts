@@ -33,11 +33,14 @@ export class UsersController {
   }
 
   public create(req: Request, res: Response) {
-    createUserSchema
-      .parseAsync(req.body)
-      .then((dto) =>
-        this.usersService.create(dto).then((data) => res.json(data)),
-      );
+    createUserSchema.parseAsync(req.body).then((dto) => {
+      // Agregar automáticamente el bodegaId del usuario autenticado
+      const userData = {
+        ...dto,
+        bodegaId: req.bodegaId,
+      };
+      return this.usersService.create(userData).then((data) => res.json(data));
+    });
   }
 
   public update(req: Request, res: Response) {
