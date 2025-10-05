@@ -1,5 +1,5 @@
 import { Transaction } from 'sequelize';
-import { EstadoRecorrido } from './model';
+import { EstadoRecorrido, HEstadoRecorrido } from './model';
 import { CreateEstadoRecorridoDto, UpdateEstadoRecorridoDto } from './types';
 import { errors } from '@/error';
 import { EstadoRecorridoEnum } from './enum';
@@ -61,6 +61,17 @@ class EstadoRecorridoService {
       valor: estadoRecorrido.dataValues,
     });
     return estadoRecorrido;
+  }
+
+  public async canDelete(id: number) {
+    const estadoRecorrido = await EstadoRecorrido.findByPk(id);
+    if (!estadoRecorrido) throw errors.app.estado_recorrido.estado_not_found;
+
+    const recorridosWithEstado = await HEstadoRecorrido.count({
+      where: { estadoRecorridoId: id },
+    });
+
+    return recorridosWithEstado === 0;
   }
 }
 export const estadoRecorridoService = new EstadoRecorridoService();

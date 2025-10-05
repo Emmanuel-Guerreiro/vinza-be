@@ -4,6 +4,7 @@ import { EstadoReserva } from './model';
 import { CreateEstadoReservaDto, UpdateEstadoReservaDto } from './types';
 import { PaginationParams } from '@/pagination/schemas';
 import { generatePaginationParams } from '@/pagination';
+import { HEstadoReserva } from './model';
 
 class EstadoReservaService {
   public async create(dto: CreateEstadoReservaDto) {
@@ -49,6 +50,17 @@ class EstadoReservaService {
     if (!estadoReserva) throw errors.app.reserva.estado_not_found;
     await estadoReserva.destroy();
     return estadoReserva;
+  }
+
+  public async canDelete(id: number) {
+    const estadoReserva = await EstadoReserva.findByPk(id);
+    if (!estadoReserva) throw errors.app.reserva.estado_not_found;
+
+    const reservasWithEstado = await HEstadoReserva.count({
+      where: { estadoReservaId: id },
+    });
+
+    return reservasWithEstado === 0;
   }
 
   private async getCountAndMetadata(params: PaginationParams, limit: number) {

@@ -140,6 +140,30 @@ router.put('/:id', authMiddleware, controller.update);
  */
 router.delete('/:id', authMiddleware, controller.delete);
 
+/**
+ * @openapi
+ * /estado-recorrido/{id}/can-delete:
+ *   get:
+ *     summary: Check if an estado recorrido can be deleted
+ *     tags:
+ *       - EstadoRecorridos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the estado recorrido
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Success
+ *       404:
+ *         description: Estado recorrido not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/:id/can-delete', authMiddleware, controller.canDelete);
+
 logger.debug('EstadoRecorrido router initialized');
 
 export default router;
