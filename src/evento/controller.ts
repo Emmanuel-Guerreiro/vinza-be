@@ -21,6 +21,7 @@ export class EventoController {
     this.suspenderInstanciaEvento = this.suspenderInstanciaEvento.bind(this);
     this.reactivarInstanciaEvento = this.reactivarInstanciaEvento.bind(this);
     this.getInstanciaEvento = this.getInstanciaEvento.bind(this);
+    this.obtenerReservasInstancia = this.obtenerReservasInstancia.bind(this);
   }
 
   public getAll(req: Request, res: Response) {
@@ -115,6 +116,17 @@ export class EventoController {
   public getInstanciaEvento(req: Request, res: Response, next: NextFunction) {
     this.eventoService
       .findByInstanciaEvento(+req.params.instanciaId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  }
+
+  public obtenerReservasInstancia(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    this.eventoService
+      .obtenerReservasInstancia(+req.params.instanciaId)
       .then((data) => res.json(data))
       .catch((err) => next(err));
   }
