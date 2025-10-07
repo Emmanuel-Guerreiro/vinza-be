@@ -435,6 +435,13 @@ class EventoService {
   }
 
   /**
+   * Obtiene las reservas de una instancia específica de un evento
+   */
+  public async obtenerReservasInstancia(instanciaId: number) {
+    return await instanciaEventoService.obtenerReservasInstancia(instanciaId);
+  }
+
+  /**
    * Valida los datos del evento (estadoId, categoriaId, sucursalId, nombre duplicado)
    */
   private async validateEventoData(

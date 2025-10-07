@@ -19,6 +19,10 @@ import {
   generatePaginationParams,
   generateOrderConditions,
 } from '@/pagination';
+import { Reserva } from '@/reserva/model';
+import { EstadoReserva } from '@/estado-reserva/model';
+import { Recorrido } from '@/recorrido/model';
+import { User } from '@/users/model';
 
 class InstanciaEventoService {
   public async findAll(
@@ -234,6 +238,43 @@ class InstanciaEventoService {
 
     // Retornar la instancia actualizada con todas las relaciones
     return await this.findOne(id, transaction);
+  }
+
+  public async obtenerReservasInstancia(instanciaId: number) {
+    try {
+      return Reserva.findAll({
+        where: { instanciaEventoId: instanciaId },
+        include: [
+          {
+            model: EstadoReserva,
+            as: 'estados',
+          },
+          {
+            model: Recorrido,
+            as: 'recorrido',
+            attributes: [], // Omitir todos los atributos del recorrido
+            include: [
+              {
+                model: User,
+                as: 'user',
+                attributes: [
+                  'id',
+                  'nombre',
+                  'apellido',
+                  'email',
+                  'validado',
+                  'fecha_nacimiento',
+                  'bodegaId',
+                ],
+              },
+            ],
+          },
+        ],
+      });
+    } catch (error) {
+      logger.error('Error al obtener las reservas de la instancia:', error);
+      throw error;
+    }
   }
 
   /**
