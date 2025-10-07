@@ -6,7 +6,6 @@ import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { EstadoEvento } from '@/estado-evento/model';
 import { estadoEventoService } from '@/estado-evento/service';
-<<<<<<< HEAD
 import { Sucursal } from '@/sucursal/model';
 import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { sucursalService } from '@/sucursal/service';
@@ -24,31 +23,13 @@ import {
   generateOrderConditions,
 } from '@/pagination';
 import { RecurrenciaEvento } from './model';
-import { Bodega } from '@/bodega/model';
 import { instanciaEventoService } from '@/instancia-evento/service';
-=======
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
->>>>>>> develop
 import { InstanciaEvento } from '@/instancia-evento/model';
-import { instanciaEventoService } from '@/instancia-evento/service';
-import logger from '@/logger';
-import {
-  generateOrderConditions,
-  generatePaginationParams,
-} from '@/pagination';
-import { PaginatedResponse } from '@/pagination/types';
-import { Sucursal } from '@/sucursal/model';
-import { sucursalService } from '@/sucursal/service';
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { valoracionService } from '@/valoracion/service';
-<<<<<<< HEAD
 import { multimediaService } from '@/multimedia/service';
 import { MultimediaEventos } from '@/multimedia/model';
-=======
-import { FindOptions, Op, Transaction, WhereOptions } from 'sequelize';
-import { Evento, RecurrenciaEvento } from './model';
-import { CreateEventoDto, FindAllParams, UpdateEventoDto } from './types';
->>>>>>> develop
 
 class EventoService {
   public async createWithMultimedia(
@@ -107,35 +88,6 @@ class EventoService {
 
       await valoracionService.initializeValoracionMedia(evento.id, transaction);
 
-<<<<<<< HEAD
-      // // Generar instancias automáticamente después de crear el evento
-      // try {
-      //   await instanciaEventoService.generarInstanciasParaEvento(evento.id);
-      //   logger.info(
-      //     `Instancias generadas automáticamente para evento ${evento.id}`,
-      //   );
-      // } catch (error) {
-      //   logger.error(
-      //     `Error generando instancias automáticamente para evento ${evento.id}:`,
-      //     error,
-      //   );
-      //   // No fallar la creación del evento si falla la generación de instancias
-      // }
-
-      const eventoCompleted = await this.findOne(evento.id, transaction);
-      if (!disableAudit) {
-        auditEmitter.emitEntry({
-          tipoEvento: 'evento:create',
-          valor: evento.dataValues,
-        });
-      }
-      if (!t) {
-        await transaction.commit();
-      }
-      return eventoCompleted;
-    } catch (error) {
-      if (!t) await transaction.rollback();
-=======
       // Generar instancias automáticamente después de crear el evento
 
       await instanciaEventoService.generarInstanciasParaEvento(
@@ -159,7 +111,6 @@ class EventoService {
     } catch (error) {
       logger.error(`error create evento ${JSON.stringify(error)}`);
       await transaction.rollback();
->>>>>>> develop
       throw error;
     }
   }
@@ -179,13 +130,10 @@ class EventoService {
       offset,
       include: [
         {
-<<<<<<< HEAD
           model: MultimediaEventos,
         },
         {
-=======
           as: 'categoria',
->>>>>>> develop
           model: CategoriaEvento,
           where: params.categoriaId ? { id: params.categoriaId } : undefined,
           required: !!params.categoriaId,
@@ -584,8 +532,6 @@ class EventoService {
       const sucursal = await sucursalService.findOne(dto.sucursalId);
       if (!sucursal) throw errors.app.sucursal.not_found;
     }
-<<<<<<< HEAD
-=======
 
     // Validar que no hayan 2 eventos activos con el mismo nombre en la misma bodega
     if (dto.nombre && dto.sucursalId) {
@@ -611,7 +557,6 @@ class EventoService {
         throw errors.app.evento.nombre_duplicate;
       }
     }
->>>>>>> develop
   }
 }
 
