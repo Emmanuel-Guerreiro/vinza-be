@@ -165,6 +165,35 @@ router.delete(
   controller.delete,
 );
 
+/**
+ * @openapi
+ * /estado-reserva/{id}/can-delete:
+ *   get:
+ *     summary: Check if an estado reserva can be deleted
+ *     tags:
+ *       - EstadoReservas
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the estado reserva
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Success
+ *       404:
+ *         description: Estado reserva not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/:id/can-delete',
+  authMiddleware,
+  requirePermissions([Permissions.SUDO]),
+  controller.canDelete,
+);
+
 logger.debug('EstadoReserva router initialized');
 
 export default router;

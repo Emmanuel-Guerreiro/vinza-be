@@ -20,5 +20,5 @@ export const updateFaqSchema = createFaqSchema.partial();
 export const findAllFaqsSchema = paginationAndOrderSchema([
   'created_at',
 ]).extend({
-  recipient: z.nativeEnum(FaqRecipientsEnum),
+  recipient: z.nativeEnum(FaqRecipientsEnum).optional(),
 });

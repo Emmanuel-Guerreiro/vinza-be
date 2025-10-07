@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { createValoracionSchema } from './schema';
 import { IValoracionService } from './service';
 
@@ -14,33 +14,40 @@ export class ValoracionController {
     this.getAverageByEvento = this.getAverageByEvento.bind(this);
   }
 
-  public getAll(_req: Request, res: Response) {
-    this.valoracionService.findAll().then((data) => res.json(data));
+  public getAll(_req: Request, res: Response, next: NextFunction) {
+    this.valoracionService
+      .findAll()
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
   }
 
-  public getOne(req: Request, res: Response) {
+  public getOne(req: Request, res: Response, next: NextFunction) {
     this.valoracionService
       .findOne(+req.params.id)
-      .then((data) => res.json(data));
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
   }
 
-  public create(req: Request, res: Response) {
+  public create(req: Request, res: Response, next: NextFunction) {
     createValoracionSchema
       .parseAsync({ ...req.body, userId: req.user! })
       .then((dto) =>
         this.valoracionService.create(dto).then((data) => res.json(data)),
-      );
+      )
+      .catch((error) => next(error));
   }
 
-  public delete(req: Request, res: Response) {
+  public delete(req: Request, res: Response, next: NextFunction) {
     this.valoracionService
       .delete(+req.params.id)
-      .then((data) => res.json(data));
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
   }
 
-  public getAverageByEvento(req: Request, res: Response) {
+  public getAverageByEvento(req: Request, res: Response, next: NextFunction) {
     this.valoracionService
       .getAverageByEvento(+req.params.eventoId)
-      .then((avg) => res.json({ avg }));
+      .then((avg) => res.json({ avg }))
+      .catch((error) => next(error));
   }
 }
