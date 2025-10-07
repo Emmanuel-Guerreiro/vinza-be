@@ -174,7 +174,34 @@ const upload = multer({
  *       500:
  *         description: Internal server error
  */
-router.get('', controller.getAll);
+router.get('', authMiddleware, controller.getAll);
+
+/**
+ * @openapi
+ * /eventos/instancia/{instanciaId}:
+ *   get:
+ *     summary: Get an evento by instanciaId
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: instanciaId
+ *         in: path
+ *         required: true
+ *         description: The id of the instancia
+ *     responses:
+ *       200:
+ *         description: Evento found successfully
+ *       400:
+ *         description: Bad request - Invalid filter parameters
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/instancia/:instanciaId',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_READ]),
+  controller.getInstanciaEvento,
+);
 
 /**
  * @openapi
@@ -531,7 +558,7 @@ router.delete(
  *       500:
  *         description: Internal server error
  */
-router.get('/:id/instancias', controller.getInstanciasEvento);
+router.get('/:id/instancias', authMiddleware, controller.getInstanciasEvento);
 
 /**
  * @openapi
@@ -674,6 +701,114 @@ router.put(
   requirePermissions([Permissions.EVENTOS_MANAGE]),
   instanciaEventoAuthMiddleware,
   controller.reactivarInstanciaEvento,
+);
+
+/**
+ * @openapi
+ * /eventos/instancias/{instanciaId}/reservas:
+ *   security:
+ *     - bearerAuth: []
+ *   get:
+ *     summary: Get all reservations of a specific instance of an event [EVENTOS_MANAGE]
+ *     description: Get all reservations of a specific instance of an event. Requires EVENTOS_MANAGE permission.
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: instanciaId
+ *         in: path
+ *         required: true
+ *         description: The id of the instance to get the reservations from
+ *         schema:
+ *           type: number
+ *     responses:
+ *       200:
+ *         description: Reservas retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: number
+ *                     description: ID único de la reserva
+ *                   instanciaEventoId:
+ *                     type: number
+ *                     description: ID de la instancia del evento
+ *                   recorridoId:
+ *                     type: number
+ *                     description: ID del recorrido asociado
+ *                   precio:
+ *                     type: number
+ *                     format: decimal
+ *                     description: Precio de la reserva
+ *                   cantidadGente:
+ *                     type: number
+ *                     description: Cantidad de personas en la reserva
+ *                   estados:
+ *                     type: array
+ *                     description: Estados de la reserva
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: number
+ *                           description: ID del estado
+ *                         nombre:
+ *                           type: string
+ *                           description: Nombre del estado
+ *                   user:
+ *                     type: object
+ *                     description: Usuario propietario de la reserva
+ *                     properties:
+ *                       id:
+ *                         type: number
+ *                         description: ID del usuario
+ *                       nombre:
+ *                         type: string
+ *                         description: Nombre del usuario
+ *                       apellido:
+ *                         type: string
+ *                         description: Apellido del usuario
+ *                       email:
+ *                         type: string
+ *                         format: email
+ *                         description: Email del usuario
+ *                       validado:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Fecha de validación del usuario
+ *                       fecha_nacimiento:
+ *                         type: string
+ *                         format: date
+ *                         description: Fecha de nacimiento del usuario
+ *                       bodegaId:
+ *                         type: number
+ *                         description: ID de la bodega asignada al usuario
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Fecha de creación
+ *                   updated_at:
+ *                     type: string
+ *                     format: date-time
+ *                     description: Fecha de última actualización
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       403:
+ *         description: Forbidden - Insufficient permissions . EVENTOS_MANAGE required.
+ *       404:
+ *         description: Instance not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/instancias/:instanciaId/reservas',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  instanciaEventoAuthMiddleware,
+  controller.obtenerReservasInstancia,
 );
 
 logger.debug('Evento router initialized');

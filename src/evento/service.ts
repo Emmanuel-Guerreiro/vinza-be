@@ -1,10 +1,12 @@
 import { auditEmitter } from '@/audit/event';
+import { Bodega } from '@/bodega/model';
 import { CategoriaEvento } from '@/categoria-evento/model';
 import { categoriaEventoService } from '@/categoria-evento/service';
 import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { EstadoEvento } from '@/estado-evento/model';
 import { estadoEventoService } from '@/estado-evento/service';
+<<<<<<< HEAD
 import { Sucursal } from '@/sucursal/model';
 import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
 import { sucursalService } from '@/sucursal/service';
@@ -24,11 +26,29 @@ import {
 import { RecurrenciaEvento } from './model';
 import { Bodega } from '@/bodega/model';
 import { instanciaEventoService } from '@/instancia-evento/service';
+=======
+import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
+>>>>>>> develop
 import { InstanciaEvento } from '@/instancia-evento/model';
+import { instanciaEventoService } from '@/instancia-evento/service';
+import logger from '@/logger';
+import {
+  generateOrderConditions,
+  generatePaginationParams,
+} from '@/pagination';
+import { PaginatedResponse } from '@/pagination/types';
+import { Sucursal } from '@/sucursal/model';
+import { sucursalService } from '@/sucursal/service';
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { valoracionService } from '@/valoracion/service';
+<<<<<<< HEAD
 import { multimediaService } from '@/multimedia/service';
 import { MultimediaEventos } from '@/multimedia/model';
+=======
+import { FindOptions, Op, Transaction, WhereOptions } from 'sequelize';
+import { Evento, RecurrenciaEvento } from './model';
+import { CreateEventoDto, FindAllParams, UpdateEventoDto } from './types';
+>>>>>>> develop
 
 class EventoService {
   public async createWithMultimedia(
@@ -87,6 +107,7 @@ class EventoService {
 
       await valoracionService.initializeValoracionMedia(evento.id, transaction);
 
+<<<<<<< HEAD
       // // Generar instancias automáticamente después de crear el evento
       // try {
       //   await instanciaEventoService.generarInstanciasParaEvento(evento.id);
@@ -114,6 +135,31 @@ class EventoService {
       return eventoCompleted;
     } catch (error) {
       if (!t) await transaction.rollback();
+=======
+      // Generar instancias automáticamente después de crear el evento
+
+      await instanciaEventoService.generarInstanciasParaEvento(
+        {
+          eventoId: evento.id,
+        },
+        transaction,
+      );
+      logger.info(
+        `Instancias generadas automáticamente para evento ${evento.id}`,
+      );
+
+      await transaction.commit();
+
+      auditEmitter.emitEntry({
+        tipoEvento: 'evento:create',
+        valor: evento.dataValues,
+      });
+
+      return this.findOne(evento.id);
+    } catch (error) {
+      logger.error(`error create evento ${JSON.stringify(error)}`);
+      await transaction.rollback();
+>>>>>>> develop
       throw error;
     }
   }
@@ -133,27 +179,41 @@ class EventoService {
       offset,
       include: [
         {
+<<<<<<< HEAD
           model: MultimediaEventos,
         },
         {
+=======
+          as: 'categoria',
+>>>>>>> develop
           model: CategoriaEvento,
           where: params.categoriaId ? { id: params.categoriaId } : undefined,
           required: !!params.categoriaId,
         },
         {
+          as: 'estado',
           model: EstadoEvento,
           where: params.estadoId ? { id: params.estadoId } : undefined,
           required: !!params.estadoId,
         },
         {
+          as: 'sucursal',
           model: Sucursal,
           where: params.bodegaId ? { bodegaId: params.bodegaId } : undefined,
           required: !!params.bodegaId,
+          include: [
+            {
+              model: Bodega,
+              as: 'bodega',
+            },
+          ],
         },
         {
           model: RecurrenciaEvento,
+          as: 'recurrencias',
         },
         {
+          as: 'valoracionMedia',
           model: ValoracionMedia,
           where: params.puntuacionMinima
             ? {
@@ -163,6 +223,16 @@ class EventoService {
               }
             : undefined,
           required: !!params.puntuacionMinima,
+        },
+        {
+          model: InstanciaEvento,
+          as: 'instancias',
+          include: [
+            {
+              as: 'estado',
+              model: EstadoInstanciaEvento,
+            },
+          ],
         },
       ],
     };
@@ -182,27 +252,40 @@ class EventoService {
     const evento = await Evento.findByPk(id, {
       include: [
         {
+          as: 'categoria',
           model: CategoriaEvento,
         },
         {
+          as: 'estado',
           model: EstadoEvento,
         },
         {
+          as: 'sucursal',
           model: Sucursal,
           include: [
             {
+              as: 'bodega',
               model: Bodega,
             },
           ],
         },
         {
+          as: 'recurrencias',
           model: RecurrenciaEvento,
         },
         {
+          as: 'valoracionMedia',
           model: ValoracionMedia,
         },
         {
           model: InstanciaEvento,
+          as: 'instancias',
+          include: [
+            {
+              as: 'estado',
+              model: EstadoInstanciaEvento,
+            },
+          ],
         },
         {
           model: MultimediaEventos,
@@ -412,6 +495,7 @@ class EventoService {
     return Evento.findOne({
       transaction,
       include: [
+        { model: Sucursal, as: 'sucursal' },
         {
           model: InstanciaEvento,
           as: 'instancias',
@@ -436,7 +520,9 @@ class EventoService {
     }
 
     // Llamar al servicio de instancia-evento para generar instancias del evento específico
-    return await instanciaEventoService.generarInstanciasParaEvento(eventoId);
+    return await instanciaEventoService.generarInstanciasParaEvento({
+      eventoId,
+    });
   }
 
   /**
@@ -459,6 +545,13 @@ class EventoService {
     if (!instancia) throw errors.app.instancia_evento.not_found;
 
     return await instanciaEventoService.reactivarInstancia(instanciaId);
+  }
+
+  /**
+   * Obtiene las reservas de una instancia específica de un evento
+   */
+  public async obtenerReservasInstancia(instanciaId: number) {
+    return await instanciaEventoService.obtenerReservasInstancia(instanciaId);
   }
 
   /**
@@ -491,6 +584,34 @@ class EventoService {
       const sucursal = await sucursalService.findOne(dto.sucursalId);
       if (!sucursal) throw errors.app.sucursal.not_found;
     }
+<<<<<<< HEAD
+=======
+
+    // Validar que no hayan 2 eventos activos con el mismo nombre en la misma bodega
+    if (dto.nombre && dto.sucursalId) {
+      const existingEvento = await Evento.findOne({
+        where: {
+          nombre: dto.nombre,
+          sucursalId: dto.sucursalId,
+        },
+        include: [
+          {
+            model: Sucursal,
+            include: [
+              {
+                model: Bodega,
+              },
+            ],
+          },
+        ],
+        transaction,
+      });
+
+      if (existingEvento) {
+        throw errors.app.evento.nombre_duplicate;
+      }
+    }
+>>>>>>> develop
   }
 }
 

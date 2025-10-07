@@ -9,6 +9,10 @@ export const UpdateBodegaSchema = z.object({
 export const createBodegaSchema = z.object({
   nombre: z.string(),
   descripcion: z.string(),
+  direccion: z.string(),
+  telefono: z.string(),
+  aclaraciones: z.string().optional(),
+  firstUserId: z.coerce.number(),
 });
 
 export const createBodegaWithMultimediaSchema = createBodegaSchema.extend({
@@ -28,4 +32,8 @@ export const findAllParamsSchema = paginationAndOrderSchema(
   bodegaOrderByAttributes,
 ).extend({
   nombre: z.string().optional(),
+});
+
+export const validateBodegaSchema = z.object({
+  es_valida: z.boolean(),
 });

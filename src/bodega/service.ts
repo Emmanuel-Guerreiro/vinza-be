@@ -8,6 +8,7 @@ import {
   CreateBodegaWithMultimediaDto,
   FindAllParams,
   UpdateBodegaDto,
+  ValidateBodegaDto,
 } from './types';
 import logger from '@/logger';
 import { PaginatedResponse } from '@/pagination/types';
@@ -19,6 +20,7 @@ import { Op, Transaction, WhereOptions } from 'sequelize';
 import { Sucursal } from '@/sucursal/model';
 import { multimediaService } from '@/multimedia/service';
 import { MultimediaBodegas } from '@/multimedia/model';
+import { usersService } from '@/users/service';
 
 class BodegaService {
   public async createWithMultimedia(
@@ -64,8 +66,9 @@ class BodegaService {
       sucursalService.create(
         {
           nombre: dto.nombre,
-          direccion: 'Principal',
           es_principal: true,
+          direccion: dto.direccion,
+          aclaraciones: dto.aclaraciones,
           bodegaId: bodega.id,
         },
         transaction,
@@ -78,6 +81,16 @@ class BodegaService {
         });
       }
       const bodegaCompleted = await this.findOne(bodega.id, transaction);
+      const user = await usersService.findOne(dto.firstUserId, transaction);
+      if (!user) throw errors.app.user.not_found;
+      await user.update({ bodegaId: bodega.id }, { transaction });
+
+      await transaction.commit();
+
+      auditEmitter.emitEntry({
+        tipoEvento: 'bodega:create',
+        valor: bodega.dataValues,
+      });
       if (!t) await transaction.commit();
       return bodegaCompleted;
     } catch (error) {
@@ -168,6 +181,15 @@ class BodegaService {
       tipoEvento: 'bodega:delete',
       valor: bodega.dataValues,
     });
+    return bodega;
+  }
+
+  public async validate(id: number, dto: ValidateBodegaDto) {
+    const bodega = await Bodega.findByPk(id);
+    if (!bodega) {
+      throw errors.app.bodega.not_found;
+    }
+    await bodega.update({ validada: dto.es_valida ? new Date() : null });
     return bodega;
   }
 

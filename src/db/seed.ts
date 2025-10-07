@@ -4,7 +4,7 @@ import { hashPassword } from '@/auth/auth';
 import { Bodega } from '@/bodega/model';
 import { categoriaEventoService } from '@/categoria-evento/service';
 import config from '@/config';
-import { EstadoEvento } from '@/estado-evento/enum';
+import { EstadoEventoEnum } from '@/estado-evento/enum';
 import { estadoEventoService } from '@/estado-evento/service';
 import { EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
 import { EstadoInstanciaEvento as EstadoInstanciaEventoModel } from '@/estado-instancia-evento/model';
@@ -20,6 +20,8 @@ import { permissionsService, rolesService } from '@/rbac/service';
 import { sucursalService } from '@/sucursal/service';
 import { User } from '@/users/model';
 import { valoracionService } from '@/valoracion/service';
+import { faqService } from '@/faqs/service';
+import { FaqRecipientsEnum } from '@/faqs/enums';
 import { sequelize } from '.';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
@@ -44,7 +46,7 @@ async function seed() {
 
     // Create estados de evento
     await Promise.all(
-      Object.values(EstadoEvento).map(async (nombre) => {
+      Object.values(EstadoEventoEnum).map(async (nombre) => {
         return await estadoEventoService.create({
           nombre,
         });
@@ -53,13 +55,13 @@ async function seed() {
 
     // Obtener referencias a los estados creados
     const activoEstadoEvento = await estadoEventoService.findByName(
-      EstadoEvento.ACTIVO,
+      EstadoEventoEnum.ACTIVO,
     );
     const suspendidoEstadoEvento = await estadoEventoService.findByName(
-      EstadoEvento.SUSPENDIDO,
+      EstadoEventoEnum.SUSPENDIDO,
     );
     const finalizadoEstadoEvento = await estadoEventoService.findByName(
-      EstadoEvento.FINALIZADO,
+      EstadoEventoEnum.FINALIZADO,
     );
 
     if (
@@ -230,6 +232,28 @@ async function seed() {
       permisos: adminPermissions.map((p) => p.id),
     });
 
+    // Create operador role (limited permissions - no event management)
+    const operadorRole = await rolesService.create({
+      nombre: 'OPERADOR',
+      bodegaId: zuccardi.id,
+    });
+
+    // Limited permissions for operador: read permissions + reservations management
+    const operadorPermissions = permissions.filter(
+      (p) =>
+        p.nombre === Permissions.EVENTOS_READ ||
+        p.nombre === Permissions.RESERVAS_READ ||
+        p.nombre === Permissions.RESERVAS_MANAGE ||
+        p.nombre === Permissions.INSTANCIA_EVENTOS_READ ||
+        p.nombre === Permissions.VALORACIONES_READ ||
+        p.nombre === Permissions.BODEGAS_READ ||
+        p.nombre === Permissions.USERS_READ,
+    );
+
+    await rolesService.update(operadorRole.id, {
+      permisos: operadorPermissions.map((p) => p.id),
+    });
+
     // ========================================
     // 5. CREAR USUARIOS
     // ========================================
@@ -246,6 +270,19 @@ async function seed() {
       validado: new Date(),
     });
     await adminUser.$set('roles', [adminRole.id]);
+
+    // Create operador user with limited permissions
+    const operadorPassword = await hashPassword('operador123');
+    const operadorUser = await User.create({
+      nombre: 'Operador',
+      apellido: 'Zuccardi',
+      email: 'operador@zuccardi.com',
+      contrasena: operadorPassword,
+      roles: [operadorRole.id],
+      bodegaId: zuccardi.id,
+      validado: new Date(),
+    });
+    await operadorUser.$set('roles', [operadorRole.id]);
 
     // Create sudoer user with SUDO role and no bodega
     const sudoPassword = await hashPassword('sudo123');
@@ -336,6 +373,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 1 creado');
 
     // Evento 2: Taller de cocina mensual
     const evento2 = await eventoService.create({
@@ -361,6 +399,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 2 creado');
 
     // Evento 3: Charlas de tecnología (múltiples horarios por día)
     const evento3 = await eventoService.create({
@@ -398,6 +437,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 3 creado');
 
     // Evento 4: Evento único con fecha específica
     const evento4 = await eventoService.create({
@@ -412,8 +452,8 @@ async function seed() {
         {
           dia: DiaSemana.VIERNES,
           hora: HoraEvento.HORA_18_00,
-          fecha_desde: new Date('2025-09-15'),
-          fecha_hasta: new Date('2025-09-15'),
+          fecha_desde: new Date('2025-10-15'),
+          fecha_hasta: new Date('2025-10-15'),
         },
       ],
     });
@@ -436,6 +476,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 5 creado');
 
     // Evento 6: Tour gastronómico en Catena (Buenos Aires)
     const evento6 = await eventoService.create({
@@ -455,6 +496,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 6 creado');
 
     // Evento 7: Clases de cocina regional en Trapiche Central
     const evento7 = await eventoService.create({
@@ -481,6 +523,8 @@ async function seed() {
       ],
     });
 
+    console.log('Evento 7 creado');
+
     // Evento 8: Festival de vinos del norte en Trapiche Norte
     const evento8 = await eventoService.create({
       nombre: 'Festival de Vinos del Norte',
@@ -499,6 +543,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 8 creado');
 
     // Evento 9: Enología para principiantes en Trapiche Sur
     const evento9 = await eventoService.create({
@@ -518,6 +563,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 9 creado');
 
     // Evento 10: Maridaje de vinos en Luigi Bosca
     const evento10 = await eventoService.create({
@@ -543,6 +589,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 10 creado');
 
     // Evento 11: Evento especial en Zuccardi segunda sucursal
     const evento11 = await eventoService.create({
@@ -562,6 +609,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 11 creado');
 
     // Evento 12: Evento único en Luigi Bosca
     const evento12 = await eventoService.create({
@@ -581,6 +629,7 @@ async function seed() {
         },
       ],
     });
+    console.log('Evento 12 creado');
 
     // ========================================
     // 7. CREAR VALORACIONES
@@ -620,7 +669,41 @@ async function seed() {
     await maximosDiasAdelanteReservaService.patch({ valor: 30 });
 
     // ========================================
-    // 8. ESTADOS DE RESERVA (COMENTADO TEMPORALMENTE)
+    // 8. CREAR FAQS
+    // ========================================
+
+    // Create FAQ recipients
+    const [endRecipient, bodegasRecipient] = await Promise.all([
+      faqService.createRecipient({
+        name: FaqRecipientsEnum.END,
+        label: 'Usuarios finales',
+      }),
+      faqService.createRecipient({
+        name: FaqRecipientsEnum.BODEGAS,
+        label: 'Administradores de bodegas',
+      }),
+    ]);
+
+    // Create FAQ 1: About bodega validation (for administrators)
+    await faqService.createFaq({
+      question: '¿Cómo funciona la validación de bodegas?',
+      answer:
+        'La validación de bodegas es un proceso manual que realizan los administradores del sistema. Cuando una nueva bodega solicita acceso, los administradores revisan la documentación y verifican que cumpla con todos los requisitos antes de aprobar su ingreso a la plataforma. Este proceso puede tomar entre 2 a 5 días hábiles.',
+      recipient_id: bodegasRecipient.id,
+    });
+
+    // Create FAQ 2: About recurring events (for end users)
+    await faqService.createFaq({
+      question: '¿Qué son los eventos recurrentes?',
+      answer:
+        'Los eventos recurrentes son actividades que se repiten periódicamente siguiendo un patrón establecido. Por ejemplo, clases de yoga todos los lunes y miércoles, o catas de vinos los primeros sábados de cada mes. Estos eventos te permiten planificar con anticipación y participar regularmente en las actividades que más te interesan.',
+      recipient_id: endRecipient.id,
+    });
+
+    console.log('FAQs creados exitosamente');
+
+    // ========================================
+    // 9. ESTADOS DE RESERVA (COMENTADO TEMPORALMENTE)
     // ========================================
 
     // Create all estado reserva - Comentado temporalmente
@@ -643,6 +726,9 @@ async function seed() {
     console.log('\nADMIN ZUCCARDI (Bodega 1):');
     console.log('  Email: admin@example.com | Password: admin123');
     console.log('  Puede acceder a eventos de Zuccardi');
+    console.log('\nOPERADOR ZUCCARDI (Bodega 1):');
+    console.log('  Email: operador@zuccardi.com | Password: operador123');
+    console.log('  Solo lectura de eventos y gestión de reservas');
     console.log('\nADMIN CATENA ZAPATA (Bodega 2):');
     console.log('  Email: admin@catena.com | Password: catena123');
     console.log('  Puede acceder a eventos de Catena Zapata');

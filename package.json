@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "nodemon",
-    "lint": "eslint 'src/**/*.ts'",
+    "lint": "eslint src/",
     "prettify": "prettier --write \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "seed": "tsx src/db/seed.ts",
@@ -77,9 +77,9 @@
   },
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
-      "prettier --write \"src/**/*.ts\"",
+      "prettier --write",
       "git add",
-      "eslint \"src/**/*.ts\""
+      "eslint"
     ]
   }
 }

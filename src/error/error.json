@@ -58,6 +58,12 @@
         "message": "Debe esperar al menos 45 segundos antes de solicitar un nuevo código de validación",
         "message_eng": "You must wait at least 45 seconds before requesting a new validation code",
         "status": 400
+      },
+      "forbidden": {
+        "key": "app.auth.forbidden",
+        "message": "No tienes permisos para realizar esta acción",
+        "message_eng": "You don't have permission to perform this action",
+        "status": 403
       }
     },
     "user": {
@@ -141,7 +147,7 @@
       },
       "nombre_duplicate": {
         "key": "app.evento.nombre_duplicate",
-        "message": "Ya existe un evento con este nombre en la misma bodega",
+        "message": "Ya existe un evento activo con este nombre en la misma bodega",
         "message_eng": "An event with this name already exists in the same bodega",
         "status": 400
       },
@@ -168,6 +174,12 @@
       }
     },
     "reserva": {
+      "duplicated_event_for_recorrido": {
+        "key": "app.reserva.duplicated_event_for_recorrido",
+        "message": "El evento ya está asociado a este recorrido",
+        "message_eng": "The event is already associated with this recorrido",
+        "status": 400
+      },
       "confirmar_error": {
         "key": "app.reserva.confirmar_error",
         "message": "Error al confirmar la reserva",
@@ -307,9 +319,9 @@
         "status": 500
       }
     },
-    "estadoReserva": {
+    "estado_reserva": {
       "estado_not_found": {
-        "key": "app.EstadoReserva.estado_not_found",
+        "key": "app.estado_reserva.estado_not_found",
         "message": "Estado reserva not found",
         "message_eng": "Estado reserva not found",
         "status": 404

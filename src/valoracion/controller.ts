@@ -26,11 +26,9 @@ export class ValoracionController {
 
   public create(req: Request, res: Response) {
     createValoracionSchema
-      .parseAsync(req.body)
+      .parseAsync({ ...req.body, userId: req.user! })
       .then((dto) =>
-        this.valoracionService
-          .create({ ...dto, userId: req.user! })
-          .then((data) => res.json(data)),
+        this.valoracionService.create(dto).then((data) => res.json(data)),
       );
   }
 

@@ -5,6 +5,8 @@ import logger from '@/logger';
 import multer from 'multer';
 import { authMiddleware } from '@/auth/middleware';
 import { uniqueBodegaPerUserMiddleware } from './middleware';
+import { requirePermissions } from '@/rbac/middleware';
+import { Permissions } from '@/rbac/permissions';
 
 const controller = new BodegaController(bodegaService);
 const router = Router();
@@ -88,6 +90,11 @@ router.get('/:id', controller.getOne);
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - nombre
+ *               - descripcion
+ *               - direccion
+ *               - telefono
  *             properties:
  *               nombre:
  *                 type: string
@@ -108,6 +115,18 @@ router.get('/:id', controller.getOne);
  *                   type: string
  *                   format: binary
  *                 maxItems: 10
+ *               direccion:
+ *                 type: string
+ *                 description: Dirección de la bodega
+ *                 example: "Av. Principal 123"
+ *               telefono:
+ *                 type: string
+ *                 description: Teléfono de contacto de la bodega
+ *                 example: "+54 11 1234-5678"
+ *               aclaraciones:
+ *                 type: string
+ *                 description: Aclaraciones adicionales (opcional)
+ *                 example: "Horario de atención: 8:00 a 18:00"
  *     responses:
  *       201:
  *         description: Bodega created successfully
@@ -196,6 +215,45 @@ router.put('/:id', controller.update);
  *         description: Internal server error
  */
 router.delete('/:id', controller.delete);
+
+/**
+ * @openapi
+ * /bodegas/{id}/validate:
+ *   post:
+ *     summary: Validate a bodega
+ *     tags:
+ *       - Bodegas
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the bodega
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               es_valida:
+ *                 type: boolean
+ *                 description: Whether the bodega is valid
+ *                 required: true
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Bodega validated successfully
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.post(
+  '/:id/validate',
+  authMiddleware,
+  requirePermissions([Permissions.BODEGAS_VALIDATE]),
+  controller.validate,
+);
 
 logger.debug('Bodega router initialized');
 

@@ -4,6 +4,7 @@ import {
   createBodegaWithMultimediaSchema,
   findAllParamsSchema,
   UpdateBodegaSchema,
+  validateBodegaSchema,
 } from './schema';
 
 export class BodegaController {
@@ -16,6 +17,7 @@ export class BodegaController {
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
+    this.validate = this.validate.bind(this);
   }
 
   public getAll(req: Request, res: Response) {
@@ -55,5 +57,15 @@ export class BodegaController {
 
   public delete(req: Request, res: Response) {
     this.bodegaService.delete(+req.params.id).then((data) => res.json(data));
+  }
+
+  public validate(req: Request, res: Response) {
+    validateBodegaSchema
+      .parseAsync(req.body)
+      .then((dto) =>
+        this.bodegaService
+          .validate(+req.params.id, dto)
+          .then((data) => res.json(data)),
+      );
   }
 }

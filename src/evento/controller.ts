@@ -20,6 +20,8 @@ export class EventoController {
     this.generarInstanciasEvento = this.generarInstanciasEvento.bind(this);
     this.suspenderInstanciaEvento = this.suspenderInstanciaEvento.bind(this);
     this.reactivarInstanciaEvento = this.reactivarInstanciaEvento.bind(this);
+    this.getInstanciaEvento = this.getInstanciaEvento.bind(this);
+    this.obtenerReservasInstancia = this.obtenerReservasInstancia.bind(this);
   }
 
   public getAll(req: Request, res: Response) {
@@ -27,8 +29,11 @@ export class EventoController {
     this.eventoService.findAll(query).then((data) => res.json(data));
   }
 
-  public getOne(req: Request, res: Response) {
-    this.eventoService.findOne(+req.params.id).then((data) => res.json(data));
+  public getOne(req: Request, res: Response, next: NextFunction) {
+    this.eventoService
+      .findOne(+req.params.id)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
   }
 
   public async create(req: Request, res: Response, next: NextFunction) {
@@ -131,6 +136,24 @@ export class EventoController {
 
     this.eventoService
       .reactivarInstanciaEvento(instanciaId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  }
+
+  public getInstanciaEvento(req: Request, res: Response, next: NextFunction) {
+    this.eventoService
+      .findByInstanciaEvento(+req.params.instanciaId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  }
+
+  public obtenerReservasInstancia(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    this.eventoService
+      .obtenerReservasInstancia(+req.params.instanciaId)
       .then((data) => res.json(data))
       .catch((err) => next(err));
   }

@@ -18,5 +18,5 @@ export const findAllRecorridosParamsSchema = paginationAndOrderSchema(
   recorridoOrderByAttributes,
 ).extend({
   userId: z.number().int().positive().optional(),
-  estados: z.array(z.nativeEnum(EstadoRecorridoEnum)).optional(),
+  estados: z.nativeEnum(EstadoRecorridoEnum).optional(),
 });

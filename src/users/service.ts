@@ -1,4 +1,5 @@
 import { auditEmitter } from '@/audit/event';
+import { Bodega } from '@/bodega/model';
 import { sequelize } from '@/db';
 import { errors } from '@/error';
 import logger from '@/logger';
@@ -82,6 +83,20 @@ class UsersService {
     const user = await User.findOne({
       where: { email },
       include: [{ model: Rol, as: 'roles' }],
+    });
+    if (!user) {
+      throw errors.app.user.not_found;
+    }
+    return user;
+  }
+
+  public async findOneByEmailWithBodega(email: string) {
+    const user = await User.findOne({
+      where: { email },
+      include: [
+        { model: Rol, as: 'roles' },
+        { model: Bodega, as: 'bodega' },
+      ],
     });
     if (!user) {
       throw errors.app.user.not_found;

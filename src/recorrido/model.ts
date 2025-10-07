@@ -18,11 +18,18 @@ export interface RecorridoAttributes {
   last_optimization: Date | null;
   userId: number;
   id: number;
+  reservas: Reserva[];
+  estados: EstadoRecorrido[];
 }
 
 export type RecorridoCreationAttributes = Omit<
   RecorridoAttributes,
-  'created_at' | 'deleted_at' | 'last_optimization' | 'id'
+  | 'created_at'
+  | 'deleted_at'
+  | 'last_optimization'
+  | 'id'
+  | 'reservas'
+  | 'estados'
 >;
 
 @Table({

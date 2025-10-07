@@ -21,16 +21,28 @@ export const authMiddleware = (
   if (!token) {
     throw errors.app.auth.unauthorized;
   }
+  try {
+    const decoded = jwt.verify(token, config.JWT_SECRET);
+    if (!decoded) {
+      throw errors.app.auth.unauthorized;
+    }
+    req.user = (decoded as unknown as JwtAuthPayload).user;
+    req.bodegaId = (decoded as unknown as JwtAuthPayload).bodegaId;
+    req.logger.debug(`Setting user context, ${req.user}`);
+    // This context is used to log the user in the audit
+    setContext('user', req.user);
 
-  const decoded = jwt.verify(token, config.JWT_SECRET);
-  if (!decoded) {
+    next();
+  } catch (err) {
+    req.logger.error(`Error verifying token: ${err}`);
+    if (err instanceof jwt.JsonWebTokenError) {
+      if (err.message === 'jwt expired') {
+        throw errors.app.auth.invalid_or_expired_code;
+      }
+      // Handle all JWT errors (malformed, invalid signature, etc.)
+      throw errors.app.auth.unauthorized;
+    }
+    // Handle other errors (like JSON parsing errors)
     throw errors.app.auth.unauthorized;
   }
-  req.user = (decoded as unknown as JwtAuthPayload).user;
-  req.bodegaId = (decoded as unknown as JwtAuthPayload).bodegaId;
-  req.logger.debug(`Setting user context, ${req.user}`);
-  // This context is used to log the user in the audit
-  setContext('user', req.user);
-
-  next();
 };

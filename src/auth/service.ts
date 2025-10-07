@@ -67,7 +67,7 @@ export class AuthService {
 
   public async login(dto: LoginDto): Promise<AuthenticatedUser> {
     // If more strategies are added must extend this
-    const user = await usersService.findOneByEmail(dto.email);
+    const user = await usersService.findOneByEmailWithBodega(dto.email);
     if (!user || !(await bcrypt.compare(dto.password, user.contrasena))) {
       throw errors.app.auth.non_valid_credentials;
     }
@@ -98,7 +98,11 @@ export class AuthService {
       bodegaId: dto.bodegaId,
     };
     const token = jwt.sign(payload, config.JWT_SECRET, {
+<<<<<<< HEAD
       expiresIn: '45d',
+=======
+      expiresIn: '30d',
+>>>>>>> develop
     });
     return token;
   }
@@ -146,7 +150,7 @@ export class AuthService {
   public async validateAccount(
     dto: ValidateAccountDto,
   ): Promise<AuthenticatedUser> {
-    const user = await usersService.findOneByEmail(dto.email);
+    const user = await usersService.findOneByEmailWithBodega(dto.email);
     if (!user) throw errors.app.user.not_found;
     const recovery = await CodigoRecuperarContra.findOne({
       where: {
