@@ -7,7 +7,6 @@ import { Permiso, Rol } from '@/rbac/model';
 import { Op, Transaction } from 'sequelize';
 import { User } from './model';
 import { CreateUserDto, UpdateUserDto } from './types';
-import { Bodega } from '@/bodega/model';
 
 class UsersService {
   public async create(dto: CreateUserDto) {

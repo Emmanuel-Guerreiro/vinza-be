@@ -74,9 +74,6 @@ function handleNotFoundError(
 export function handleErrors(app: Express) {
   app.use(handleNotFoundError);
   app.use(handleUnhandledError);
-  app.on('error', (err) => {
-    logger.error('Unhandled error:', err);
-  });
 }
 
 process.on('unhandledRejection', (reason: unknown) => {

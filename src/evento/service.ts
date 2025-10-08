@@ -39,7 +39,7 @@ class EventoService {
     const transaction = await sequelize.transaction();
     try {
       const { multimediaPortada, ...eventoDto } = dto;
-      const evento = await this.create(eventoDto, transaction, true);
+      const evento = await this.create(eventoDto, transaction);
       if (files.length) {
         await multimediaService.uploadMultipleFilesForEvento(
           { files, portadaFileName: multimediaPortada, eventoId: evento.id },
@@ -61,11 +61,7 @@ class EventoService {
     }
   }
 
-  public async create(
-    dto: CreateEventoDto,
-    t?: Transaction,
-    disableAudit: boolean = false,
-  ) {
+  public async create(dto: CreateEventoDto, t?: Transaction) {
     const transaction = t || (await sequelize.transaction());
     try {
       // Validar datos del evento
