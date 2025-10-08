@@ -1,17 +1,9 @@
 import { z } from 'zod';
-import { EstadoEventoEnum } from './enum';
 
 export const createEstadoEventoSchema = z.object({
-  nombre: z.nativeEnum(EstadoEventoEnum, {
-    required_error: 'El estado es requerido',
-    invalid_type_error: 'El estado debe ser un valor válido',
-  }),
+  nombre: z.string().min(1, 'El estado es requerido'),
 });
 
 export const updateEstadoEventoSchema = z.object({
-  nombre: z
-    .nativeEnum(EstadoEventoEnum, {
-      invalid_type_error: 'El estado debe ser un valor válido',
-    })
-    .optional(),
+  nombre: z.string().min(1, 'El estado es requerido').optional(),
 });

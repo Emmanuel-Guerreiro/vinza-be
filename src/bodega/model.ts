@@ -10,6 +10,7 @@ export interface BodegaAttributes {
   roles?: Rol[];
   users?: User[];
   validada: Date | null;
+  telefono: string;
 }
 
 export type BodegaCreationAttributes = Omit<
@@ -37,6 +38,9 @@ export class Bodega extends Model<BodegaAttributes, BodegaCreationAttributes> {
 
   @Column({ type: DataType.STRING, allowNull: false })
   descripcion!: string;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  telefono!: string;
 
   @HasMany(() => Rol)
   roles?: Rol[];

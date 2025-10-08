@@ -153,6 +153,35 @@ router.delete(
   controller.delete,
 );
 
+/**
+ * @openapi
+ * /categoria-eventos/{id}/can-delete:
+ *   get:
+ *     summary: Check if a categoria evento can be deleted
+ *     tags:
+ *       - CategoriaEventos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the categoria evento
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Success
+ *       404:
+ *         description: Categoria evento not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/:id/can-delete',
+  authMiddleware,
+  requirePermissions([Permissions.SUDO]),
+  controller.canDelete,
+);
+
 logger.debug('CategoriaEvento router initialized');
 
 export default router;

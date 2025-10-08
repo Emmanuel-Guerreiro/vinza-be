@@ -16,20 +16,26 @@ export class EstadoInstanciaEventoController {
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
+    this.canDelete = this.canDelete.bind(this);
   }
 
-  public getAll(req: Request, res: Response) {
-    paginationSchema.parseAsync(req.query).then((query) => {
-      this.estadoInstanciaEventoService
-        .findAll(query)
-        .then((data) => res.json(data));
-    });
+  public getAll(req: Request, res: Response, next: NextFunction) {
+    paginationSchema
+      .parseAsync(req.query)
+      .then((query) => {
+        this.estadoInstanciaEventoService
+          .findAll(query)
+          .then((data) => res.json(data))
+          .catch((error) => next(error));
+      })
+      .catch((error) => next(error));
   }
 
-  public getOne(req: Request, res: Response) {
+  public getOne(req: Request, res: Response, next: NextFunction) {
     this.estadoInstanciaEventoService
       .findOne(+req.params.id)
-      .then((data) => res.json(data));
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
   }
 
   public create(req: Request, res: Response, next: NextFunction) {
@@ -48,9 +54,17 @@ export class EstadoInstanciaEventoController {
       .catch((err) => next(err));
   }
 
-  public delete(req: Request, res: Response) {
+  public delete(req: Request, res: Response, next: NextFunction) {
     this.estadoInstanciaEventoService
       .delete(+req.params.id)
-      .then((data) => res.json(data));
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
+  }
+
+  public canDelete(req: Request, res: Response, next: NextFunction) {
+    this.estadoInstanciaEventoService
+      .canDelete(+req.params.id)
+      .then((canDelete) => res.json({ canDelete }))
+      .catch((error) => next(error));
   }
 }

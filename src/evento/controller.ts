@@ -22,6 +22,7 @@ export class EventoController {
     this.reactivarInstanciaEvento = this.reactivarInstanciaEvento.bind(this);
     this.getInstanciaEvento = this.getInstanciaEvento.bind(this);
     this.getAllByBodega = this.getAllByBodega.bind(this);
+    this.obtenerReservasInstancia = this.obtenerReservasInstancia.bind(this);
   }
 
   public getAll(req: Request, res: Response) {
@@ -127,5 +128,16 @@ export class EventoController {
       (query as unknown as { bodegaId?: number }).bodegaId = req.bodegaId;
     }
     this.eventoService.findAll(query).then((data) => res.json(data));
+  }
+
+  public obtenerReservasInstancia(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    this.eventoService
+      .obtenerReservasInstancia(+req.params.instanciaId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
   }
 }

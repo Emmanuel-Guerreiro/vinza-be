@@ -28,6 +28,7 @@ import recorrido from './recorrido/router';
 import estadoRecorridoRouter from './estado-recorrido/router';
 import estadoReservaRouter from './estado-reserva/router';
 import estadoInstanciaEventoRouter from './estado-instancia-evento/router';
+import faqRouter from './faqs/router';
 
 function initializeRouter() {
   const router = Router();
@@ -53,7 +54,7 @@ function initializeRouter() {
   router.use('/estado-recorrido', estadoRecorridoRouter);
   router.use('/estado-reservas', estadoReservaRouter);
   router.use('/estado-instancia-eventos', estadoInstanciaEventoRouter);
-
+  router.use('/faqs', faqRouter);
   return router;
 }
 

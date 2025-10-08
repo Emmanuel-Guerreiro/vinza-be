@@ -27,6 +27,7 @@ class BodegaService {
         {
           nombre: dto.nombre,
           descripcion: dto.descripcion,
+          telefono: dto.telefono,
         },
         { transaction },
       );
@@ -74,6 +75,12 @@ class BodegaService {
         order,
         limit,
         offset,
+        include: [
+          {
+            model: Sucursal,
+            as: 'sucursales',
+          },
+        ],
       }),
     ]);
 
@@ -88,6 +95,7 @@ class BodegaService {
       include: [
         {
           model: Sucursal,
+          as: 'sucursales',
         },
       ],
     });

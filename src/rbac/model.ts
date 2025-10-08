@@ -41,6 +41,7 @@ export interface PermisoCreationAttributes
 export interface PermissionAttributes {
   id: number;
   nombre: string;
+  descripcion?: string;
   clave: string;
   roles: Rol[];
   createdAt: Date;
@@ -74,6 +75,9 @@ export class Permiso extends Model<
 
   @Column({ type: DataType.STRING, allowNull: false, unique: true })
   nombre!: string;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  descripcion?: string;
 
   @Index
   @Column({ type: DataType.STRING, allowNull: false, unique: true })

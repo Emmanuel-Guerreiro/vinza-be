@@ -39,7 +39,7 @@ export class EstadoReserva extends Model<
   })
   id!: number;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false, unique: true })
   nombre!: string;
 
   @BelongsToMany(() => Reserva, () => HEstadoReserva)

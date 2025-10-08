@@ -24,6 +24,12 @@
         "message": "Misconfigured audit middleware",
         "message_eng": "Misconfigured audit middleware",
         "status": 500
+      },
+      "unique_error": {
+        "key": "app.general.unique_error",
+        "message": "Error de unicidad",
+        "message_eng": "Unique error",
+        "status": 400
       }
     },
     "auth": {

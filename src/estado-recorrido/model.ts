@@ -7,7 +7,6 @@ import {
   Table,
 } from 'sequelize-typescript';
 import { Recorrido } from '../recorrido/model';
-import { EstadoRecorridoEnum } from './enum';
 
 export interface EstadoRecorridoAttributes {
   id: number;
@@ -40,10 +39,11 @@ export class EstadoRecorrido extends Model<
   id!: number;
 
   @Column({
-    type: DataType.ENUM(...Object.values(EstadoRecorridoEnum)),
+    type: DataType.STRING,
     allowNull: false,
+    unique: true,
   })
-  nombre!: EstadoRecorridoEnum;
+  nombre!: string;
 
   @BelongsToMany(() => Recorrido, () => HEstadoRecorrido)
   recorridos!: Recorrido[];

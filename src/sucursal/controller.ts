@@ -1,5 +1,5 @@
 import { ISucursalService } from './service';
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { createSucursalSchema, updateSucursalSchema } from './schema';
 
 export class SucursalController {
@@ -15,34 +15,45 @@ export class SucursalController {
     this.getAllByBodega = this.getAllByBodega.bind(this);
   }
 
-  public getAll(_req: Request, res: Response) {
-    this.sucursalService.findAll().then((data) => res.json(data));
+  public getAll(_req: Request, res: Response, next: NextFunction) {
+    this.sucursalService
+      .findAll()
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
   }
 
-  public getOne(req: Request, res: Response) {
-    this.sucursalService.findOne(+req.params.id).then((data) => res.json(data));
+  public getOne(req: Request, res: Response, next: NextFunction) {
+    this.sucursalService
+      .findOne(+req.params.id)
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
   }
 
-  public create(req: Request, res: Response) {
+  public create(req: Request, res: Response, next: NextFunction) {
     createSucursalSchema
       .parseAsync(req.body)
       .then((dto) =>
         this.sucursalService.create(dto).then((data) => res.json(data)),
-      );
+      )
+      .catch((error) => next(error));
   }
 
-  public update(req: Request, res: Response) {
+  public update(req: Request, res: Response, next: NextFunction) {
     updateSucursalSchema
       .parseAsync(req.body)
       .then((dto) =>
         this.sucursalService
           .update(+req.params.id, dto)
           .then((data) => res.json(data)),
-      );
+      )
+      .catch((error) => next(error));
   }
 
-  public delete(req: Request, res: Response) {
-    this.sucursalService.delete(+req.params.id).then((data) => res.json(data));
+  public delete(req: Request, res: Response, next: NextFunction) {
+    this.sucursalService
+      .delete(+req.params.id)
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
   }
 
   public getAllByBodega(req: Request, res: Response) {

@@ -20,6 +20,8 @@ import { permissionsService, rolesService } from '@/rbac/service';
 import { sucursalService } from '@/sucursal/service';
 import { User } from '@/users/model';
 import { valoracionService } from '@/valoracion/service';
+import { faqService } from '@/faqs/service';
+import { FaqRecipientsEnum } from '@/faqs/enums';
 import { sequelize } from '.';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
@@ -107,12 +109,76 @@ async function seed() {
     // 2. CREAR PERMISOS Y ROLES
     // ========================================
 
+    // Permission labels in Spanish for admin UI
+    const permissionLabels: Record<Permissions, string> = {
+      [Permissions.SUDO]: 'Gestion de parametros del sistema',
+      [Permissions.BODEGAS_READ]: 'Ver Bodegas',
+      [Permissions.BODEGAS_MANAGE]: 'Gestionar Bodegas',
+      [Permissions.BODEGAS_VALIDATE]: 'Validar Bodegas',
+      [Permissions.USERS_READ]: 'Ver Usuarios',
+      [Permissions.USERS_MANAGE]: 'Gestionar Usuarios',
+      [Permissions.ROLES_READ]: 'Ver Roles',
+      [Permissions.ROLES_MANAGE]: 'Gestionar Roles',
+      [Permissions.EVENTOS_READ]: 'Ver Eventos',
+      [Permissions.EVENTOS_MANAGE]: 'Gestionar Eventos',
+      [Permissions.RESERVAS_READ]: 'Ver Reservas',
+      [Permissions.RESERVAS_MANAGE]: 'Gestionar Reservas',
+      [Permissions.RECORRIDO_READ]: 'Ver Recorridos',
+      [Permissions.RECORRIDO_MANAGE]: 'Gestionar Recorridos',
+      [Permissions.VALORACIONES_READ]: 'Ver Valoraciones',
+      [Permissions.VALORACIONES_MANAGE]: 'Gestionar Valoraciones',
+      [Permissions.INSTANCIA_EVENTOS_READ]: 'Ver Instancias de Eventos',
+      [Permissions.INSTANCIA_EVENTOS_MANAGE]: 'Gestionar Instancias de Eventos',
+      [Permissions.FAQ_MANAGE]: 'Gestionar Preguntas Frecuentes',
+    };
+
+    // Permission descriptions in Spanish
+    const permissionDescriptions: Record<Permissions, string> = {
+      [Permissions.SUDO]:
+        'Acceso completo a todas las funcionalidades del sistema sin restricciones',
+      [Permissions.BODEGAS_READ]:
+        'Permite visualizar información de bodegas registradas en el sistema',
+      [Permissions.BODEGAS_MANAGE]:
+        'Permite crear, editar y eliminar bodegas del sistema',
+      [Permissions.BODEGAS_VALIDATE]:
+        'Permite aprobar o rechazar solicitudes de nuevas bodegas',
+      [Permissions.USERS_READ]:
+        'Permite visualizar información de usuarios registrados',
+      [Permissions.USERS_MANAGE]:
+        'Permite crear, editar y eliminar usuarios del sistema',
+      [Permissions.ROLES_READ]: 'Permite visualizar roles y permisos asignados',
+      [Permissions.ROLES_MANAGE]:
+        'Permite crear, editar y asignar roles a usuarios',
+      [Permissions.EVENTOS_READ]:
+        'Permite visualizar eventos disponibles en el sistema',
+      [Permissions.EVENTOS_MANAGE]: 'Permite crear, editar y eliminar eventos',
+      [Permissions.RESERVAS_READ]:
+        'Permite visualizar reservas realizadas por usuarios',
+      [Permissions.RESERVAS_MANAGE]:
+        'Permite gestionar reservas: crear, modificar y cancelar',
+      [Permissions.RECORRIDO_READ]:
+        'Permite visualizar recorridos turísticos disponibles',
+      [Permissions.RECORRIDO_MANAGE]:
+        'Permite crear, editar y eliminar recorridos turísticos',
+      [Permissions.VALORACIONES_READ]:
+        'Permite visualizar valoraciones y comentarios de usuarios',
+      [Permissions.VALORACIONES_MANAGE]:
+        'Permite moderar y gestionar valoraciones de usuarios',
+      [Permissions.INSTANCIA_EVENTOS_READ]:
+        'Permite visualizar instancias específicas de eventos',
+      [Permissions.INSTANCIA_EVENTOS_MANAGE]:
+        'Permite gestionar instancias específicas de eventos',
+      [Permissions.FAQ_MANAGE]:
+        'Permite crear, editar y eliminar preguntas frecuentes',
+    };
+
     // Create all permissions
     const permissions = await Promise.all(
       Object.values(Permissions).map(async (permission) => {
         return await permissionsService.create({
-          nombre: permission,
+          nombre: permissionLabels[permission],
           clave: permission,
+          descripcion: permissionDescriptions[permission],
         });
       }),
     );
@@ -133,6 +199,7 @@ async function seed() {
     const zuccardi = await Bodega.create({
       nombre: 'zuccardi',
       descripcion: 'Bodega Zuccardi',
+      telefono: '1234567890',
     });
 
     // Create additional bodegas
@@ -140,14 +207,17 @@ async function seed() {
       Bodega.create({
         nombre: 'catena-zapata',
         descripcion: 'Bodega Catena Zapata',
+        telefono: '1234567890',
       }),
       Bodega.create({
         nombre: 'trapiche',
         descripcion: 'Bodega Trapiche',
+        telefono: '1234567890',
       }),
       Bodega.create({
         nombre: 'luigi-bosca',
         descripcion: 'Bodega Luigi Bosca',
+        telefono: '1234567890',
       }),
     ]);
 
@@ -684,7 +754,41 @@ async function seed() {
     await maximosDiasAdelanteReservaService.patch({ valor: 30 });
 
     // ========================================
-    // 8. ESTADOS DE RESERVA (COMENTADO TEMPORALMENTE)
+    // 8. CREAR FAQS
+    // ========================================
+
+    // Create FAQ recipients
+    const [endRecipient, bodegasRecipient] = await Promise.all([
+      faqService.createRecipient({
+        name: FaqRecipientsEnum.END,
+        label: 'Usuarios finales',
+      }),
+      faqService.createRecipient({
+        name: FaqRecipientsEnum.BODEGAS,
+        label: 'Administradores de bodegas',
+      }),
+    ]);
+
+    // Create FAQ 1: About bodega validation (for administrators)
+    await faqService.createFaq({
+      question: '¿Cómo funciona la validación de bodegas?',
+      answer:
+        'La validación de bodegas es un proceso manual que realizan los administradores del sistema. Cuando una nueva bodega solicita acceso, los administradores revisan la documentación y verifican que cumpla con todos los requisitos antes de aprobar su ingreso a la plataforma. Este proceso puede tomar entre 2 a 5 días hábiles.',
+      recipient_id: bodegasRecipient.id,
+    });
+
+    // Create FAQ 2: About recurring events (for end users)
+    await faqService.createFaq({
+      question: '¿Qué son los eventos recurrentes?',
+      answer:
+        'Los eventos recurrentes son actividades que se repiten periódicamente siguiendo un patrón establecido. Por ejemplo, clases de yoga todos los lunes y miércoles, o catas de vinos los primeros sábados de cada mes. Estos eventos te permiten planificar con anticipación y participar regularmente en las actividades que más te interesan.',
+      recipient_id: endRecipient.id,
+    });
+
+    console.log('FAQs creados exitosamente');
+
+    // ========================================
+    // 9. ESTADOS DE RESERVA (COMENTADO TEMPORALMENTE)
     // ========================================
 
     // Create all estado reserva - Comentado temporalmente
