@@ -7,6 +7,7 @@ import {
   UpdateRoleDto,
 } from './types';
 import { sequelize } from '@/db';
+import { Op } from 'sequelize';
 import { usersService } from '@/users/service';
 
 export class RolesService {
@@ -41,6 +42,31 @@ export class RolesService {
 
   public async findAll() {
     const roles = await Rol.findAll({
+      include: [{ model: Permiso, as: 'permisos' }],
+    });
+    return roles;
+  }
+
+  public async findByUserBodega(userBodegaId: number | null) {
+    let whereClause: Record<string, unknown>;
+
+    if (userBodegaId !== null) {
+      // Usuario tiene bodega específica: mostrar roles de su bodega + roles globales
+      whereClause = {
+        [Op.or]: [
+          { bodegaId: userBodegaId }, // Roles específicos de su bodega
+          { bodegaId: null }, // Roles globales del sistema
+        ],
+      };
+    } else {
+      // Usuario sin bodega: solo roles globales
+      whereClause = {
+        bodegaId: null,
+      };
+    }
+
+    const roles = await Rol.findAll({
+      where: whereClause,
       include: [{ model: Permiso, as: 'permisos' }],
     });
     return roles;

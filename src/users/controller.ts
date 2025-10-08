@@ -10,6 +10,7 @@ export class UsersController {
     // Keep binding this to the methods to avoid problems with
     // the this reference inside callbacks
     this.getAll = this.getAll.bind(this);
+    this.getAllByBodega = this.getAllByBodega.bind(this);
     this.getOne = this.getOne.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
@@ -25,6 +26,14 @@ export class UsersController {
       .catch((error) => next(error));
   }
 
+  public getAllByBodega(req: Request, res: Response, next: NextFunction) {
+    const bodegaId = req.bodegaId!;
+    this.usersService
+      .findAllByBodega(bodegaId)
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
+  }
+
   public getOne(req: Request, res: Response, next: NextFunction) {
     this.usersService
       .findOne(+req.params.id)
@@ -35,9 +44,16 @@ export class UsersController {
   public create(req: Request, res: Response, next: NextFunction) {
     createUserSchema
       .parseAsync(req.body)
-      .then((dto) =>
-        this.usersService.create(dto).then((data) => res.json(data)),
-      )
+      .then((dto) => {
+        // Agregar automáticamente el bodegaId del usuario autenticado
+        const userData = {
+          ...dto,
+          bodegaId: req.bodegaId,
+        };
+        return this.usersService
+          .create(userData)
+          .then((data) => res.json(data));
+      })
       .catch((error) => next(error));
   }
 

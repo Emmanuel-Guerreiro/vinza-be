@@ -12,6 +12,7 @@ export class SucursalController {
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
+    this.getAllByBodega = this.getAllByBodega.bind(this);
   }
 
   public getAll(_req: Request, res: Response, next: NextFunction) {
@@ -53,5 +54,16 @@ export class SucursalController {
       .delete(+req.params.id)
       .then((data) => res.json(data))
       .catch((error) => next(error));
+  }
+
+  public getAllByBodega(req: Request, res: Response) {
+    // Filtrar por la bodega del usuario autenticado
+    if (typeof req.bodegaId !== 'undefined' && req.bodegaId !== null) {
+      this.sucursalService
+        .findAllByBodega(req.bodegaId)
+        .then((data) => res.json(data));
+    } else {
+      res.json([]);
+    }
   }
 }
