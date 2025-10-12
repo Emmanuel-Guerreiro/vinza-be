@@ -24,6 +24,9 @@ export enum AuditModel {
   FAQ = 'faq',
   ESTADO_EVENTO = 'estado-evento',
   ESTADO_RECORRIDO = 'estado-recorrido',
+  ESTADO_INSTANCIA_EVENTO = 'estado-instancia-evento',
+  ESTADO_RESERVA = 'estado-reserva',
+  CATEGORIA_EVENTO = 'categoria-evento',
 }
 // Define the type for the audit events
 export type AuditEventType = `${AuditModel}:${AuditEvent}`;
