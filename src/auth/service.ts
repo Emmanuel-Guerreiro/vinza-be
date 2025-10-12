@@ -23,6 +23,7 @@ import {
   RequestPasswordRecoveryDto,
   ResetPasswordDto,
   ValidateAccountDto,
+  ChangePasswordDto,
   JwtAuthPayload,
 } from './types';
 
@@ -211,6 +212,30 @@ export class AuthService {
       await transaction.rollback();
       throw error;
     }
+  }
+
+  public async changePassword(
+    userId: number,
+    dto: ChangePasswordDto,
+  ): Promise<{ success: boolean }> {
+    const user = await User.findByPk(userId);
+    if (!user) throw errors.app.user.not_found;
+
+    // Check if current password matches
+    const isCurrentPasswordValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.contrasena,
+    );
+    if (!isCurrentPasswordValid) {
+      throw errors.app.auth.current_password_mismatch;
+    }
+
+    // Hash and set new password
+    const hashedNewPassword = await hashPassword(dto.newPassword);
+    user.contrasena = hashedNewPassword;
+    await user.save();
+
+    return { success: true };
   }
 }
 

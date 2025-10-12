@@ -6,6 +6,7 @@ import {
   requestPasswordRecoverySchema,
   resetPasswordSchema,
   validateAccountSchema,
+  changePasswordSchema,
 } from './schema';
 
 export type RegisterDto = z.infer<typeof registerSchema>;
@@ -18,6 +19,7 @@ export type RequestPasswordRecoveryDto = z.infer<
 >;
 export type ResetPasswordDto = z.infer<typeof resetPasswordSchema>;
 export type ValidateAccountDto = z.infer<typeof validateAccountSchema>;
+export type ChangePasswordDto = z.infer<typeof changePasswordSchema>;
 
 export type JwtAuthPayload = {
   user: number;

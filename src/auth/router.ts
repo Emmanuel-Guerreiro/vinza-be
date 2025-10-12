@@ -1,5 +1,6 @@
 import { authService } from './service';
 import { AuthController } from './controller';
+import { authMiddleware } from './middleware';
 import { Router } from 'express';
 import logger from '@/logger';
 
@@ -351,6 +352,53 @@ router.post('/validate', controller.validateAccount);
  *         description: Internal server error
  */
 router.post('/request-validation', controller.requestValidationCode);
+
+/**
+ * @openapi
+ * /auth/change-password:
+ *   post:
+ *     summary: Change password
+ *     description: Cambia la contraseña del usuario autenticado. Requiere la contraseña actual y una nueva contraseña.
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 format: password
+ *                 description: Contraseña actual del usuario
+ *                 example: "currentPassword123"
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 description: Nueva contraseña (mínimo 6 caracteres)
+ *                 example: "newPassword123"
+ *     responses:
+ *       200:
+ *         description: Contraseña cambiada exitosamente
+ 
+ *        
+ *       400:
+ *         description: Error de validación o contraseña actual incorrecta
+ 
+ *       401:
+ *         description: No autorizado
+ 
+ *       404:
+ *         description: Usuario no encontrado
+ 
+ *       500:
+ *         description: Error interno del servidor
+ 
+ */
+router.post('/change-password', authMiddleware, controller.changePassword);
 
 logger.debug('Auth router initialized');
 export default router;

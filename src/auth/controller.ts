@@ -6,6 +6,7 @@ import {
   requestValidationCodeSchema,
   resetPasswordSchema,
   validateAccountSchema,
+  changePasswordSchema,
 } from './schema';
 import { IAuthService } from './service';
 
@@ -17,6 +18,7 @@ export class AuthController {
     this.resetPassword = this.resetPassword.bind(this);
     this.validateAccount = this.validateAccount.bind(this);
     this.requestValidationCode = this.requestValidationCode.bind(this);
+    this.changePassword = this.changePassword.bind(this);
   }
 
   public register(req: Request, res: Response, next: NextFunction) {
@@ -71,6 +73,15 @@ export class AuthController {
     const dto = requestValidationCodeSchema.parse(req.body);
     this.authService
       .requestValidationCode(dto)
+      .then((result) => res.json(result))
+      .catch((err) => next(err));
+  }
+
+  public changePassword(req: Request, res: Response, next: NextFunction) {
+    const dto = changePasswordSchema.parse(req.body);
+    const userId = req.user!; // This will be set by authMiddleware
+    this.authService
+      .changePassword(userId, dto)
       .then((result) => res.json(result))
       .catch((err) => next(err));
   }
