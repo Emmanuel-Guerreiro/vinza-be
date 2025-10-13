@@ -284,6 +284,7 @@ class EventoService {
         },
         {
           model: MultimediaEventos,
+          as: 'multimedia',
         },
       ],
       transaction,
