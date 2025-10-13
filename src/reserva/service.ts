@@ -15,6 +15,8 @@ import {
 import { PaginatedResponse } from '@/pagination/types';
 import { Recorrido } from '@/recorrido/model';
 import { recorridoService } from '@/recorrido/service';
+import { Sucursal } from '@/sucursal/model';
+import { User } from '@/users/model';
 import { FindOptions, Op, Transaction, WhereOptions } from 'sequelize';
 import { Reserva } from './model';
 import {
@@ -232,6 +234,7 @@ class ReservaService {
 
   public async findAll(
     filter: ReservaFilterParams,
+    bodegaId?: number,
   ): Promise<PaginatedResponse<Reserva>> {
     const where = this.generateWhereConditions(filter);
     const order = generateOrderConditions(filter);
@@ -250,6 +253,27 @@ class ReservaService {
             {
               model: Evento,
               as: 'evento',
+              include: [
+                {
+                  model: Sucursal,
+                  as: 'sucursal',
+                  where: bodegaId ? { bodegaId } : undefined,
+                  required: !!bodegaId,
+                  attributes: ['id', 'nombre', 'bodegaId'],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          model: Recorrido,
+          as: 'recorrido',
+          attributes: ['id'],
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['id', 'nombre', 'apellido', 'email'],
             },
           ],
         },
@@ -286,6 +310,18 @@ class ReservaService {
             {
               model: Evento,
               as: 'evento',
+            },
+          ],
+        },
+        {
+          model: Recorrido,
+          as: 'recorrido',
+          attributes: ['id'],
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['id', 'nombre', 'apellido', 'email'],
             },
           ],
         },

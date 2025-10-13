@@ -13,9 +13,69 @@ const router = Router();
  * @openapi
  * /reserva:
  *   get:
- *     summary: Get all reservas
+ *     summary: Get all reservas (only for system administrators)
  *     tags:
  *       - Reservas
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: integer
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *       - name: orderBy
+ *         in: query
+ *         schema:
+ *           type: string
+ *       - name: estado
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [PENDIENTE, CONFIRMADA, CANCELADA]
+ *     responses:
+ *       200:
+ *         description: All reservas retrieved successfully
+ *       403:
+ *         description: Forbidden - Only system administrators can access this endpoint
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '',
+  authMiddleware,
+  requirePermissions([Permissions.SUDO]),
+  controller.getAll,
+);
+
+/**
+ * @openapi
+ * /reserva/mi-bodega:
+ *   get:
+ *     summary: Get reservas for the authenticated user's bodega
+ *     tags:
+ *       - Reservas
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: integer
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *       - name: orderBy
+ *         in: query
+ *         schema:
+ *           type: string
+ *       - name: estado
+ *         in: query
+ *         schema:
+ *           type: string
+ *           enum: [PENDIENTE, CONFIRMADA, CANCELADA]
  *     responses:
  *       200:
  *         description: Reservas retrieved successfully
@@ -25,10 +85,10 @@ const router = Router();
  *         description: Internal server error
  */
 router.get(
-  '',
+  '/mi-bodega',
   authMiddleware,
   requirePermissions([Permissions.RESERVAS_READ]),
-  controller.getAll,
+  controller.getMiBodega,
 );
 
 /**

@@ -27,10 +27,10 @@ const router = Router();
  *           schema:
  *             type: object
  *             properties:
- *               name:
+ *               nombre:
  *                 type: string
  *                 description: The name of the role
- *               permissions:
+ *               permisos:
  *                 type: array
  *                 description: The permissions of the role
  *                 example: [1, 2, 3]
