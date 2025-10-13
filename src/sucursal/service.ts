@@ -43,6 +43,12 @@ class SucursalService {
     return Sucursal.findAll();
   }
 
+  public findAllByBodega(bodegaId: number) {
+    return Sucursal.findAll({
+      where: { bodegaId },
+    });
+  }
+
   public async findOne(id: number) {
     const sucursal = await Sucursal.findByPk(id);
     if (!sucursal) throw errors.app.sucursal.not_found;

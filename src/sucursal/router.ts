@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { SucursalController } from './controller';
 import { sucursalService } from './service';
+import { authMiddleware } from '@/auth/middleware';
 import logger from '@/logger';
 
 const controller = new SucursalController(sucursalService);
@@ -18,6 +19,49 @@ const router = Router();
  *         description: Success
  */
 router.get('', controller.getAll);
+
+/**
+ * @openapi
+ * /sucursales/mi-bodega:
+ *   get:
+ *     summary: Get sucursales de mi bodega
+ *     description: Get sucursales filtradas por la bodega del usuario autenticado
+ *     tags:
+ *       - Sucursales
+ *     responses:
+ *       200:
+ *         description: List of sucursales from user's bodega retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: number
+ *                   nombre:
+ *                     type: string
+ *                   direccion:
+ *                     type: string
+ *                   aclaraciones:
+ *                     type: string
+ *                   es_principal:
+ *                     type: boolean
+ *                   bodegaId:
+ *                     type: number
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *                   updatedAt:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/mi-bodega', authMiddleware, controller.getAllByBodega);
 
 /**
  * @openapi

@@ -32,6 +32,12 @@
         "message": "Misconfigured audit middleware",
         "message_eng": "Misconfigured audit middleware",
         "status": 500
+      },
+      "unique_error": {
+        "key": "app.general.unique_error",
+        "message": "Error de unicidad",
+        "message_eng": "Unique error",
+        "status": 400
       }
     },
     "auth": {
@@ -64,6 +70,12 @@
         "message": "No tienes permisos para realizar esta acción",
         "message_eng": "You don't have permission to perform this action",
         "status": 403
+      },
+      "current_password_mismatch": {
+        "key": "app.auth.current_password_mismatch",
+        "message": "La contraseña actual no coincide",
+        "message_eng": "Current password does not match",
+        "status": 400
       }
     },
     "user": {

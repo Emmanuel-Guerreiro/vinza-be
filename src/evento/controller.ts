@@ -21,6 +21,7 @@ export class EventoController {
     this.suspenderInstanciaEvento = this.suspenderInstanciaEvento.bind(this);
     this.reactivarInstanciaEvento = this.reactivarInstanciaEvento.bind(this);
     this.getInstanciaEvento = this.getInstanciaEvento.bind(this);
+    this.getAllByBodega = this.getAllByBodega.bind(this);
     this.obtenerReservasInstancia = this.obtenerReservasInstancia.bind(this);
   }
 
@@ -145,6 +146,15 @@ export class EventoController {
       .findByInstanciaEvento(+req.params.instanciaId)
       .then((data) => res.json(data))
       .catch((err) => next(err));
+  }
+
+  public getAllByBodega(req: Request, res: Response) {
+    const query = findAllParamsSchema.parse(req.query);
+    // Filtrar por la bodega del usuario autenticado
+    if (typeof req.bodegaId !== 'undefined' && req.bodegaId !== null) {
+      (query as unknown as { bodegaId?: number }).bodegaId = req.bodegaId;
+    }
+    this.eventoService.findAll(query).then((data) => res.json(data));
   }
 
   public obtenerReservasInstancia(

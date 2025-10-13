@@ -29,7 +29,14 @@ class BodegaService {
   ) {
     const transaction = await sequelize.transaction();
     try {
-      const bodega = await this.create(dto, true, transaction);
+      const bodega = await Bodega.create(
+        {
+          nombre: dto.nombre,
+          descripcion: dto.descripcion,
+          telefono: dto.telefono,
+        },
+        { transaction },
+      );
       if (files.length) {
         await multimediaService.uploadMultipleFilesForBodega(
           {
@@ -40,6 +47,21 @@ class BodegaService {
           transaction,
         );
       }
+      // Create the first sucursal as main
+      await sucursalService.create(
+        {
+          nombre: dto.nombre,
+          es_principal: true,
+          direccion: dto.direccion,
+          aclaraciones: dto.aclaraciones,
+          bodegaId: bodega.id,
+        },
+        transaction,
+      );
+
+      const user = await usersService.findOne(dto.firstUserId, transaction);
+      if (!user) throw errors.app.user.not_found;
+      await user.update({ bodegaId: bodega.id }, { transaction });
 
       await transaction.commit();
 
@@ -117,6 +139,11 @@ class BodegaService {
         include: [
           {
             model: MultimediaBodegas,
+            as: 'multimedia',
+          },
+          {
+            model: Sucursal,
+            as: 'sucursales',
           },
         ],
       }),
@@ -133,6 +160,7 @@ class BodegaService {
       include: [
         {
           model: Sucursal,
+          as: 'sucursales',
         },
         {
           model: MultimediaBodegas,

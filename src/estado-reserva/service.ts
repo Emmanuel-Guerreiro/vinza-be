@@ -4,10 +4,16 @@ import { EstadoReserva } from './model';
 import { CreateEstadoReservaDto, UpdateEstadoReservaDto } from './types';
 import { PaginationParams } from '@/pagination/schemas';
 import { generatePaginationParams } from '@/pagination';
+import { HEstadoReserva } from './model';
+import { auditEmitter } from '@/audit/event';
 
 class EstadoReservaService {
   public async create(dto: CreateEstadoReservaDto) {
     const estadoReserva = await EstadoReserva.create(dto);
+    auditEmitter.emitEntry({
+      tipoEvento: 'estado-reserva:create',
+      valor: estadoReserva.dataValues,
+    });
     return estadoReserva;
   }
 
@@ -41,6 +47,10 @@ class EstadoReservaService {
     const updatedEstadoReserva = await estadoReserva.update(dto, {
       returning: true,
     });
+    auditEmitter.emitEntry({
+      tipoEvento: 'estado-reserva:update',
+      valor: updatedEstadoReserva.dataValues,
+    });
     return updatedEstadoReserva;
   }
 
@@ -48,7 +58,22 @@ class EstadoReservaService {
     const estadoReserva = await EstadoReserva.findByPk(id);
     if (!estadoReserva) throw errors.app.reserva.estado_not_found;
     await estadoReserva.destroy();
+    auditEmitter.emitEntry({
+      tipoEvento: 'estado-reserva:delete',
+      valor: estadoReserva.dataValues,
+    });
     return estadoReserva;
+  }
+
+  public async canDelete(id: number) {
+    const estadoReserva = await EstadoReserva.findByPk(id);
+    if (!estadoReserva) throw errors.app.reserva.estado_not_found;
+
+    const reservasWithEstado = await HEstadoReserva.count({
+      where: { estadoReservaId: id },
+    });
+
+    return reservasWithEstado === 0;
   }
 
   private async getCountAndMetadata(params: PaginationParams, limit: number) {

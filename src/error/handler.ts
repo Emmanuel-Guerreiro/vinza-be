@@ -1,7 +1,8 @@
 import { errors } from '@/error';
 import { IError } from '@/error/types';
 import logger from '@/logger';
-import { NextFunction, Response, Request, Express } from 'express';
+import { Express, NextFunction, Request, Response } from 'express';
+import { UniqueConstraintError } from 'sequelize';
 import { ZodError } from 'zod';
 
 export interface AppError extends Error {
@@ -35,6 +36,20 @@ function createZodError(zodError: ZodError): IError {
   };
 }
 
+function createUniqueError(uniqueError: UniqueConstraintError): IError {
+  const baseError = errors.app.general.unique_error;
+  const fieldName = uniqueError.errors[0]?.path;
+  const value = uniqueError.errors[0]?.value;
+  return {
+    status: baseError.status,
+    key: baseError.key,
+    message: fieldName
+      ? `Ya existe un ${fieldName} con valor ${value}`
+      : uniqueError.message,
+    message_eng: baseError.message_eng,
+  };
+}
+
 function handleUnhandledError(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   err: any,
@@ -48,6 +63,12 @@ function handleUnhandledError(
   // If the error is already in the correct format (has key, message, etc)
   if (err.key && err.message && err.message_eng && err.status) {
     res.status(err.status).json(err);
+    return;
+  }
+
+  if (err instanceof UniqueConstraintError) {
+    const uniqueError = createUniqueError(err);
+    res.status(uniqueError.status).json(uniqueError);
     return;
   }
 
@@ -74,6 +95,9 @@ function handleNotFoundError(
 export function handleErrors(app: Express) {
   app.use(handleNotFoundError);
   app.use(handleUnhandledError);
+  app.on('error', (err) => {
+    logger.error('Unhandled error event:', err);
+  });
 }
 
 process.on('unhandledRejection', (reason: unknown) => {

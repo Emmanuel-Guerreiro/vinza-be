@@ -1,10 +1,9 @@
 import { z } from 'zod';
-import { EstadoInstanciaEventoEnum } from './enum';
 
 export const createEstadoInstanciaEventoSchema = z.object({
-  nombre: z.nativeEnum(EstadoInstanciaEventoEnum),
+  nombre: z.string().min(1, 'El estado es requerido'),
 });
 
 export const updateEstadoInstanciaEventoSchema = z.object({
-  nombre: z.nativeEnum(EstadoInstanciaEventoEnum).optional(),
+  nombre: z.string().optional(),
 });

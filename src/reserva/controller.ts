@@ -12,6 +12,7 @@ export class ReservaController {
   constructor(reservaService: IReservaService) {
     this.reservaService = reservaService;
     this.getAll = this.getAll.bind(this);
+    this.getMiBodega = this.getMiBodega.bind(this);
     this.getOne = this.getOne.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
@@ -24,6 +25,18 @@ export class ReservaController {
       .then((filter) =>
         this.reservaService
           .findAll(filter)
+          .then((data) => res.json(data))
+          .catch((err) => next(err)),
+      )
+      .catch((err) => next(err));
+  }
+
+  public getMiBodega(req: Request, res: Response, next: NextFunction) {
+    reservaFilterSchema
+      .parseAsync(req.query)
+      .then((filter) =>
+        this.reservaService
+          .findAll(filter, req.bodegaId)
           .then((data) => res.json(data))
           .catch((err) => next(err)),
       )
@@ -50,12 +63,15 @@ export class ReservaController {
   }
 
   public update(req: Request, res: Response, next: NextFunction) {
-    updateReservaSchema.parseAsync(req.body).then((dto) =>
-      this.reservaService
-        .update(+req.params.id, dto)
-        .then((data) => res.json(data))
-        .catch((err) => next(err)),
-    );
+    updateReservaSchema
+      .parseAsync(req.body)
+      .then((dto) =>
+        this.reservaService
+          .update(+req.params.id, dto)
+          .then((data) => res.json(data))
+          .catch((err) => next(err)),
+      )
+      .catch((err) => next(err));
   }
 
   public delete(req: Request, res: Response, next: NextFunction) {

@@ -114,7 +114,7 @@ export class FaqService {
         {
           model: FaqRecipient,
           as: 'recipient',
-          where: { name: params.recipient },
+          where: params.recipient ? { name: params.recipient } : undefined,
           required: true,
         },
       ],

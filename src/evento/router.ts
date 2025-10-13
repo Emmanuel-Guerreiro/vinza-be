@@ -178,6 +178,130 @@ router.get('', authMiddleware, controller.getAll);
 
 /**
  * @openapi
+ * /eventos/mi-bodega:
+ *   get:
+ *     summary: Get eventos de mi bodega
+ *     description: Get eventos filtrados por la bodega del usuario autenticado
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: limit
+ *         in: query
+ *         description: Number of items per page
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: sucursalId
+ *         in: query
+ *         description: Filter by specific sucursal ID
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: categoriaId
+ *         in: query
+ *         description: Filter by specific category ID
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: estadoId
+ *         in: query
+ *         description: Filter by specific state ID
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: fechaDesde
+ *         in: query
+ *         description: Filter events created from this date in ISO format
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - name: fechaHasta
+ *         in: query
+ *         description: Filter events created until this date in ISO format
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - name: precioMaximo
+ *         in: query
+ *         description: Filter events with price less than or equal to this value
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: puntuacionMinima
+ *         in: query
+ *         description: Filter events with minimum rating on 0-5 scale
+ *         required: false
+ *         schema:
+ *           type: number
+ *       - name: nombre
+ *         in: query
+ *         description: Filter events by name using case-insensitive search
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: orderBy
+ *         in: query
+ *         description: Order results by field and direction. Format field:direction
+ *         required: false
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of eventos from user's bodega retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: number
+ *                       nombre:
+ *                         type: string
+ *                       descripcion:
+ *                         type: string
+ *                       cupo:
+ *                         type: number
+ *                       precio:
+ *                         type: number
+ *                       sucursalId:
+ *                         type: number
+ *                       estadoId:
+ *                         type: number
+ *                       categoriaId:
+ *                         type: number
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: number
+ *                     currentPage:
+ *                       type: number
+ *                     itemsPerPage:
+ *                       type: number
+ *                     totalPages:
+ *                       type: number
+ *       400:
+ *         description: Bad request - Invalid filter parameters
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/mi-bodega', authMiddleware, controller.getAllByBodega);
+
+/**
+ * @openapi
  * /eventos/instancia/{instanciaId}:
  *   get:
  *     summary: Get an evento by instanciaId

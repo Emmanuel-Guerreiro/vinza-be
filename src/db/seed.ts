@@ -73,8 +73,20 @@ async function seed() {
     }
 
     // Create categorías de evento
-    const [categoriaEvento1, categoriaEvento2] = await Promise.all(
-      ['categoria 1', 'categoria 2'].map(async (nombre) => {
+    const [
+      categoriaDegustacion,
+      categoriaGastronomia,
+      categoriaEducacion,
+      categoriaEntretenimiento,
+      categoriaBienestar,
+    ] = await Promise.all(
+      [
+        'Degustación de Vinos',
+        'Gastronomía y Maridaje',
+        'Educación Enológica',
+        'Entretenimiento y Eventos',
+        'Bienestar y Salud',
+      ].map(async (nombre) => {
         return await categoriaEventoService.create({
           nombre,
         });
@@ -97,21 +109,85 @@ async function seed() {
     // 2. CREAR PERMISOS Y ROLES
     // ========================================
 
+    // Permission labels in Spanish for admin UI
+    const permissionLabels: Record<Permissions, string> = {
+      [Permissions.SUDO]: 'Gestion de parametros del sistema',
+      [Permissions.BODEGAS_READ]: 'Ver Bodegas',
+      [Permissions.BODEGAS_MANAGE]: 'Gestionar Bodegas',
+      [Permissions.BODEGAS_VALIDATE]: 'Validar Bodegas',
+      [Permissions.USERS_READ]: 'Ver Usuarios',
+      [Permissions.USERS_MANAGE]: 'Gestionar Usuarios',
+      [Permissions.ROLES_READ]: 'Ver Roles',
+      [Permissions.ROLES_MANAGE]: 'Gestionar Roles',
+      [Permissions.EVENTOS_READ]: 'Ver Eventos',
+      [Permissions.EVENTOS_MANAGE]: 'Gestionar Eventos',
+      [Permissions.RESERVAS_READ]: 'Ver Reservas',
+      [Permissions.RESERVAS_MANAGE]: 'Gestionar Reservas',
+      [Permissions.RECORRIDO_READ]: 'Ver Recorridos',
+      [Permissions.RECORRIDO_MANAGE]: 'Gestionar Recorridos',
+      [Permissions.VALORACIONES_READ]: 'Ver Valoraciones',
+      [Permissions.VALORACIONES_MANAGE]: 'Gestionar Valoraciones',
+      [Permissions.INSTANCIA_EVENTOS_READ]: 'Ver Instancias de Eventos',
+      [Permissions.INSTANCIA_EVENTOS_MANAGE]: 'Gestionar Instancias de Eventos',
+      [Permissions.FAQ_MANAGE]: 'Gestionar Preguntas Frecuentes',
+    };
+
+    // Permission descriptions in Spanish
+    const permissionDescriptions: Record<Permissions, string> = {
+      [Permissions.SUDO]:
+        'Acceso completo a todas las funcionalidades del sistema sin restricciones',
+      [Permissions.BODEGAS_READ]:
+        'Permite visualizar información de bodegas registradas en el sistema',
+      [Permissions.BODEGAS_MANAGE]:
+        'Permite crear, editar y eliminar bodegas del sistema',
+      [Permissions.BODEGAS_VALIDATE]:
+        'Permite aprobar o rechazar solicitudes de nuevas bodegas',
+      [Permissions.USERS_READ]:
+        'Permite visualizar información de usuarios registrados',
+      [Permissions.USERS_MANAGE]:
+        'Permite crear, editar y eliminar usuarios del sistema',
+      [Permissions.ROLES_READ]: 'Permite visualizar roles y permisos asignados',
+      [Permissions.ROLES_MANAGE]:
+        'Permite crear, editar y asignar roles a usuarios',
+      [Permissions.EVENTOS_READ]:
+        'Permite visualizar eventos disponibles en el sistema',
+      [Permissions.EVENTOS_MANAGE]: 'Permite crear, editar y eliminar eventos',
+      [Permissions.RESERVAS_READ]:
+        'Permite visualizar reservas realizadas por usuarios',
+      [Permissions.RESERVAS_MANAGE]:
+        'Permite gestionar reservas: crear, modificar y cancelar',
+      [Permissions.RECORRIDO_READ]:
+        'Permite visualizar recorridos turísticos disponibles',
+      [Permissions.RECORRIDO_MANAGE]:
+        'Permite crear, editar y eliminar recorridos turísticos',
+      [Permissions.VALORACIONES_READ]:
+        'Permite visualizar valoraciones y comentarios de usuarios',
+      [Permissions.VALORACIONES_MANAGE]:
+        'Permite moderar y gestionar valoraciones de usuarios',
+      [Permissions.INSTANCIA_EVENTOS_READ]:
+        'Permite visualizar instancias específicas de eventos',
+      [Permissions.INSTANCIA_EVENTOS_MANAGE]:
+        'Permite gestionar instancias específicas de eventos',
+      [Permissions.FAQ_MANAGE]:
+        'Permite crear, editar y eliminar preguntas frecuentes',
+    };
+
     // Create all permissions
     const permissions = await Promise.all(
       Object.values(Permissions).map(async (permission) => {
         return await permissionsService.create({
-          nombre: permission,
+          nombre: permissionLabels[permission],
           clave: permission,
+          descripcion: permissionDescriptions[permission],
         });
       }),
     );
 
-    // Create SUDO role (all permissions), no bodega related
-    const sudoRole = await rolesService.create({
-      nombre: 'SUDO',
+    // Create ADMINISTRADOR_SISTEMA role (all permissions), no bodega related
+    const adminSistemaRole = await rolesService.create({
+      nombre: 'ADMINISTRADOR_SISTEMA',
     });
-    await rolesService.update(sudoRole.id, {
+    await rolesService.update(adminSistemaRole.id, {
       permisos: permissions.map((p) => p.id),
     });
 
@@ -123,6 +199,7 @@ async function seed() {
     const zuccardi = await Bodega.create({
       nombre: 'zuccardi',
       descripcion: 'Bodega Zuccardi',
+      telefono: '1234567890',
     });
 
     // Create additional bodegas
@@ -130,31 +207,36 @@ async function seed() {
       Bodega.create({
         nombre: 'catena-zapata',
         descripcion: 'Bodega Catena Zapata',
+        telefono: '1234567890',
       }),
       Bodega.create({
         nombre: 'trapiche',
         descripcion: 'Bodega Trapiche',
+        telefono: '1234567890',
       }),
       Bodega.create({
         nombre: 'luigi-bosca',
         descripcion: 'Bodega Luigi Bosca',
+        telefono: '1234567890',
       }),
     ]);
 
     // Create sucursales for zuccardi bodega
     const [mainSucursal, sucursalZuccardi2] = await Promise.all([
       sucursalService.create({
-        nombre: 'main',
+        nombre: 'Zuccardi Valle de Uco',
         es_principal: true,
-        direccion: 'direccion 1',
-        aclaraciones: 'Sucursal principal de ejemplo',
+        direccion: 'Ruta 89, Km 9.5, Valle de Uco, Mendoza',
+        aclaraciones:
+          'Bodega principal con viñedos de alta montaña y centro de visitantes',
         bodegaId: zuccardi.id,
       }),
       sucursalService.create({
-        nombre: 'zuccardi-2',
+        nombre: 'Zuccardi Maipú',
         es_principal: false,
-        direccion: 'direccion 2',
-        aclaraciones: 'Segunda sucursal de Zuccardi',
+        direccion: 'Ruta 60, Km 22, Maipú, Mendoza',
+        aclaraciones:
+          'Segunda bodega especializada en vinos tradicionales mendocinos',
         bodegaId: zuccardi.id,
       }),
     ]);
@@ -162,17 +244,18 @@ async function seed() {
     // Create sucursales for Catena Zapata
     const [sucursalCatena1, sucursalCatena2] = await Promise.all([
       sucursalService.create({
-        nombre: 'catena-principal',
+        nombre: 'Catena Zapata Agrelo',
         es_principal: true,
-        direccion: 'Mendoza, Argentina',
-        aclaraciones: 'Sucursal principal de Catena Zapata',
+        direccion: 'Ruta Provincial 15, Km 29, Agrelo, Luján de Cuyo, Mendoza',
+        aclaraciones:
+          'Bodega histórica con arquitectura única y viñedos de alta calidad',
         bodegaId: bodegaCatena.id,
       }),
       sucursalService.create({
-        nombre: 'catena-secundaria',
+        nombre: 'Catena Zapata Buenos Aires',
         es_principal: false,
-        direccion: 'Buenos Aires, Argentina',
-        aclaraciones: 'Sucursal secundaria de Catena Zapata',
+        direccion: 'Av. del Libertador 3800, Palermo, Buenos Aires',
+        aclaraciones: 'Showroom y centro de degustación en la capital federal',
         bodegaId: bodegaCatena.id,
       }),
     ]);
@@ -181,24 +264,27 @@ async function seed() {
     const [sucursalTrapiche1, sucursalTrapiche2, sucursalTrapiche3] =
       await Promise.all([
         sucursalService.create({
-          nombre: 'trapiche-central',
+          nombre: 'Trapiche Maipú',
           es_principal: true,
-          direccion: 'Maipú, Mendoza',
-          aclaraciones: 'Sucursal central de Trapiche',
+          direccion: 'Ruta Nacional 7, Km 1038, Maipú, Mendoza',
+          aclaraciones:
+            'Bodega histórica con más de 140 años de tradición vitivinícola',
           bodegaId: bodegaTrapiche.id,
         }),
         sucursalService.create({
-          nombre: 'trapiche-norte',
+          nombre: 'Trapiche Cafayate',
           es_principal: false,
-          direccion: 'Salta, Argentina',
-          aclaraciones: 'Sucursal norte de Trapiche',
+          direccion: 'Ruta Nacional 40, Cafayate, Salta',
+          aclaraciones:
+            'Viñedos de altura para vinos premium de la región norte',
           bodegaId: bodegaTrapiche.id,
         }),
         sucursalService.create({
-          nombre: 'trapiche-sur',
+          nombre: 'Trapiche Patagonia',
           es_principal: false,
-          direccion: 'Neuquén, Argentina',
-          aclaraciones: 'Sucursal sur de Trapiche',
+          direccion: 'Ruta 231, San Patricio del Chañar, Neuquén',
+          aclaraciones:
+            'Bodega patagónica especializada en vinos frescos y minerales',
           bodegaId: bodegaTrapiche.id,
         }),
       ]);
@@ -206,10 +292,11 @@ async function seed() {
     // Create sucursales for Luigi Bosca
     const [sucursalLuigiBosca1] = await Promise.all([
       sucursalService.create({
-        nombre: 'luigi-bosca-mendoza',
+        nombre: 'Luigi Bosca Luján de Cuyo',
         es_principal: true,
-        direccion: 'Luján de Cuyo, Mendoza',
-        aclaraciones: 'Sucursal principal de Luigi Bosca',
+        direccion: 'Ruta Provincial 82, Km 8, Luján de Cuyo, Mendoza',
+        aclaraciones:
+          'Bodega familiar con más de 120 años de historia y tradición italiana',
         bodegaId: bodegaLuigiBosca.id,
       }),
     ]);
@@ -224,10 +311,8 @@ async function seed() {
       bodegaId: zuccardi.id,
     });
 
-    // All permissions except SUDO for admin
-    const adminPermissions = permissions.filter(
-      (p) => p.nombre !== Permissions.SUDO,
-    );
+    // All permissions for admin (no restrictions)
+    const adminPermissions = permissions;
     await rolesService.update(adminRole.id, {
       permisos: adminPermissions.map((p) => p.id),
     });
@@ -261,9 +346,9 @@ async function seed() {
     // Create admin user related to zuccardi
     const adminPassword = await hashPassword('admin123');
     const adminUser = await User.create({
-      nombre: 'Admin',
-      apellido: 'User',
-      email: 'admin@example.com',
+      nombre: 'Sebastián',
+      apellido: 'Zuccardi',
+      email: 'sebastian.zuccardi@familiazuccardi.com',
       contrasena: adminPassword,
       roles: [adminRole.id],
       bodegaId: zuccardi.id,
@@ -274,9 +359,9 @@ async function seed() {
     // Create operador user with limited permissions
     const operadorPassword = await hashPassword('operador123');
     const operadorUser = await User.create({
-      nombre: 'Operador',
-      apellido: 'Zuccardi',
-      email: 'operador@zuccardi.com',
+      nombre: 'María',
+      apellido: 'Fernández',
+      email: 'maria.fernandez@familiazuccardi.com',
       contrasena: operadorPassword,
       roles: [operadorRole.id],
       bodegaId: zuccardi.id,
@@ -284,17 +369,17 @@ async function seed() {
     });
     await operadorUser.$set('roles', [operadorRole.id]);
 
-    // Create sudoer user with SUDO role and no bodega
-    const sudoPassword = await hashPassword('sudo123');
-    const sudoer = await User.create({
-      nombre: 'sudoer',
-      apellido: 'sudoer',
-      email: 'sudo@sudo.com',
-      contrasena: sudoPassword,
-      roles: [sudoRole.id],
+    // Create administrador sistema user with ADMINISTRADOR_SISTEMA role and no bodega
+    const adminSistemaPassword = await hashPassword('admin123');
+    const adminSistema = await User.create({
+      nombre: 'Carlos',
+      apellido: 'Rodríguez',
+      email: 'carlos.rodriguez@vinza.com',
+      contrasena: adminSistemaPassword,
+      roles: [adminSistemaRole.id],
       validado: new Date(),
     });
-    await sudoer.$set('roles', [sudoRole.id]);
+    await adminSistema.$set('roles', [adminSistemaRole.id]);
 
     // ========================================
     // 5.1 CREAR USUARIOS PARA CADA BODEGA
@@ -303,9 +388,9 @@ async function seed() {
     // Create user for Catena Zapata (usa el mismo rol ADMIN)
     const adminCatenaPassword = await hashPassword('catena123');
     const adminCatena = await User.create({
-      nombre: 'Admin',
+      nombre: 'Laura',
       apellido: 'Catena',
-      email: 'admin@catena.com',
+      email: 'laura.catena@bodegacatenazapata.com',
       contrasena: adminCatenaPassword,
       roles: [adminRole.id], // Mismo rol ADMIN
       bodegaId: bodegaCatena.id,
@@ -316,9 +401,9 @@ async function seed() {
     // Create user for Trapiche (usa el mismo rol ADMIN)
     const adminTrapichePassword = await hashPassword('trapiche123');
     const adminTrapiche = await User.create({
-      nombre: 'Admin',
-      apellido: 'Trapiche',
-      email: 'admin@trapiche.com',
+      nombre: 'Roberto',
+      apellido: 'González',
+      email: 'roberto.gonzalez@trapiche.com.ar',
       contrasena: adminTrapichePassword,
       roles: [adminRole.id], // Mismo rol ADMIN
       bodegaId: bodegaTrapiche.id,
@@ -329,9 +414,9 @@ async function seed() {
     // Create user for Luigi Bosca (usa el mismo rol ADMIN)
     const adminLuigiBoscaPassword = await hashPassword('luigibosca123');
     const adminLuigiBosca = await User.create({
-      nombre: 'Admin',
-      apellido: 'Luigi Bosca',
-      email: 'admin@luigibosca.com',
+      nombre: 'Alejandra',
+      apellido: 'Bosca',
+      email: 'alejandra.bosca@luigibosca.com.ar',
       contrasena: adminLuigiBoscaPassword,
       roles: [adminRole.id], // Mismo rol ADMIN
       bodegaId: bodegaLuigiBosca.id,
@@ -350,7 +435,7 @@ async function seed() {
       cupo: 20,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento1.id,
+      categoriaId: categoriaBienestar.id,
       precio: 150,
       recurrencias: [
         {
@@ -382,7 +467,7 @@ async function seed() {
       cupo: 15,
       sucursalId: mainSucursal.id,
       estadoId: suspendidoEstadoEvento.id,
-      categoriaId: categoriaEvento2.id,
+      categoriaId: categoriaGastronomia.id,
       precio: 300,
       recurrencias: [
         {
@@ -408,7 +493,7 @@ async function seed() {
       cupo: 50,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento1.id,
+      categoriaId: categoriaEducacion.id,
       precio: 200,
       recurrencias: [
         {
@@ -446,7 +531,7 @@ async function seed() {
       cupo: 100,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento2.id,
+      categoriaId: categoriaEntretenimiento.id,
       precio: 500,
       recurrencias: [
         {
@@ -465,7 +550,7 @@ async function seed() {
       cupo: 25,
       sucursalId: sucursalCatena1.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento1.id,
+      categoriaId: categoriaDegustacion.id,
       precio: 800,
       recurrencias: [
         {
@@ -485,7 +570,7 @@ async function seed() {
       cupo: 30,
       sucursalId: sucursalCatena2.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento2.id,
+      categoriaId: categoriaGastronomia.id,
       precio: 1200,
       recurrencias: [
         {
@@ -505,7 +590,7 @@ async function seed() {
       cupo: 18,
       sucursalId: sucursalTrapiche1.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento2.id,
+      categoriaId: categoriaGastronomia.id,
       precio: 450,
       recurrencias: [
         {
@@ -532,7 +617,7 @@ async function seed() {
       cupo: 60,
       sucursalId: sucursalTrapiche2.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento1.id,
+      categoriaId: categoriaEntretenimiento.id,
       precio: 350,
       recurrencias: [
         {
@@ -552,7 +637,7 @@ async function seed() {
       cupo: 35,
       sucursalId: sucursalTrapiche3.id,
       estadoId: suspendidoEstadoEvento.id,
-      categoriaId: categoriaEvento1.id,
+      categoriaId: categoriaEducacion.id,
       precio: 280,
       recurrencias: [
         {
@@ -572,7 +657,7 @@ async function seed() {
       cupo: 22,
       sucursalId: sucursalLuigiBosca1.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento2.id,
+      categoriaId: categoriaGastronomia.id,
       precio: 600,
       recurrencias: [
         {
@@ -598,7 +683,7 @@ async function seed() {
       cupo: 40,
       sucursalId: sucursalZuccardi2.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento1.id,
+      categoriaId: categoriaEntretenimiento.id,
       precio: 400,
       recurrencias: [
         {
@@ -618,7 +703,7 @@ async function seed() {
       cupo: 80,
       sucursalId: sucursalLuigiBosca1.id,
       estadoId: activoEstadoEvento.id,
-      categoriaId: categoriaEvento2.id,
+      categoriaId: categoriaEntretenimiento.id,
       precio: 1500,
       recurrencias: [
         {
@@ -721,25 +806,40 @@ async function seed() {
     // INFORMACIÓN DE USUARIOS PARA PRUEBAS
     // ========================================
     console.log('\n=== USUARIOS CREADOS PARA PRUEBAS ===');
-    console.log('SUDO (Sin bodega - Acceso total):');
-    console.log('  Email: sudo@sudo.com | Password: sudo123');
+    console.log('ADMINISTRADOR_SISTEMA (Sin bodega - Acceso total):');
+    console.log('  Email: carlos.rodriguez@vinza.com | Password: admin123');
+    console.log(
+      '  Nombre: Carlos Rodríguez - Administrador principal del sistema',
+    );
     console.log('\nADMIN ZUCCARDI (Bodega 1):');
-    console.log('  Email: admin@example.com | Password: admin123');
-    console.log('  Puede acceder a eventos de Zuccardi');
+    console.log(
+      '  Email: sebastian.zuccardi@familiazuccardi.com | Password: admin123',
+    );
+    console.log(
+      '  Nombre: Sebastián Zuccardi - Administrador de Familia Zuccardi',
+    );
     console.log('\nOPERADOR ZUCCARDI (Bodega 1):');
-    console.log('  Email: operador@zuccardi.com | Password: operador123');
-    console.log('  Solo lectura de eventos y gestión de reservas');
+    console.log(
+      '  Email: maria.fernandez@familiazuccardi.com | Password: operador123',
+    );
+    console.log('  Nombre: María Fernández - Operadora de eventos');
     console.log('\nADMIN CATENA ZAPATA (Bodega 2):');
-    console.log('  Email: admin@catena.com | Password: catena123');
-    console.log('  Puede acceder a eventos de Catena Zapata');
+    console.log(
+      '  Email: laura.catena@bodegacatenazapata.com | Password: catena123',
+    );
+    console.log('  Nombre: Laura Catena - Administradora de Catena Zapata');
     console.log('\nADMIN TRAPICHE (Bodega 3):');
-    console.log('  Email: admin@trapiche.com | Password: trapiche123');
-    console.log('  Puede acceder a eventos de Trapiche');
+    console.log(
+      '  Email: roberto.gonzalez@trapiche.com.ar | Password: trapiche123',
+    );
+    console.log('  Nombre: Roberto González - Administrador de Trapiche');
     console.log('\nADMIN LUIGI BOSCA (Bodega 4):');
-    console.log('  Email: admin@luigibosca.com | Password: luigibosca123');
-    console.log('  Puede acceder a eventos de Luigi Bosca');
+    console.log(
+      '  Email: alejandra.bosca@luigibosca.com.ar | Password: luigibosca123',
+    );
+    console.log('  Nombre: Alejandra Bosca - Administradora de Luigi Bosca');
     console.log('\n=== PRUEBAS DE AUTORIZACIÓN ===');
-    console.log('1. Login con admin@catena.com');
+    console.log('1. Login con laura.catena@bodegacatenazapata.com');
     console.log(
       '2. Intentar crear evento en sucursal de Zuccardi → Debe fallar (403)',
     );

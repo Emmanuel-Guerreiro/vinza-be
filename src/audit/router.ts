@@ -47,43 +47,6 @@ const auditController = new AuditController(auditService);
  *     responses:
  *       '200':
  *         description: A paginated list of audits
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 items:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                       valor:
- *                         type: object
- *                       tipoEvento:
- *                         type: string
- *                       userId:
- *                         type: integer
- *                         nullable: true
- *                       createdAt:
- *                         type: string
- *                         format: date-time
- *                       deletedAt:
- *                         type: string
- *                         format: date-time
- *                         nullable: true
- *                 meta:
- *                   type: object
- *                   properties:
- *                     totalItems:
- *                       type: integer
- *                     totalPages:
- *                       type: integer
- *                     currentPage:
- *                       type: integer
- *                     itemsPerPage:
- *                       type: integer
  */
 router.get(
   '',

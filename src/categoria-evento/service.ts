@@ -2,10 +2,16 @@ import { errors } from '@/error';
 import { CategoriaEvento } from './model';
 import { CreateCategoriaEventoDto, UpdateCategoriaEventoDto } from './types';
 import { Transaction } from 'sequelize';
+import { Evento } from '@/evento/model';
+import { auditEmitter } from '@/audit/event';
 
 class CategoriaEventoService {
   public async create(dto: CreateCategoriaEventoDto) {
     const categoriaEvento = await CategoriaEvento.create(dto);
+    auditEmitter.emitEntry({
+      tipoEvento: 'categoria-evento:create',
+      valor: categoriaEvento.dataValues,
+    });
     return categoriaEvento;
   }
 
@@ -27,6 +33,10 @@ class CategoriaEventoService {
     const updatedCategoriaEvento = await categoriaEvento.update(dto, {
       returning: true,
     });
+    auditEmitter.emitEntry({
+      tipoEvento: 'categoria-evento:update',
+      valor: updatedCategoriaEvento.dataValues,
+    });
     return updatedCategoriaEvento;
   }
 
@@ -35,7 +45,22 @@ class CategoriaEventoService {
     if (!categoriaEvento) throw errors.app.evento.categoria_evento_not_found;
 
     await categoriaEvento.destroy();
+    auditEmitter.emitEntry({
+      tipoEvento: 'categoria-evento:delete',
+      valor: categoriaEvento.dataValues,
+    });
     return categoriaEvento;
+  }
+
+  public async canDelete(id: number) {
+    const categoriaEvento = await CategoriaEvento.findByPk(id);
+    if (!categoriaEvento) throw errors.app.evento.categoria_evento_not_found;
+
+    const eventosWithCategory = await Evento.count({
+      where: { categoriaId: id },
+    });
+
+    return eventosWithCategory === 0;
   }
 }
 

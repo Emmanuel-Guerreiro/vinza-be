@@ -1,16 +1,22 @@
+import { errors } from '@/error';
+import { InstanciaEvento } from '@/instancia-evento/model';
+import { generatePaginationParams } from '@/pagination';
+import { PaginationParams } from '@/pagination/schemas';
 import { Transaction } from 'sequelize';
 import { EstadoInstanciaEvento } from './model';
 import {
   CreateEstadoInstanciaEventoDto,
   UpdateEstadoInstanciaEventoDto,
 } from './types';
-import { errors } from '@/error';
-import { PaginationParams } from '@/pagination/schemas';
-import { generatePaginationParams } from '@/pagination';
+import { auditEmitter } from '@/audit/event';
 
 class EstadoInstanciaEventoService {
   public async create(dto: CreateEstadoInstanciaEventoDto) {
     const estadoInstanciaEvento = await EstadoInstanciaEvento.create(dto);
+    auditEmitter.emitEntry({
+      tipoEvento: 'estado-instancia-evento:create',
+      valor: estadoInstanciaEvento.dataValues,
+    });
     return estadoInstanciaEvento;
   }
 
@@ -49,6 +55,10 @@ class EstadoInstanciaEventoService {
         returning: true,
       },
     );
+    auditEmitter.emitEntry({
+      tipoEvento: 'estado-instancia-evento:update',
+      valor: updatedEstadoInstanciaEvento.dataValues,
+    });
     return updatedEstadoInstanciaEvento;
   }
 
@@ -57,7 +67,23 @@ class EstadoInstanciaEventoService {
     if (!estadoInstanciaEvento)
       throw errors.app.instancia_evento.estado_not_found;
     await estadoInstanciaEvento.destroy();
+    auditEmitter.emitEntry({
+      tipoEvento: 'estado-instancia-evento:delete',
+      valor: estadoInstanciaEvento.dataValues,
+    });
     return estadoInstanciaEvento;
+  }
+
+  public async canDelete(id: number) {
+    const estadoInstanciaEvento = await EstadoInstanciaEvento.findByPk(id);
+    if (!estadoInstanciaEvento)
+      throw errors.app.instancia_evento.estado_not_found;
+
+    const instanciasWithStatus = await InstanciaEvento.count({
+      where: { estadoId: id },
+    });
+
+    return instanciasWithStatus === 0;
   }
 
   private async getCountAndMetadata(params: PaginationParams, limit: number) {
