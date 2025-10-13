@@ -63,6 +63,7 @@ class EventoService {
 
   public async create(dto: CreateEventoDto, t?: Transaction) {
     const transaction = t || (await sequelize.transaction());
+    const shouldCommit = !t; // Only commit if we created the transaction
     try {
       // Validar datos del evento
       await this.validateEventoData(dto, transaction);
@@ -96,17 +97,67 @@ class EventoService {
         `Instancias generadas automáticamente para evento ${evento.id}`,
       );
 
-      await transaction.commit();
+      // Load all relations within the transaction before commit
+      await evento.reload({
+        include: [
+          {
+            as: 'categoria',
+            model: CategoriaEvento,
+          },
+          {
+            as: 'estado',
+            model: EstadoEvento,
+          },
+          {
+            as: 'sucursal',
+            model: Sucursal,
+            include: [
+              {
+                as: 'bodega',
+                model: Bodega,
+              },
+            ],
+          },
+          {
+            as: 'recurrencias',
+            model: RecurrenciaEvento,
+          },
+          {
+            as: 'valoracionMedia',
+            model: ValoracionMedia,
+          },
+          {
+            model: InstanciaEvento,
+            as: 'instancias',
+            include: [
+              {
+                as: 'estado',
+                model: EstadoInstanciaEvento,
+              },
+            ],
+          },
+          {
+            model: MultimediaEventos,
+          },
+        ],
+        transaction,
+      });
+
+      if (shouldCommit) {
+        await transaction.commit();
+      }
 
       auditEmitter.emitEntry({
         tipoEvento: 'evento:create',
         valor: evento.dataValues,
       });
 
-      return this.findOne(evento.id);
+      return evento;
     } catch (error) {
       logger.error(`error create evento ${JSON.stringify(error)}`);
-      await transaction.rollback();
+      if (shouldCommit) {
+        await transaction.rollback();
+      }
       throw error;
     }
   }
