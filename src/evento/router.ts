@@ -224,43 +224,6 @@ router.get('', authMiddleware, controller.getAll);
  *     responses:
  *       200:
  *         description: List of eventos from user's bodega retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 items:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: number
- *                       nombre:
- *                         type: string
- *                       descripcion:
- *                         type: string
- *                       cupo:
- *                         type: number
- *                       precio:
- *                         type: number
- *                       sucursalId:
- *                         type: number
- *                       estadoId:
- *                         type: number
- *                       categoriaId:
- *                         type: number
- *                 meta:
- *                   type: object
- *                   properties:
- *                     totalItems:
- *                       type: number
- *                     currentPage:
- *                       type: number
- *                     itemsPerPage:
- *                       type: number
- *                     totalPages:
- *                       type: number
  *       400:
  *         description: Bad request - Invalid filter parameters
  *       500:
@@ -952,6 +915,47 @@ router.get(
   requirePermissions([Permissions.EVENTOS_MANAGE]),
   instanciaEventoAuthMiddleware,
   controller.obtenerReservasInstancia,
+);
+
+/**
+ * @openapi
+ * /eventos/{id}/can-delete:
+ *   get:
+ *     summary: Check if an evento can be deleted
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the evento
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 canDelete:
+ *                   type: boolean
+ *                   description: Whether the evento can be deleted
+ *                 reason:
+ *                   type: string
+ *                   description: Reason why it cannot be deleted (if applicable)
+ *       404:
+ *         description: Evento not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/:id/can-delete',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_MANAGE]),
+  eventoAuthMiddleware,
+  controller.canDelete,
 );
 
 logger.debug('Evento router initialized');

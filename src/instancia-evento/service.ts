@@ -55,6 +55,18 @@ class InstanciaEventoService {
           attributes: ['id', 'nombre'],
           required: false, // LEFT JOIN para incluir instancias sin estado
         },
+        {
+          model: Reserva,
+          as: 'reservas',
+          attributes: ['id', 'precio', 'cantidadGente'],
+          include: [
+            {
+              model: EstadoReserva,
+              as: 'estados',
+              attributes: ['id', 'nombre'],
+            },
+          ],
+        },
       ],
     };
 
