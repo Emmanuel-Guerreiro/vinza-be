@@ -435,7 +435,7 @@ async function seed() {
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaBienestar.id,
-      precio: 150,
+      precio: 25000,
       recurrencias: [
         {
           dia: DiaSemana.LUNES,
@@ -468,7 +468,7 @@ async function seed() {
       sucursalId: mainSucursal.id,
       estadoId: suspendidoEstadoEvento.id,
       categoriaId: categoriaGastronomia.id,
-      precio: 300,
+      precio: 35000,
       recurrencias: [
         {
           dia: DiaSemana.SABADO,
@@ -495,7 +495,7 @@ async function seed() {
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEducacion.id,
-      precio: 200,
+      precio: 10000,
       recurrencias: [
         {
           dia: DiaSemana.MARTES,
@@ -533,7 +533,7 @@ async function seed() {
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
-      precio: 500,
+      precio: 10000,
       recurrencias: [
         {
           dia: DiaSemana.VIERNES,
@@ -552,7 +552,7 @@ async function seed() {
       sucursalId: sucursalCatena1.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaDegustacion.id,
-      precio: 800,
+      precio: 12000,
       recurrencias: [
         {
           dia: DiaSemana.SABADO,
@@ -572,7 +572,7 @@ async function seed() {
       sucursalId: sucursalCatena2.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaGastronomia.id,
-      precio: 1200,
+      precio: 12000,
       recurrencias: [
         {
           dia: DiaSemana.DOMINGO,
@@ -592,7 +592,7 @@ async function seed() {
       sucursalId: sucursalTrapiche1.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaGastronomia.id,
-      precio: 450,
+      precio: 17000,
       recurrencias: [
         {
           dia: DiaSemana.MIERCOLES,
@@ -619,7 +619,7 @@ async function seed() {
       sucursalId: sucursalTrapiche2.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
-      precio: 350,
+      precio: 3500,
       recurrencias: [
         {
           dia: DiaSemana.VIERNES,
@@ -639,7 +639,7 @@ async function seed() {
       sucursalId: sucursalTrapiche3.id,
       estadoId: suspendidoEstadoEvento.id,
       categoriaId: categoriaEducacion.id,
-      precio: 280,
+      precio: 28000,
       recurrencias: [
         {
           dia: DiaSemana.JUEVES,
@@ -659,7 +659,7 @@ async function seed() {
       sucursalId: sucursalLuigiBosca1.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaGastronomia.id,
-      precio: 600,
+      precio: 28000,
       recurrencias: [
         {
           dia: DiaSemana.MARTES,
@@ -685,7 +685,7 @@ async function seed() {
       sucursalId: sucursalZuccardi2.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
-      precio: 400,
+      precio: 20000,
       recurrencias: [
         {
           dia: DiaSemana.VIERNES,
@@ -705,7 +705,7 @@ async function seed() {
       sucursalId: sucursalLuigiBosca1.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
-      precio: 1500,
+      precio: 150000,
       recurrencias: [
         {
           dia: DiaSemana.SABADO,
