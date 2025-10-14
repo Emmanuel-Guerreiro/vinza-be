@@ -328,9 +328,21 @@ class EventoService {
       };
     }
 
-    if (params.precioMaximo) {
+    if (params.precioMaximo && !params.precioMinimo) {
       where.precio = {
         [Op.lte]: params.precioMaximo,
+      };
+    }
+
+    if (params.precioMinimo && !params.precioMaximo) {
+      where.precio = {
+        [Op.gte]: params.precioMinimo,
+      };
+    }
+
+    if (params.precioMinimo && params.precioMaximo) {
+      where.precio = {
+        [Op.between]: [params.precioMinimo, params.precioMaximo],
       };
     }
 
