@@ -683,7 +683,7 @@ async function seed() {
       descripcion: 'Celebración especial del Malbec argentino',
       cupo: 40,
       sucursalId: sucursalZuccardi2.id,
-      estadoId: activoEstadoEvento.id,
+      estadoId: finalizadoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
       precio: 20000,
       recurrencias: [
