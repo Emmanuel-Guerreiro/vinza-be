@@ -13,6 +13,7 @@ import {
   HEstadoInstanciaEvento,
 } from '@/estado-instancia-evento/model';
 import { RecurrenciaEvento } from '@/evento/model';
+import { Reserva } from '@/reserva/model';
 
 export interface InstanciaEventoAttributes {
   id: number;
@@ -75,4 +76,7 @@ export class InstanciaEvento extends Model<
 
   @HasMany(() => HEstadoInstanciaEvento)
   historialEstados?: HEstadoInstanciaEvento[];
+
+  @HasMany(() => Reserva)
+  reservas?: Reserva[];
 }

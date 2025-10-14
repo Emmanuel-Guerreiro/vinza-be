@@ -26,6 +26,8 @@ import { RecurrenciaEvento } from './model';
 import { instanciaEventoService } from '@/instancia-evento/service';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
+import { Reserva } from '@/reserva/model';
+import { EstadoReserva } from '@/estado-reserva/model';
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { valoracionService } from '@/valoracion/service';
 import { multimediaService } from '@/multimedia/service';
@@ -170,6 +172,28 @@ class EventoService {
     const order = generateOrderConditions(params);
     const { limit, offset } = generatePaginationParams(params);
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let filtros: Record<string, any> | null = {
+      fecha: {},
+    };
+
+    if (params.fechaDesde && params.fechaHasta) {
+      filtros.fecha = {
+        [Op.between]: [params.fechaDesde, params.fechaHasta],
+      };
+    } else if (params.fechaDesde) {
+      filtros.fecha = {
+        [Op.gte]: params.fechaDesde,
+      };
+    } else if (params.fechaHasta) {
+      filtros.fecha = {
+        [Op.lte]: params.fechaHasta,
+      };
+    }
+    if (!params.fechaDesde && !params.fechaHasta) {
+      filtros = null;
+    }
+
     const queryOptions: FindOptions = {
       where,
       order,
@@ -222,6 +246,7 @@ class EventoService {
         {
           model: InstanciaEvento,
           as: 'instancias',
+          where: filtros || undefined,
           include: [
             {
               as: 'estado',
@@ -411,35 +436,21 @@ class EventoService {
       where.sucursalId = params.sucursalId;
     }
 
-    // Es horrible pero funciona
-    if (params.fechaDesde && params.fechaHasta) {
-      where.createdAt = {
-        [Op.and]: [
-          {
-            [Op.gte]: params.fechaDesde,
-          },
-          {
-            [Op.lte]: params.fechaHasta,
-          },
-        ],
-      };
-    }
-
-    if (params.fechaDesde && !params.fechaHasta) {
-      where.createdAt = {
-        [Op.gte]: params.fechaDesde,
-      };
-    }
-
-    if (params.fechaHasta && !params.fechaDesde) {
-      where.createdAt = {
-        [Op.lte]: params.fechaHasta,
-      };
-    }
-
-    if (params.precioMaximo) {
+    if (params.precioMaximo && !params.precioMinimo) {
       where.precio = {
         [Op.lte]: params.precioMaximo,
+      };
+    }
+
+    if (params.precioMinimo && !params.precioMaximo) {
+      where.precio = {
+        [Op.gte]: params.precioMinimo,
+      };
+    }
+
+    if (params.precioMinimo && params.precioMaximo) {
+      where.precio = {
+        [Op.between]: [params.precioMinimo, params.precioMaximo],
       };
     }
 
@@ -477,12 +488,14 @@ class EventoService {
     const evento = await this.findOne(eventoId);
     if (!evento) throw errors.app.evento.not_found;
 
-    return await instanciaEventoService.findAll({
+    const res = await instanciaEventoService.findAll({
       eventoId,
       page: 1,
       limit: 1000, // Límite alto para obtener todas las instancias
       orderBy: 'id:asc',
     });
+
+    return res;
   }
   async findByInstanciaEvento(
     instanciaEventoId: number,
@@ -547,7 +560,60 @@ class EventoService {
    * Obtiene las reservas de una instancia específica de un evento
    */
   public async obtenerReservasInstancia(instanciaId: number) {
-    return await instanciaEventoService.obtenerReservasInstancia(instanciaId);
+    return instanciaEventoService.obtenerReservasInstancia(instanciaId);
+  }
+
+  /**
+   * Verifica si un evento puede ser eliminado
+   * Un evento no puede ser eliminado si tiene reservas pendientes o confirmadas
+   */
+  public async canDelete(eventoId: number) {
+    // Verificar que el evento existe
+    const evento = await this.findOne(eventoId);
+    if (!evento) throw errors.app.evento.not_found;
+
+    // Obtener todas las instancias del evento
+    const instancias = await InstanciaEvento.findAll({
+      where: { eventoId },
+      attributes: ['id'],
+    });
+
+    if (instancias.length === 0) {
+      return { canDelete: true };
+    }
+
+    const instanciaIds = instancias.map((instancia) => instancia.id);
+
+    // Buscar reservas con estado PENDIENTE o CONFIRMADA
+    const reservasConEstados = await Reserva.findAll({
+      where: {
+        instanciaEventoId: {
+          [Op.in]: instanciaIds,
+        },
+      },
+      include: [
+        {
+          model: EstadoReserva,
+          as: 'estados',
+          where: {
+            nombre: {
+              [Op.in]: ['PENDIENTE', 'CONFIRMADA'],
+            },
+          },
+          required: true,
+        },
+      ],
+    });
+
+    if (reservasConEstados.length > 0) {
+      return {
+        canDelete: false,
+        reason:
+          'El evento no puede ser eliminado porque tiene reservas pendientes o confirmadas',
+      };
+    }
+
+    return { canDelete: true };
   }
 
   /**

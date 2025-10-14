@@ -115,6 +115,7 @@ export const findAllParamsSchema = paginationAndOrderSchema(
   bodegaId: z.string().optional(),
   fechaDesde: z.coerce.date().optional(),
   fechaHasta: z.coerce.date().optional(),
+  precioMinimo: z.coerce.number().min(0).optional(),
   precioMaximo: z.coerce.number().min(0).optional(),
   puntuacionMinima: z.coerce.number().min(0).max(5).optional(),
   nombre: z.string().optional(),

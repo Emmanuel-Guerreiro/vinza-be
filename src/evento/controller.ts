@@ -23,6 +23,7 @@ export class EventoController {
     this.getInstanciaEvento = this.getInstanciaEvento.bind(this);
     this.getAllByBodega = this.getAllByBodega.bind(this);
     this.obtenerReservasInstancia = this.obtenerReservasInstancia.bind(this);
+    this.canDelete = this.canDelete.bind(this);
   }
 
   public getAll(req: Request, res: Response) {
@@ -164,6 +165,13 @@ export class EventoController {
   ) {
     this.eventoService
       .obtenerReservasInstancia(+req.params.instanciaId)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  }
+
+  public canDelete(req: Request, res: Response, next: NextFunction) {
+    this.eventoService
+      .canDelete(+req.params.id)
       .then((data) => res.json(data))
       .catch((err) => next(err));
   }
