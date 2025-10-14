@@ -703,7 +703,7 @@ async function seed() {
       descripcion: 'Cena de gala con vinos premium de Luigi Bosca',
       cupo: 80,
       sucursalId: sucursalLuigiBosca1.id,
-      estadoId: activoEstadoEvento.id,
+      estadoId: finalizadoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
       precio: 150000,
       recurrencias: [
