@@ -43,6 +43,7 @@ export class BodegaController {
     try {
       const dto = createBodegaWithMultimediaSchema.parse({
         ...req.body,
+        firstUserId: req.user,
       });
       const files = req.files as Express.Multer.File[];
       // Create the bodega

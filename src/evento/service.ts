@@ -202,6 +202,7 @@ class EventoService {
       include: [
         {
           model: MultimediaEventos,
+          as: 'multimedia',
         },
         {
           as: 'categoria',

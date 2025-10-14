@@ -22,6 +22,7 @@ import logger from '@/logger';
 import { InstanciaEvento } from '@/instancia-evento/model';
 import { Evento } from '@/evento/model';
 import { Sucursal } from '@/sucursal/model';
+import { MultimediaEventos } from '@/multimedia/model';
 
 class RecorridoService {
   public async create(dto: CreateRecorridoDto, t?: Transaction) {
@@ -260,7 +261,10 @@ class RecorridoService {
               {
                 model: Evento,
                 as: 'evento',
-                include: [{ model: Sucursal, as: 'sucursal' }],
+                include: [
+                  { model: Sucursal, as: 'sucursal' },
+                  { model: MultimediaEventos, as: 'multimedia' },
+                ],
               },
             ],
           },
