@@ -122,7 +122,11 @@ class UsersService {
     const user = await User.findOne({
       where: { email },
       include: [
-        { model: Rol, as: 'roles' },
+        {
+          model: Rol,
+          as: 'roles',
+          include: [{ model: Permiso, as: 'permisos' }],
+        },
         { model: Bodega, as: 'bodega' },
       ],
     });
