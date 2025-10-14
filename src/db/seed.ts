@@ -488,8 +488,9 @@ async function seed() {
 
     // Evento 3: Charlas de tecnología (múltiples horarios por día)
     const evento3 = await eventoService.create({
-      nombre: 'Charlas de Tecnología',
-      descripcion: 'Charlas sobre las últimas tendencias en tecnología.',
+      nombre: 'Taller de enología',
+      descripcion:
+        'Introducción a la vinificación, cata de aromsa y degustación técnica (4 vinos).',
       cupo: 50,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
