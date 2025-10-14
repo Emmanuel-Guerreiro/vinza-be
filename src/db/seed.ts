@@ -428,10 +428,9 @@ async function seed() {
     // 6. CREAR EVENTOS
     // ========================================
 
-    // Evento 1: Clases de yoga semanales
     const evento1 = await eventoService.create({
-      nombre: 'Clases de Yoga',
-      descripcion: 'Clases de yoga para todos los niveles',
+      nombre: 'Cata de espumantes',
+      descripcion: 'Cata de la linea de espumantes de la bodega',
       cupo: 20,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
@@ -462,8 +461,9 @@ async function seed() {
 
     // Evento 2: Taller de cocina mensual
     const evento2 = await eventoService.create({
-      nombre: 'Taller de Cocina',
-      descripcion: 'Aprende técnicas de cocina profesional',
+      nombre: 'Rally de las bodegas',
+      descripcion:
+        'Accede a recorrer la visita de autos clasicos, acompañado de un almuerzo de pasos.',
       cupo: 15,
       sucursalId: mainSucursal.id,
       estadoId: suspendidoEstadoEvento.id,
@@ -489,7 +489,7 @@ async function seed() {
     // Evento 3: Charlas de tecnología (múltiples horarios por día)
     const evento3 = await eventoService.create({
       nombre: 'Charlas de Tecnología',
-      descripcion: 'Charlas sobre las últimas tendencias en tecnología',
+      descripcion: 'Charlas sobre las últimas tendencias en tecnología.',
       cupo: 50,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
@@ -527,7 +527,7 @@ async function seed() {
     // Evento 4: Evento único con fecha específica
     const evento4 = await eventoService.create({
       nombre: 'Conferencia Única',
-      descripcion: 'Conferencia especial sobre innovación',
+      descripcion: 'Conferencia especial sobre innovación.',
       cupo: 100,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
@@ -546,7 +546,7 @@ async function seed() {
     // Evento 5: Cata de vinos en Catena Zapata (Mendoza)
     const evento5 = await eventoService.create({
       nombre: 'Cata de Vinos Premium',
-      descripcion: 'Degustación de vinos premium de Catena Zapata',
+      descripcion: 'Degustación de vinos premium de Catena Zapata.',
       cupo: 25,
       sucursalId: sucursalCatena1.id,
       estadoId: activoEstadoEvento.id,
@@ -566,7 +566,7 @@ async function seed() {
     // Evento 6: Tour gastronómico en Catena (Buenos Aires)
     const evento6 = await eventoService.create({
       nombre: 'Tour Gastronómico',
-      descripcion: 'Recorrido por la gastronomía porteña con vinos Catena',
+      descripcion: 'Recorrido por la gastronomía porteña con vinos Catena.',
       cupo: 30,
       sucursalId: sucursalCatena2.id,
       estadoId: activoEstadoEvento.id,
@@ -586,7 +586,7 @@ async function seed() {
     // Evento 7: Clases de cocina regional en Trapiche Central
     const evento7 = await eventoService.create({
       nombre: 'Cocina Regional Mendocina',
-      descripcion: 'Aprende a cocinar platos típicos de Mendoza',
+      descripcion: 'Aprende a cocinar platos típicos de Mendoza.',
       cupo: 18,
       sucursalId: sucursalTrapiche1.id,
       estadoId: activoEstadoEvento.id,
@@ -613,7 +613,7 @@ async function seed() {
     // Evento 8: Festival de vinos del norte en Trapiche Norte
     const evento8 = await eventoService.create({
       nombre: 'Festival de Vinos del Norte',
-      descripcion: 'Celebración de vinos de altura de Salta',
+      descripcion: 'Celebración de vinos de altura de Salta.',
       cupo: 60,
       sucursalId: sucursalTrapiche2.id,
       estadoId: activoEstadoEvento.id,
