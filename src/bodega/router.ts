@@ -2,12 +2,45 @@ import { Router } from 'express';
 import { BodegaController } from './controller';
 import { bodegaService } from './service';
 import logger from '@/logger';
+import multer from 'multer';
 import { authMiddleware } from '@/auth/middleware';
+import { uniqueBodegaPerUserMiddleware } from './middleware';
 import { requirePermissions } from '@/rbac/middleware';
 import { Permissions } from '@/rbac/permissions';
 
 const controller = new BodegaController(bodegaService);
 const router = Router();
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit per file
+  },
+  fileFilter: (req, file, cb) => {
+    // Allow images and videos
+    const allowedMimes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'video/mp4',
+      'video/webm',
+      'video/quicktime',
+    ];
+
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error(
+          'Tipo de archivo no permitido. Solo se permiten imágenes y videos.',
+        ),
+      );
+    }
+  },
+});
 
 /**
  * @openapi
@@ -48,13 +81,13 @@ router.get('/:id', controller.getOne);
  * @openapi
  * /bodegas:
  *   post:
- *     summary: Create a bodega
+ *     summary: Create a bodega with multimedia files
+ *     description: Create a new bodega with multimedia files. Supports form data with file uploads.
  *     tags:
  *       - Bodegas
  *     requestBody:
- *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
@@ -71,6 +104,17 @@ router.get('/:id', controller.getOne);
  *                 type: string
  *                 description: Descripción de la bodega
  *                 example: "Bodega principal de almacenamiento"
+ *               multimediaPortada:
+ *                 type: string
+ *                 description: Nombre del archivo multimedia que será la portada de la bodega
+ *                 example: "portada.jpg"
+ *               multimedia:
+ *                 type: array
+ *                 description: Array de archivos multimedia (imágenes y videos)
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 maxItems: 10
  *               direccion:
  *                 type: string
  *                 description: Dirección de la bodega
@@ -87,11 +131,19 @@ router.get('/:id', controller.getOne);
  *       201:
  *         description: Bodega created successfully
  *       400:
- *         description: Bad request
+ *         description: Bad request - Invalid form data or file validation failed
+ *       413:
+ *         description: Payload too large - File size exceeds limit
  *       500:
  *         description: Internal server error
  */
-router.post('', authMiddleware, controller.create);
+router.post(
+  '',
+  authMiddleware,
+  uniqueBodegaPerUserMiddleware,
+  upload.array('multimedia', 10), // Handle up to 10 multimedia files
+  controller.create,
+);
 
 /**
  * @openapi

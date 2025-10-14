@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import {
   createEventoSchema,
   findAllParamsSchema,
@@ -38,20 +38,47 @@ export class EventoController {
       .catch((err) => next(err));
   }
 
-  public create(req: Request, res: Response, next: NextFunction) {
-    const dto = createEventoSchema.parse(req.body);
-    this.eventoService
-      .create(dto)
-      .then((data) => res.json(data))
-      .catch((err) => next(err));
+  public async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const dto = createEventoSchema.parse({
+        ...req.body,
+        // This is ugly, but zod is failing to transform pre parsing
+        recurrencias: JSON.parse(req.body.recurrencias),
+      });
+      const files = req.files as Express.Multer.File[];
+      // Create the evento
+      const evento = await this.eventoService.createWithMultimedia(
+        dto,
+        files ?? [],
+      );
+      res.json(evento);
+    } catch (err) {
+      next(err);
+    }
   }
 
-  public update(req: Request, res: Response, next: NextFunction) {
-    const dto = updateEventoSchema.parse(req.body);
-    this.eventoService
-      .update(+req.params.id, dto)
-      .then((data) => res.json(data))
-      .catch((err) => next(err));
+  public async update(req: Request, res: Response, next: NextFunction) {
+    try {
+      const dto = updateEventoSchema.parse({
+        ...req.body,
+        // Parse JSON fields from form data
+        recurrencias: req.body.recurrencias
+          ? JSON.parse(req.body.recurrencias)
+          : undefined,
+        removeMultimedia: req.body.removeMultimedia
+          ? JSON.parse(req.body.removeMultimedia)
+          : undefined,
+      });
+      const files = req.files as Express.Multer.File[];
+      // Update the evento
+      const evento = await this.eventoService.update(+req.params.id, {
+        ...dto,
+        addMultimedia: files ?? [],
+      });
+      res.json(evento);
+    } catch (err) {
+      next(err);
+    }
   }
 
   public delete(req: Request, res: Response) {

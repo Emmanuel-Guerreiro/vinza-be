@@ -4,16 +4,20 @@ import logger from '@/logger';
 import { HRolPermiso, Permiso, Rol } from '@/rbac/model';
 import { CodigoRecuperarContra, HRolUsuario, User } from '@/users/model';
 import 'dotenv/config';
-import { Sequelize } from 'sequelize-typescript';
-import { Sucursal } from '@/sucursal/model';
+
 import { Audit } from '@/audit/model';
+import { CategoriaEvento, HCategoriaEvento } from '@/categoria-evento/model';
 import { EstadoEvento, HEstadoEvento } from '@/estado-evento/model';
-import { Evento } from '@/evento/model';
-import { CategoriaEvento } from '@/categoria-evento/model';
-import { HCategoriaEvento } from '@/categoria-evento/model';
-import { Valoracion, ValoracionMedia } from '@/valoracion/model';
+import { Evento, RecurrenciaEvento } from '@/evento/model';
 import { MaximosDiasAdelanteReserva } from '@/maximos-dias-adelante-reserva/model';
-import { RecurrenciaEvento } from '@/evento/model';
+import {
+  MultimediaBodegas,
+  MultimediaEventos,
+  TipoMultimedia,
+} from '@/multimedia/model';
+import { Sucursal } from '@/sucursal/model';
+import { Sequelize } from 'sequelize-typescript';
+import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
 import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
 import {
@@ -22,6 +26,7 @@ import {
 } from '@/estado-instancia-evento/model';
 import { Recorrido } from '@/recorrido/model';
 import { Reserva } from '@/reserva/model';
+
 import { EstadoRecorrido, HEstadoRecorrido } from '@/estado-recorrido/model';
 import { Faq, FaqRecipient } from '@/faqs/model';
 
@@ -54,6 +59,9 @@ export const sequelize = new Sequelize({
     CodigoRecuperarContra,
     MaximosDiasAdelanteReserva,
     RecurrenciaEvento,
+    MultimediaBodegas,
+    MultimediaEventos,
+    TipoMultimedia,
     InstanciaEvento,
     EstadoInstanciaEvento,
     HEstadoInstanciaEvento,

@@ -1,3 +1,4 @@
+import { MultimediaBodegas } from '@/multimedia/model';
 import { Rol } from '@/rbac/model';
 import { Sucursal } from '@/sucursal/model';
 import { User } from '@/users/model';
@@ -51,6 +52,8 @@ export class Bodega extends Model<BodegaAttributes, BodegaCreationAttributes> {
   @HasMany(() => Sucursal)
   sucursales?: Sucursal[];
 
+  @HasMany(() => MultimediaBodegas)
+  multimedia?: MultimediaBodegas[];
   @Column({ type: DataType.DATE, allowNull: true })
   validada!: Date | null;
 }

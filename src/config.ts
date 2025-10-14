@@ -23,4 +23,8 @@ export default {
   SMTP_USER: process.env.SMTP_USER || 'user',
   SMTP_PASS: process.env.SMTP_PASS || 'pass',
   SMTP_FROM: process.env.SMTP_FROM || 'no-reply@example.com',
+  AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID || '',
+  AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || '',
+  AWS_REGION: process.env.AWS_REGION || 'us-east-1',
+  AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME || 'vinza-media-bucket',
 };

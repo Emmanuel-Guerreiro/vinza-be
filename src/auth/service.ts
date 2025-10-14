@@ -99,7 +99,7 @@ export class AuthService {
       bodegaId: dto.bodegaId,
     };
     const token = jwt.sign(payload, config.JWT_SECRET, {
-      expiresIn: '30d',
+      expiresIn: '45d',
     });
     return token;
   }

@@ -1,7 +1,7 @@
 import { IBodegaService } from './service';
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import {
-  createBodegaSchema,
+  createBodegaWithMultimediaSchema,
   findAllParamsSchema,
   UpdateBodegaSchema,
   validateBodegaSchema,
@@ -39,13 +39,21 @@ export class BodegaController {
       .catch((error) => next(error));
   }
 
-  public create(req: Request, res: Response, next: NextFunction) {
-    createBodegaSchema
-      .parseAsync({ ...req.body, firstUserId: req.user })
-      .then((dto) =>
-        this.bodegaService.create(dto).then((data) => res.json(data)),
-      )
-      .catch((error) => next(error));
+  public async create(req: Request, res: Response, next: NextFunction) {
+    try {
+      const dto = createBodegaWithMultimediaSchema.parse({
+        ...req.body,
+      });
+      const files = req.files as Express.Multer.File[];
+      // Create the bodega
+      const bodega = await this.bodegaService.createWithMultimedia(
+        dto,
+        files ?? [],
+      );
+      res.json(bodega);
+    } catch (err) {
+      next(err);
+    }
   }
 
   public update(req: Request, res: Response, next: NextFunction) {

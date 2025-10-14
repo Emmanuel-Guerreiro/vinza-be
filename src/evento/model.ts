@@ -13,6 +13,7 @@ import { CategoriaEvento } from '@/categoria-evento/model';
 
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
+import { MultimediaEventos } from '@/multimedia/model';
 
 // Enums para recurrencia de eventos
 export enum DiaSemana {
@@ -135,16 +136,19 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
   @BelongsTo(() => CategoriaEvento)
   categoria?: CategoriaEvento;
 
-  @HasMany(() => RecurrenciaEvento)
+  @HasMany(() => RecurrenciaEvento, { onDelete: 'CASCADE' })
   recurrencias?: RecurrenciaEvento[];
 
-  @HasMany(() => Valoracion)
+  @HasMany(() => Valoracion, { onDelete: 'CASCADE' })
   valoraciones?: Valoracion[];
 
-  @HasMany(() => ValoracionMedia)
+  @HasMany(() => MultimediaEventos, { onDelete: 'CASCADE' })
+  multimedia?: MultimediaEventos[];
+
+  @HasMany(() => ValoracionMedia, { onDelete: 'CASCADE' })
   valoracionMedia?: ValoracionMedia[];
 
-  @HasMany(() => InstanciaEvento)
+  @HasMany(() => InstanciaEvento, { onDelete: 'CASCADE' })
   instancias?: InstanciaEvento[];
 }
 

@@ -5,6 +5,7 @@ import { sucursalService } from '@/sucursal/service';
 import { Bodega } from './model';
 import {
   CreateBodegaDto,
+  CreateBodegaWithMultimediaDto,
   FindAllParams,
   UpdateBodegaDto,
   ValidateBodegaDto,
@@ -15,12 +16,17 @@ import {
   generatePaginationParams,
   generateOrderConditions,
 } from '@/pagination';
-import { Op, WhereOptions } from 'sequelize';
+import { Op, Transaction, WhereOptions } from 'sequelize';
 import { Sucursal } from '@/sucursal/model';
+import { multimediaService } from '@/multimedia/service';
+import { MultimediaBodegas } from '@/multimedia/model';
 import { usersService } from '@/users/service';
 
 class BodegaService {
-  public async create(dto: CreateBodegaDto) {
+  public async createWithMultimedia(
+    dto: CreateBodegaWithMultimediaDto,
+    files: Express.Multer.File[],
+  ) {
     const transaction = await sequelize.transaction();
     try {
       const bodega = await Bodega.create(
@@ -31,6 +37,16 @@ class BodegaService {
         },
         { transaction },
       );
+      if (files.length) {
+        await multimediaService.uploadMultipleFilesForBodega(
+          {
+            files,
+            portadaFileName: dto.multimediaPortada,
+            bodegaId: bodega.id,
+          },
+          transaction,
+        );
+      }
       // Create the first sucursal as main
       await sucursalService.create(
         {
@@ -60,6 +76,51 @@ class BodegaService {
     }
   }
 
+  public async create(
+    dto: CreateBodegaDto,
+    disableAudit: boolean = false,
+    t?: Transaction,
+  ) {
+    const transaction = t || (await sequelize.transaction());
+    try {
+      const bodega = await Bodega.create(dto, { transaction });
+      // Create the first sucursal as main
+      sucursalService.create(
+        {
+          nombre: dto.nombre,
+          es_principal: true,
+          direccion: dto.direccion,
+          aclaraciones: dto.aclaraciones,
+          bodegaId: bodega.id,
+        },
+        transaction,
+      );
+
+      if (!disableAudit) {
+        auditEmitter.emitEntry({
+          tipoEvento: 'bodega:create',
+          valor: bodega.dataValues,
+        });
+      }
+      const bodegaCompleted = await this.findOne(bodega.id, transaction);
+      const user = await usersService.findOne(dto.firstUserId, transaction);
+      if (!user) throw errors.app.user.not_found;
+      await user.update({ bodegaId: bodega.id }, { transaction });
+
+      await transaction.commit();
+
+      auditEmitter.emitEntry({
+        tipoEvento: 'bodega:create',
+        valor: bodega.dataValues,
+      });
+      if (!t) await transaction.commit();
+      return bodegaCompleted;
+    } catch (error) {
+      if (!t) await transaction.rollback();
+      throw error;
+    }
+  }
+
   public async findAll(
     params: FindAllParams,
   ): Promise<PaginatedResponse<Bodega>> {
@@ -77,6 +138,10 @@ class BodegaService {
         offset,
         include: [
           {
+            model: MultimediaBodegas,
+            as: 'multimedia',
+          },
+          {
             model: Sucursal,
             as: 'sucursales',
           },
@@ -90,14 +155,18 @@ class BodegaService {
     };
   }
 
-  public async findOne(id: number) {
+  public async findOne(id: number, transaction?: Transaction) {
     const bodega = await Bodega.findByPk(id, {
       include: [
         {
           model: Sucursal,
           as: 'sucursales',
         },
+        {
+          model: MultimediaBodegas,
+        },
       ],
+      transaction,
     });
     if (!bodega) {
       throw errors.app.bodega.not_found;

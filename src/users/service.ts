@@ -99,6 +99,14 @@ class UsersService {
     return user;
   }
 
+  public async findWithBodega(id: number, transaction?: Transaction) {
+    const user = await User.findByPk(id, {
+      transaction,
+      include: [{ model: Bodega }],
+    });
+    return user;
+  }
+
   public async findOneByEmail(email: string) {
     const user = await User.findOne({
       where: { email },

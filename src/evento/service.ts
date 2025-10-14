@@ -6,28 +6,66 @@ import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { EstadoEvento } from '@/estado-evento/model';
 import { estadoEventoService } from '@/estado-evento/service';
+import { Sucursal } from '@/sucursal/model';
+import { Op, WhereOptions, FindOptions, Transaction } from 'sequelize';
+import { sucursalService } from '@/sucursal/service';
+import { Evento } from './model';
+import {
+  CreateEventoDto,
+  CreateEventoWithMultimediaDto,
+  FindAllParams,
+  UpdateEventoDto,
+} from './types';
+import logger from '@/logger';
+import { PaginatedResponse } from '@/pagination/types';
+import {
+  generatePaginationParams,
+  generateOrderConditions,
+} from '@/pagination';
+import { RecurrenciaEvento } from './model';
+import { instanciaEventoService } from '@/instancia-evento/service';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
-import { instanciaEventoService } from '@/instancia-evento/service';
-import logger from '@/logger';
-import {
-  generateOrderConditions,
-  generatePaginationParams,
-} from '@/pagination';
-import { PaginatedResponse } from '@/pagination/types';
 import { Reserva } from '@/reserva/model';
 import { EstadoReserva } from '@/estado-reserva/model';
-import { Sucursal } from '@/sucursal/model';
-import { sucursalService } from '@/sucursal/service';
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { valoracionService } from '@/valoracion/service';
-import { FindOptions, Op, Transaction, WhereOptions } from 'sequelize';
-import { Evento, RecurrenciaEvento } from './model';
-import { CreateEventoDto, FindAllParams, UpdateEventoDto } from './types';
+import { multimediaService } from '@/multimedia/service';
+import { MultimediaEventos } from '@/multimedia/model';
 
 class EventoService {
-  public async create(dto: CreateEventoDto) {
+  public async createWithMultimedia(
+    dto: CreateEventoWithMultimediaDto,
+    files: Express.Multer.File[],
+  ) {
     const transaction = await sequelize.transaction();
+    try {
+      const { multimediaPortada, ...eventoDto } = dto;
+      const evento = await this.create(eventoDto, transaction);
+      if (files.length) {
+        await multimediaService.uploadMultipleFilesForEvento(
+          { files, portadaFileName: multimediaPortada, eventoId: evento.id },
+          transaction,
+        );
+      }
+
+      await transaction.commit();
+      auditEmitter.emitEntry({
+        tipoEvento: 'evento:create',
+        valor: evento.dataValues,
+      });
+      return evento;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log('error', error);
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  public async create(dto: CreateEventoDto, t?: Transaction) {
+    const transaction = t || (await sequelize.transaction());
+    const shouldCommit = !t; // Only commit if we created the transaction
     try {
       // Validar datos del evento
       await this.validateEventoData(dto, transaction);
@@ -61,17 +99,67 @@ class EventoService {
         `Instancias generadas automáticamente para evento ${evento.id}`,
       );
 
-      await transaction.commit();
+      // Load all relations within the transaction before commit
+      await evento.reload({
+        include: [
+          {
+            as: 'categoria',
+            model: CategoriaEvento,
+          },
+          {
+            as: 'estado',
+            model: EstadoEvento,
+          },
+          {
+            as: 'sucursal',
+            model: Sucursal,
+            include: [
+              {
+                as: 'bodega',
+                model: Bodega,
+              },
+            ],
+          },
+          {
+            as: 'recurrencias',
+            model: RecurrenciaEvento,
+          },
+          {
+            as: 'valoracionMedia',
+            model: ValoracionMedia,
+          },
+          {
+            model: InstanciaEvento,
+            as: 'instancias',
+            include: [
+              {
+                as: 'estado',
+                model: EstadoInstanciaEvento,
+              },
+            ],
+          },
+          {
+            model: MultimediaEventos,
+          },
+        ],
+        transaction,
+      });
+
+      if (shouldCommit) {
+        await transaction.commit();
+      }
 
       auditEmitter.emitEntry({
         tipoEvento: 'evento:create',
         valor: evento.dataValues,
       });
 
-      return this.findOne(evento.id);
+      return evento;
     } catch (error) {
       logger.error(`error create evento ${JSON.stringify(error)}`);
-      await transaction.rollback();
+      if (shouldCommit) {
+        await transaction.rollback();
+      }
       throw error;
     }
   }
@@ -112,6 +200,9 @@ class EventoService {
       limit,
       offset,
       include: [
+        {
+          model: MultimediaEventos,
+        },
         {
           as: 'categoria',
           model: CategoriaEvento,
@@ -177,7 +268,7 @@ class EventoService {
     };
   }
 
-  public async findOne(id: number) {
+  public async findOne(id: number, transaction?: Transaction) {
     const evento = await Evento.findByPk(id, {
       include: [
         {
@@ -216,8 +307,14 @@ class EventoService {
             },
           ],
         },
+        {
+          model: MultimediaEventos,
+          as: 'multimedia',
+        },
       ],
+      transaction,
     });
+
     if (!evento) throw errors.app.evento.not_found;
 
     return evento;
@@ -231,9 +328,15 @@ class EventoService {
 
       // Validar datos del evento
       await this.validateEventoData(dto, transaction);
+      const {
+        recurrencias,
+        addMultimedia,
+        removeMultimedia,
+        multimediaPortada,
+        ...eventoData
+      } = dto;
 
-      // Manejar recurrencias si se proporcionan
-      if (dto.recurrencias !== undefined) {
+      if (recurrencias !== undefined) {
         // Eliminar recurrencias existentes
         await RecurrenciaEvento.destroy({
           where: { eventoId: id },
@@ -241,8 +344,8 @@ class EventoService {
         });
 
         // Crear nuevas recurrencias si se proporcionan
-        if (dto.recurrencias.length > 0) {
-          const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
+        if (recurrencias.length > 0) {
+          const recurrenciasData = recurrencias.map((recurrencia) => ({
             ...recurrencia,
             eventoId: id,
           }));
@@ -251,14 +354,20 @@ class EventoService {
         }
       }
 
-      // Filtrar campos que no pertenecen al modelo Evento
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { recurrencias, ...eventoData } = dto;
+      if (addMultimedia || removeMultimedia || multimediaPortada) {
+        await multimediaService.updateMultimediaForEvento(
+          {
+            files: addMultimedia || [],
+            eventoId: id,
+            portadaFileName: multimediaPortada,
+            removeMultimediaIds: removeMultimedia,
+          },
+          transaction,
+        );
+      }
 
-      // Actualizar el evento usando la transacción
       await evento.update(eventoData, { transaction });
 
-      // Recargar el evento para obtener los datos actualizados
       await evento.reload({ transaction });
 
       await transaction.commit();
