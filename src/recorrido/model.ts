@@ -50,6 +50,9 @@ export class Recorrido extends Model<
   })
   id!: number;
 
+  @Column({ type: DataType.STRING, allowNull: false })
+  name!: string;
+
   @Column({ type: DataType.DATE, allowNull: false })
   created_at!: Date;
 
