@@ -72,7 +72,10 @@ class ReservaService {
         }
       } else {
         recorrido = await recorridoService.create(
-          { userId: dto.userId },
+          {
+            userId: dto.userId,
+            name: `Recorrido ${new Date().toISOString().split('T')[0]}`,
+          },
           transaction,
         );
       }

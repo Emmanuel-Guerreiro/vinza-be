@@ -13,11 +13,12 @@ import {
 import { EstadoRecorrido, HEstadoRecorrido } from '@/estado-recorrido/model';
 
 export interface RecorridoAttributes {
+  id: number;
+  name: string;
   created_at: Date;
   deleted_at: Date | null;
   last_optimization: Date | null;
   userId: number;
-  id: number;
   reservas: Reserva[];
   estados: EstadoRecorrido[];
 }

@@ -34,6 +34,7 @@ class RecorridoService {
       const recorrido = await Recorrido.create(
         {
           userId: dto.userId,
+          name: dto.name,
         },
         { transaction },
       );
