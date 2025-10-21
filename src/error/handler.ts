@@ -95,7 +95,9 @@ function handleNotFoundError(
 export function handleErrors(app: Express) {
   app.use(handleNotFoundError);
   app.use(handleUnhandledError);
-  app.on('error', (err) => {
+  //@ts-expect-error - Express error event
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  app.on('error', (err: any) => {
     logger.error('Unhandled error event:', err);
   });
 }
