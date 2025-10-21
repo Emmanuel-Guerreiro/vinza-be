@@ -17,8 +17,18 @@ export const createFaqSchema = z.object({
 
 export const updateFaqSchema = createFaqSchema.partial();
 
-export const findAllFaqsSchema = paginationAndOrderSchema([
+// Valid attributes from the Faq model for ordering
+const faqOrderByAttributes = [
+  'id',
+  'question',
+  'answer',
+  'recipient_id',
   'created_at',
-]).extend({
+  'updated_at',
+];
+
+export const findAllFaqsSchema = paginationAndOrderSchema(
+  faqOrderByAttributes,
+).extend({
   recipient: z.nativeEnum(FaqRecipientsEnum).optional(),
 });
