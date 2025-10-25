@@ -16,6 +16,8 @@ export class RecorridoController {
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
     this.confirmar = this.confirmar.bind(this);
+    this.optimize = this.optimize.bind(this);
+    this.applyOptimization = this.applyOptimization.bind(this);
   }
 
   public getAll(req: Request, res: Response, next: NextFunction) {
@@ -93,6 +95,24 @@ export class RecorridoController {
   public confirmar(req: Request, res: Response, next: NextFunction) {
     this.recorridoService
       .confirmarRecorrido(+req.params.id)
+      .then((data) => res.json(data))
+      .catch((err) => {
+        next(err);
+      });
+  }
+
+  public optimize(req: Request, res: Response, next: NextFunction) {
+    this.recorridoService
+      .optimizeRecorrido(+req.params.id)
+      .then((data) => res.json(data))
+      .catch((err) => {
+        next(err);
+      });
+  }
+
+  public applyOptimization(req: Request, res: Response, next: NextFunction) {
+    this.recorridoService
+      .applyOptimization(+req.params.id)
       .then((data) => res.json(data))
       .catch((err) => {
         next(err);

@@ -3,7 +3,7 @@
     "multimedia": {
       "file_required": {
         "key": "app.multimedia.file_required",
-        "message": "File is required",
+        "message": "El archivo es requerido",
         "message_eng": "File is required",
         "status": 400
       }
@@ -17,7 +17,7 @@
       },
       "not_found": {
         "key": "app.general.not_found",
-        "message": "Error general",
+        "message": "No encontrado",
         "message_eng": "General error",
         "status": 404
       },
@@ -29,7 +29,7 @@
       },
       "misconfigured_audit_middleware": {
         "key": "app.general.misconfigured_audit_middleware",
-        "message": "Misconfigured audit middleware",
+        "message": "Middleware de auditoría mal configurado",
         "message_eng": "Misconfigured audit middleware",
         "status": 500
       },
@@ -43,19 +43,19 @@
     "auth": {
       "non_valid_credentials": {
         "key": "app.auth.non_valid_credentials",
-        "message": "Non valid credentials",
+        "message": "Credenciales inválidas",
         "message_eng": "Non valid credentials",
         "status": 401
       },
       "unauthorized": {
         "key": "app.auth.unauthorized",
-        "message": "Unauthorized",
+        "message": "No autorizado",
         "message_eng": "Unauthorized",
         "status": 401
       },
       "invalid_or_expired_code": {
         "key": "app.auth.invalid_or_expired_code",
-        "message": "Invalid or expired code",
+        "message": "Código de validación inválido o expirado",
         "message_eng": "Invalid or expired code",
         "status": 401
       },
@@ -81,19 +81,19 @@
     "user": {
       "not_found": {
         "key": "app.user.not_found",
-        "message": "User not found",
+        "message": "Usuario no encontrado",
         "message_eng": "User not found",
         "status": 404
       },
       "roles_not_found": {
         "key": "app.user.roles_not_found",
-        "message": "Roles not found",
+        "message": "Roles no encontrados",
         "message_eng": "Roles not found",
         "status": 404
       },
       "permission_not_found": {
         "key": "app.user.permission_not_found",
-        "message": "Permission not found",
+        "message": "Permiso no encontrado",
         "message_eng": "Permission not found",
         "status": 404
       }
@@ -101,7 +101,7 @@
     "sucursal": {
       "not_found": {
         "key": "app.sucursal.not_found",
-        "message": "Sucursal not found",
+        "message": "Sucursal no encontrada",
         "message_eng": "Sucursal not found",
         "status": 404
       }
@@ -109,13 +109,13 @@
     "bodega": {
       "not_found": {
         "key": "app.bodega.not_found",
-        "message": "Bodega not found",
+        "message": "Bodega no encontrada",
         "message_eng": "Bodega not found",
         "status": 404
       },
       "bodega_already_exists": {
         "key": "app.bodega.bodega_already_exists",
-        "message": "Bodega already exists",
+        "message": "La bodega ya existe",
         "message_eng": "Bodega already exists",
         "status": 400
       }
@@ -123,19 +123,19 @@
     "evento": {
       "not_found": {
         "key": "app.evento.not_found",
-        "message": "Evento not found",
+        "message": "Evento no encontrado",
         "message_eng": "Evento not found",
         "status": 404
       },
       "estado_not_found": {
         "key": "app.evento.estado_not_found",
-        "message": "Estado not found",
+        "message": "Estado no encontrado",
         "message_eng": "Estado not found",
         "status": 404
       },
       "categoria_evento_not_found": {
         "key": "app.evento.categoria_evento_not_found",
-        "message": "Categoria evento not found",
+        "message": "Categoría de evento no encontrada",
         "message_eng": "Categoria evento not found",
         "status": 404
       },
@@ -180,7 +180,7 @@
     "valoracion": {
       "not_found": {
         "key": "app.valoracion.not_found",
-        "message": "Valoración not found",
+        "message": "Valoración no encontrada",
         "message_eng": "Valoración not found",
         "status": 404
       }
@@ -212,13 +212,13 @@
       },
       "not_found": {
         "key": "app.reserva.not_found",
-        "message": "Reserva not found",
+        "message": "Reserva no encontrada",
         "message_eng": "Reserva not found",
         "status": 404
       },
       "estado_not_found": {
         "key": "app.reserva.estado_not_found",
-        "message": "Estado not found",
+        "message": "Estado no encontrado",
         "message_eng": "Estado not found",
         "status": 404
       },
@@ -236,7 +236,7 @@
       },
       "evento_not_found": {
         "key": "app.evento.not_found",
-        "message": "Evento reserva not found",
+        "message": "Evento de reserva no encontrado",
         "message_eng": "evento reserva not found",
         "status": 404
       },
@@ -262,7 +262,7 @@
       },
       "not_found": {
         "key": "app.recorrido.not_found",
-        "message": "Recorrido not found",
+        "message": "Recorrido no encontrado",
         "message_eng": "Recorrido not found",
         "status": 404
       },
@@ -277,12 +277,18 @@
         "message": "Error al actualizar el recorrido",
         "message_eng": "Error updating the recorrido",
         "status": 500
+      },
+      "optimization_error": {
+        "key": "app.recorrido.optimization_error",
+        "message": "Error al aplicar la optimización al recorrido",
+        "message_eng": "Error applying optimization to the recorrido",
+        "status": 500
       }
     },
     "hEstadoRecorrido": {
       "H_estado_not_found": {
         "key": "app.HEstadoRecorrido.estado_not_found",
-        "message": "Estado recorrido not found",
+        "message": "Estado de recorrido no encontrado",
         "message_eng": "Estado recorrido not found",
         "status": 404
       },
@@ -308,7 +314,7 @@
     "estado_recorrido": {
       "estado_not_found": {
         "key": "app.estado_recorrido.estado_not_found",
-        "message": "Estado recorrido not found",
+        "message": "Estado de recorrido no encontrado",
         "message_eng": "Estado recorrido not found",
         "status": 404
       },
@@ -334,7 +340,7 @@
     "estado_reserva": {
       "estado_not_found": {
         "key": "app.estado_reserva.estado_not_found",
-        "message": "Estado reserva not found",
+        "message": "Estado de reserva no encontrado",
         "message_eng": "Estado reserva not found",
         "status": 404
       },
@@ -360,7 +366,7 @@
     "hEstadoReserva": {
       "H_estado_not_found": {
         "key": "app.HEstadoReserva.estado_not_found",
-        "message": "Estado reserva not found",
+        "message": "Estado de reserva no encontrado",
         "message_eng": "Estado reserva not found",
         "status": 404
       },
@@ -386,13 +392,13 @@
     "instancia_evento": {
       "not_found": {
         "key": "app.instancia_evento.not_found",
-        "message": "Instancia evento not found",
+        "message": "Instancia de evento no encontrada",
         "message_eng": "Instancia evento not found",
         "status": 404
       },
       "estado_not_found": {
         "key": "app.instancia_evento.estado_not_found",
-        "message": "Estado instancia evento not found",
+        "message": "Estado de instancia de evento no encontrado",
         "message_eng": "Estado instancia evento not found",
         "status": 404
       }
@@ -400,7 +406,7 @@
     "recurrencia_evento": {
       "not_found": {
         "key": "app.recurrencia_evento.not_found",
-        "message": "Recurrencia evento not found",
+        "message": "Recurrencia de evento no encontrada",
         "message_eng": "Recurrencia evento not found",
         "status": 404
       },

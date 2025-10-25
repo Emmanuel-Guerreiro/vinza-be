@@ -23,6 +23,7 @@ import { Reserva } from '@/reserva/model';
 import { EstadoReserva } from '@/estado-reserva/model';
 import { Recorrido } from '@/recorrido/model';
 import { User } from '@/users/model';
+import { Sucursal } from '@/sucursal/model';
 
 class InstanciaEventoService {
   public async findAll(
@@ -43,6 +44,13 @@ class InstanciaEventoService {
           model: Evento,
           as: 'evento',
           attributes: ['id', 'nombre', 'descripcion', 'precio', 'cupo'],
+          include: [
+            {
+              model: Sucursal,
+              as: 'sucursal',
+              attributes: ['id', 'nombre'],
+            },
+          ],
         },
         {
           model: RecurrenciaEvento,

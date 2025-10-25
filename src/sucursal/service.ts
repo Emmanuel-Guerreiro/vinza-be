@@ -60,15 +60,18 @@ class SucursalService {
     try {
       const sucursal = await Sucursal.findByPk(id, { transaction });
       if (!sucursal) throw errors.app.sucursal.not_found;
-      if (dto.bodegaId && dto.bodegaId !== sucursal.bodegaId) {
+
+      if ('bodegaId' in dto && dto.bodegaId !== sucursal.bodegaId) {
         throw { message: 'Cannot change bodega of a sucursal', status: 400 };
       }
+
       if (dto.es_principal) {
         await Sucursal.update(
           { es_principal: false },
           { where: { bodegaId: sucursal.bodegaId }, transaction },
         );
       }
+
       const updatedSucursal = await sucursal.update(dto, {
         transaction,
         returning: true,

@@ -27,4 +27,6 @@ export default {
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY || '',
   AWS_REGION: process.env.AWS_REGION || 'us-east-1',
   AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME || 'vinza-media-bucket',
+  GOOGLE_MAPS_API_KEY: process.env.GOOGLE_MAPS_API_KEY || '',
+  OPTIMIZATION_URL: process.env.OPTIMIZATION_URL || 'http://localhost:7801',
 };
