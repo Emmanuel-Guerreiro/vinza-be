@@ -188,9 +188,9 @@ router.post(
 
 /**
  * @openapi
- * /recorrido/{id}/optimize:
+ * /recorrido/{id}/optimized-version:
  *   post:
- *     summary: Optimize a recorrido by id
+ *     summary: Get the optimized version of a recorrido by id
  *     tags:
  *       - Recorridos
  *     parameters:
@@ -202,7 +202,7 @@ router.post(
  *           type: string
  *     responses:
  *       200:
- *         description: Recorrido optimized successfully
+ *         description: Recorrido optimized version retrieved successfully
  *       400:
  *         description: Bad request
  *       404:
@@ -210,8 +210,8 @@ router.post(
  *       500:
  *         description: Internal server error
  */
-router.post(
-  '/:id/optimize',
+router.get(
+  '/:id/optimized-version',
   authMiddleware,
   requirePermissions([Permissions.RECORRIDO_MANAGE]),
   validateRecorrdidoOwnership,
