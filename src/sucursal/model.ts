@@ -1,12 +1,12 @@
+import { Bodega } from '@/bodega/model';
 import {
+  BelongsTo,
   Column,
   DataType,
   ForeignKey,
-  BelongsTo,
   Model,
   Table,
 } from 'sequelize-typescript';
-import { Bodega } from '@/bodega/model';
 
 export interface SucursalAttributes {
   id: number;
@@ -42,6 +42,20 @@ export class Sucursal extends Model<
 
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   es_principal!: boolean;
+
+  @Column({
+    type: DataType.DECIMAL(10, 7), // precise to ~1cm
+    comment: 'Latitude in decimal degrees (-90 to 90)',
+    allowNull: false,
+  })
+  latitude!: number;
+
+  @Column({
+    type: DataType.DECIMAL(10, 7), // precise to ~1cm
+    comment: 'Longitude in decimal degrees (-180 to 180)',
+    allowNull: false,
+  })
+  longitude!: number;
 
   @Column({ type: DataType.STRING, allowNull: false })
   direccion!: string;

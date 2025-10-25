@@ -55,6 +55,8 @@ class BodegaService {
           direccion: dto.direccion,
           aclaraciones: dto.aclaraciones,
           bodegaId: bodega.id,
+          latitude: dto.latitude,
+          longitude: dto.longitude,
         },
         transaction,
       );
@@ -83,7 +85,8 @@ class BodegaService {
   ) {
     const transaction = t || (await sequelize.transaction());
     try {
-      const bodega = await Bodega.create(dto, { transaction });
+      const { latitude, longitude, ...rest } = dto;
+      const bodega = await Bodega.create(rest, { transaction });
       // Create the first sucursal as main
       sucursalService.create(
         {
@@ -92,6 +95,8 @@ class BodegaService {
           direccion: dto.direccion,
           aclaraciones: dto.aclaraciones,
           bodegaId: bodega.id,
+          latitude: latitude,
+          longitude: longitude,
         },
         transaction,
       );

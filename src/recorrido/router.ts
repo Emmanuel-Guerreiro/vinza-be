@@ -186,5 +186,69 @@ router.post(
   controller.confirmar,
 );
 
+/**
+ * @openapi
+ * /recorrido/{id}/optimized-version:
+ *   post:
+ *     summary: Get the optimized version of a recorrido by id
+ *     tags:
+ *       - Recorridos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the recorrido to optimize
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Recorrido optimized version retrieved successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Recorrido not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/:id/optimized-version',
+  authMiddleware,
+  requirePermissions([Permissions.RECORRIDO_MANAGE]),
+  validateRecorrdidoOwnership,
+  controller.optimize,
+);
+
+/**
+ * @openapi
+ * /recorrido/{id}/apply-optimization:
+ *   post:
+ *     summary: Apply optimization to a recorrido by id
+ *     tags:
+ *       - Recorridos
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the recorrido to apply optimization
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Recorrido optimization applied successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Recorrido not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post(
+  '/:id/apply-optimization',
+  authMiddleware,
+  requirePermissions([Permissions.RECORRIDO_MANAGE]),
+  validateRecorrdidoOwnership,
+  controller.applyOptimization,
+);
+
 logger.debug('Recorridos router initialized');
 export default router;
