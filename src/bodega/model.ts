@@ -17,7 +17,9 @@ export interface BodegaAttributes {
 export type BodegaCreationAttributes = Omit<
   BodegaAttributes,
   'id' | 'roles' | 'users' | 'validada'
->;
+> & {
+  validada?: Date | null;
+};
 
 @Table({
   tableName: 'bodegas',

@@ -13,8 +13,8 @@ export const createBodegaSchema = z.object({
   telefono: z.string(),
   aclaraciones: z.string().optional(),
   firstUserId: z.coerce.number(),
-  latitude: z.number(),
-  longitude: z.number(),
+  latitude: z.coerce.number(),
+  longitude: z.coerce.number(),
 });
 
 export const createBodegaWithMultimediaSchema = createBodegaSchema.extend({
