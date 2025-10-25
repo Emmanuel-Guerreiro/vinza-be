@@ -102,12 +102,12 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               id:
- *                 type: string
- *                 example: "123"
+ *               userId:
+ *                 type: number
+ *                 description: The id of the user who created the recorrido
  *               name:
  *                 type: string
- *                 description: Nombre del recorrido
+ *                 description: The name of the recorrido
  *     responses:
  *       200:
  *         description: Recorrido updated successfully

@@ -554,8 +554,8 @@ async function seed() {
         {
           dia: DiaSemana.VIERNES,
           hora: HoraEvento.HORA_18_00,
-          fecha_desde: new Date('2025-10-15'),
-          fecha_hasta: new Date('2027-10-15'),
+          fecha_desde: new Date('2025-11-28'),
+          fecha_hasta: new Date('2025-11-28'),
         },
       ],
     });

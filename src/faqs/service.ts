@@ -1,6 +1,6 @@
 import { auditEmitter } from '@/audit/event';
 import { sequelize } from '@/db';
-import { Op } from 'sequelize';
+import { Op, FindOptions } from 'sequelize';
 import { Faq, FaqRecipient } from './model';
 import {
   CreateFaqDto,
@@ -106,7 +106,8 @@ export class FaqService {
     const order = generateOrderConditions(params);
     const { limit, offset } = generatePaginationParams(params);
 
-    const items = await Faq.findAll({
+    const queryOptions = {
+      where: { deleted_at: { [Op.is]: null } },
       order,
       limit,
       offset,
@@ -115,18 +116,19 @@ export class FaqService {
           model: FaqRecipient,
           as: 'recipient',
           where: params.recipient ? { name: params.recipient } : undefined,
-          required: true,
+          required: !!params.recipient,
         },
       ],
-    });
+    };
+
+    const [meta, items] = await Promise.all([
+      this.getCountAndMetadata(queryOptions, params.page, limit),
+      Faq.findAll(queryOptions),
+    ]);
+
     return {
       items,
-      meta: {
-        totalItems: items.length,
-        totalPages: 1,
-        currentPage: 1,
-        itemsPerPage: items.length,
-      },
+      meta,
     };
   }
 
@@ -237,6 +239,24 @@ export class FaqService {
       await transaction.rollback();
       throw error;
     }
+  }
+
+  /**
+   * Get total count of items and generate complete pagination metadata
+   */
+  private async getCountAndMetadata(
+    queryOptions: FindOptions,
+    page: number,
+    limit: number,
+  ) {
+    const totalItems = await Faq.count(queryOptions);
+
+    return {
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: page || 1,
+      itemsPerPage: limit,
+    };
   }
 }
 

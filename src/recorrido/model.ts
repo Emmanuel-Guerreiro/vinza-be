@@ -13,11 +13,12 @@ import {
 import { EstadoRecorrido, HEstadoRecorrido } from '@/estado-recorrido/model';
 
 export interface RecorridoAttributes {
+  id: number;
+  name: string;
   created_at: Date;
   deleted_at: Date | null;
   last_optimization: Date | null;
   userId: number;
-  id: number;
   reservas: Reserva[];
   estados: EstadoRecorrido[];
 }
@@ -49,6 +50,9 @@ export class Recorrido extends Model<
     autoIncrement: true,
   })
   id!: number;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  name!: string;
 
   @Column({ type: DataType.DATE, allowNull: false })
   created_at!: Date;
