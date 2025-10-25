@@ -208,11 +208,13 @@ async function seed() {
         nombre: 'catena-zapata',
         descripcion: 'Bodega Catena Zapata',
         telefono: '1234567890',
+        validada: new Date(),
       }),
       Bodega.create({
         nombre: 'trapiche',
         descripcion: 'Bodega Trapiche',
         telefono: '1234567890',
+        validada: new Date(),
       }),
       Bodega.create({
         nombre: 'luigi-bosca',
