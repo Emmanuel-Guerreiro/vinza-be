@@ -25,4 +25,9 @@ export const reservaFilterSchema = paginationAndOrderSchema(
   reservaOrderByAttributes,
 ).extend({
   estado: z.nativeEnum(EstadoReservaEnum).optional(),
+  nombre: z.string().optional(),
+  email: z.string().optional(),
+  eventoId: z.coerce.number().optional(),
+  fechaDesde: z.coerce.date().optional(),
+  fechaHasta: z.coerce.date().optional(),
 });
