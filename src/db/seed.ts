@@ -22,6 +22,9 @@ import { User } from '@/users/model';
 import { valoracionService } from '@/valoracion/service';
 import { faqService } from '@/faqs/service';
 import { FaqRecipientsEnum } from '@/faqs/enums';
+import { reservaService } from '@/reserva/service';
+import { recorridoService } from '@/recorrido/service';
+import { InstanciaEvento } from '@/instancia-evento/model';
 import { sequelize } from '.';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
@@ -801,6 +804,144 @@ async function seed() {
       }),
     );
 
+    // ========================================
+    // 10. CREAR USUARIOS FINALES Y RESERVAS
+    // ========================================
+
+    console.log('Creando usuarios finales y reservas...');
+
+    // Crear usuarios finales (clientes)
+    const usuariosFinales = [
+      {
+        nombre: 'Ana',
+        apellido: 'García',
+        email: 'ana.garcia@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1990-05-15'),
+        validado: new Date(),
+      },
+      {
+        nombre: 'Carlos',
+        apellido: 'López',
+        email: 'carlos.lopez@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1985-08-22'),
+        validado: new Date(),
+      },
+      {
+        nombre: 'María',
+        apellido: 'Rodríguez',
+        email: 'maria.rodriguez@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1992-12-03'),
+        validado: new Date(),
+      },
+      {
+        nombre: 'Diego',
+        apellido: 'Martínez',
+        email: 'diego.martinez@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1988-03-18'),
+        validado: new Date(),
+      },
+      {
+        nombre: 'Laura',
+        apellido: 'Fernández',
+        email: 'laura.fernandez@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1995-07-25'),
+        validado: new Date(),
+      },
+    ];
+
+    const usuariosCreados = await Promise.all(
+      usuariosFinales.map(async (usuarioData) => {
+        return await User.create(usuarioData);
+      }),
+    );
+
+    console.log(`${usuariosCreados.length} usuarios finales creados`);
+
+    // Obtener algunos eventos para crear instancias específicas
+    const eventosDisponibles = await eventoService.findAll({
+      page: 1,
+      limit: 5,
+      orderBy: 'nombre:ASC',
+    });
+
+    // Crear algunas instancias de eventos específicas para las próximas semanas
+    const fechasFuturas = [
+      new Date('2025-11-01'), // Viernes
+      new Date('2025-11-02'), // Sábado
+      new Date('2025-11-03'), // Domingo
+      new Date('2025-11-08'), // Viernes
+      new Date('2025-11-09'), // Sábado
+      new Date('2025-11-10'), // Domingo
+    ];
+
+    const instanciasCreadas = [];
+    for (let i = 0; i < Math.min(eventosDisponibles.items.length, 3); i++) {
+      const evento = eventosDisponibles.items[i];
+
+      // Obtener la primera recurrencia del evento
+      const recurrencias = await evento.$get('recurrencias');
+      if (recurrencias.length > 0) {
+        const recurrencia = recurrencias[0];
+
+        // Crear instancias para algunas fechas futuras
+        for (let j = 0; j < Math.min(fechasFuturas.length, 2); j++) {
+          const fecha = fechasFuturas[j];
+          const instancia = await InstanciaEvento.create({
+            fecha: fecha,
+            eventoId: evento.id,
+            recurrenciaEventoId: recurrencia.id,
+          });
+          instanciasCreadas.push(instancia);
+        }
+      }
+    }
+
+    console.log(`${instanciasCreadas.length} instancias de eventos creadas`);
+
+    // Crear recorridos y reservas para cada usuario
+    for (let i = 0; i < usuariosCreados.length; i++) {
+      const usuario = usuariosCreados[i];
+
+      // Crear un recorrido para el usuario
+      const recorrido = await recorridoService.create({
+        userId: usuario.id,
+        name: `Recorrido de ${usuario.nombre} - ${new Date().toLocaleDateString()}`,
+      });
+
+      // Crear 1-2 reservas para este usuario
+      const numReservas = Math.floor(Math.random() * 2) + 1; // 1-2 reservas
+      const instanciasSeleccionadas = instanciasCreadas
+        .sort(() => 0.5 - Math.random()) // Mezclar aleatoriamente
+        .slice(0, numReservas);
+
+      for (const instancia of instanciasSeleccionadas) {
+        try {
+          const reserva = await reservaService.create({
+            userId: usuario.id,
+            instanciaEventoId: instancia.id,
+            recorridoId: recorrido.id,
+            cantidadGente: Math.floor(Math.random() * 3) + 1, // 1-3 personas
+          });
+          console.log(
+            `Reserva creada para ${usuario.nombre}: ${reserva.cantidadGente} personas`,
+          );
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : 'Error desconocido';
+          console.log(
+            `Error creando reserva para ${usuario.nombre}: ${errorMessage}`,
+          );
+        }
+      }
+    }
+
+    console.log('Usuarios finales y reservas creados exitosamente');
+
     console.log('Database seeded successfully');
 
     // ========================================
@@ -839,6 +980,22 @@ async function seed() {
       '  Email: alejandra.bosca@luigibosca.com.ar | Password: luigibosca123',
     );
     console.log('  Nombre: Alejandra Bosca - Administradora de Luigi Bosca');
+    console.log('\n=== USUARIOS FINALES (CLIENTES) ===');
+    console.log('USUARIO FINAL 1:');
+    console.log('  Email: ana.garcia@email.com | Password: cliente123');
+    console.log('  Nombre: Ana García - Cliente final');
+    console.log('\nUSUARIO FINAL 2:');
+    console.log('  Email: carlos.lopez@email.com | Password: cliente123');
+    console.log('  Nombre: Carlos López - Cliente final');
+    console.log('\nUSUARIO FINAL 3:');
+    console.log('  Email: maria.rodriguez@email.com | Password: cliente123');
+    console.log('  Nombre: María Rodríguez - Cliente final');
+    console.log('\nUSUARIO FINAL 4:');
+    console.log('  Email: diego.martinez@email.com | Password: cliente123');
+    console.log('  Nombre: Diego Martínez - Cliente final');
+    console.log('\nUSUARIO FINAL 5:');
+    console.log('  Email: laura.fernandez@email.com | Password: cliente123');
+    console.log('  Nombre: Laura Fernández - Cliente final');
     console.log('\n=== PRUEBAS DE AUTORIZACIÓN ===');
     console.log('1. Login con laura.catena@bodegacatenazapata.com');
     console.log(
