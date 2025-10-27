@@ -26,8 +26,8 @@ import {
 } from './types';
 
 class ReservaService {
-  public async create(dto: CreateReservaDto) {
-    const transaction = await sequelize.transaction();
+  public async create(dto: CreateReservaDto, t?: Transaction) {
+    const transaction = t || (await sequelize.transaction());
     try {
       const evento = await eventoService.findByInstanciaEvento(
         dto.instanciaEventoId,
@@ -108,11 +108,11 @@ class ReservaService {
         valor: reserva.dataValues,
       });
 
-      await transaction.commit();
+      if (!t) await transaction.commit();
 
       return reserva;
     } catch (error) {
-      await transaction.rollback();
+      if (!t) await transaction.rollback();
       logger.error(`Error creating reserva -> ${JSON.stringify(error)}`);
       throw error;
     }

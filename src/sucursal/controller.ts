@@ -33,7 +33,10 @@ export class SucursalController {
     createSucursalSchema
       .parseAsync(req.body)
       .then((dto) =>
-        this.sucursalService.create(dto).then((data) => res.json(data)),
+        this.sucursalService
+          .create(dto)
+          .then((data) => res.json(data))
+          .catch((error) => next(error)),
       )
       .catch((error) => next(error));
   }

@@ -211,11 +211,13 @@ async function seed() {
         nombre: 'catena-zapata',
         descripcion: 'Bodega Catena Zapata',
         telefono: '1234567890',
+        validada: new Date(),
       }),
       Bodega.create({
         nombre: 'trapiche',
         descripcion: 'Bodega Trapiche',
         telefono: '1234567890',
+        validada: new Date(),
       }),
       Bodega.create({
         nombre: 'luigi-bosca',
@@ -233,6 +235,8 @@ async function seed() {
         aclaraciones:
           'Bodega principal con viñedos de alta montaña y centro de visitantes',
         bodegaId: zuccardi.id,
+        latitude: -32.9668703,
+        longitude: -68.5661086,
       }),
       sucursalService.create({
         nombre: 'Zuccardi Maipú',
@@ -241,6 +245,8 @@ async function seed() {
         aclaraciones:
           'Segunda bodega especializada en vinos tradicionales mendocinos',
         bodegaId: zuccardi.id,
+        latitude: -33.7653509,
+        longitude: -69.1378212,
       }),
     ]);
 
@@ -253,6 +259,8 @@ async function seed() {
         aclaraciones:
           'Bodega histórica con arquitectura única y viñedos de alta calidad',
         bodegaId: bodegaCatena.id,
+        latitude: -33.1632792,
+        longitude: -68.9125061,
       }),
       sucursalService.create({
         nombre: 'Catena Zapata Buenos Aires',
@@ -260,6 +268,8 @@ async function seed() {
         direccion: 'Av. del Libertador 3800, Palermo, Buenos Aires',
         aclaraciones: 'Showroom y centro de degustación en la capital federal',
         bodegaId: bodegaCatena.id,
+        latitude: -32.9328185,
+        longitude: -68.8483713,
       }),
     ]);
 
@@ -273,6 +283,8 @@ async function seed() {
           aclaraciones:
             'Bodega histórica con más de 140 años de tradición vitivinícola',
           bodegaId: bodegaTrapiche.id,
+          latitude: -32.972088345986265,
+          longitude: -68.74613558021821,
         }),
         sucursalService.create({
           nombre: 'Trapiche Cafayate',
@@ -281,6 +293,8 @@ async function seed() {
           aclaraciones:
             'Viñedos de altura para vinos premium de la región norte',
           bodegaId: bodegaTrapiche.id,
+          latitude: -33.05177726191364,
+          longitude: -68.86987275109807,
         }),
         sucursalService.create({
           nombre: 'Trapiche Patagonia',
@@ -289,6 +303,8 @@ async function seed() {
           aclaraciones:
             'Bodega patagónica especializada en vinos frescos y minerales',
           bodegaId: bodegaTrapiche.id,
+          latitude: -33.03357323358593,
+          longitude: -68.9212073890647,
         }),
       ]);
 
@@ -301,6 +317,8 @@ async function seed() {
         aclaraciones:
           'Bodega familiar con más de 120 años de historia y tradición italiana',
         bodegaId: bodegaLuigiBosca.id,
+        latitude: -33.01942098518029,
+        longitude: -68.87230483106366,
       }),
     ]);
 
@@ -541,8 +559,8 @@ async function seed() {
         {
           dia: DiaSemana.VIERNES,
           hora: HoraEvento.HORA_18_00,
-          fecha_desde: new Date('2025-10-28'),
-          fecha_hasta: new Date('2025-10-28'),
+          fecha_desde: new Date('2025-11-28'),
+          fecha_hasta: new Date('2025-11-28'),
         },
       ],
     });

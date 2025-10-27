@@ -23,6 +23,7 @@ import { InstanciaEvento } from '@/instancia-evento/model';
 import { Evento } from '@/evento/model';
 import { Sucursal } from '@/sucursal/model';
 import { MultimediaEventos } from '@/multimedia/model';
+import { optimizerService } from '@/optimizer/service';
 
 class RecorridoService {
   public async create(dto: CreateRecorridoDto, t?: Transaction) {
@@ -321,6 +322,81 @@ class RecorridoService {
       currentPage: page || 1,
       itemsPerPage: limit,
     };
+  }
+
+  public async optimizeRecorrido(recorridoId: number) {
+    logger.debug(`Optimizing recorrido ${recorridoId}`);
+
+    const recorrido = await this.findById(recorridoId);
+    if (!recorrido) throw errors.app.recorrido.not_found;
+    return optimizerService.optimizeRecorrido(recorrido);
+  }
+
+  public async applyOptimization(recorridoId: number) {
+    const transaction = await sequelize.transaction();
+    try {
+      const recorrido = await this.findById(recorridoId, transaction);
+      if (!recorrido) throw errors.app.recorrido.not_found;
+
+      // Get optimization results
+      const optimizationResult =
+        await optimizerService.optimizeRecorrido(recorrido);
+
+      // Extract current and new instancia evento IDs
+      const currentInstanciaIds = recorrido.reservas.map(
+        (reserva) => reserva.instanciaEvento.id,
+      );
+      const newInstanciaIds = optimizationResult.instancesIds.map((id) =>
+        parseInt(id),
+      );
+
+      // Find which reservas need to be replaced (different instancia eventos)
+      const reservasToReplace = recorrido.reservas.filter(
+        (reserva) => !newInstanciaIds.includes(reserva.instanciaEvento.id),
+      );
+
+      // Find which new instancia eventos need new reservas
+      const instanciasToAdd = newInstanciaIds.filter(
+        (id) => !currentInstanciaIds.includes(id),
+      );
+
+      // Execute both deletion and creation operations in parallel
+      await Promise.all([
+        // Delete old reservas that are being replaced
+        ...reservasToReplace.map((reserva) =>
+          reservaService.delete(reserva.id, transaction),
+        ),
+        // Create new reservas for new instancia eventos
+        ...instanciasToAdd.map(async (instanciaId) => {
+          const instanciaEvento = optimizationResult.instances.find(
+            (inst) => inst.id === instanciaId,
+          );
+
+          if (instanciaEvento) {
+            return reservaService.create(
+              {
+                cantidadGente: 1, // Default quantity, could be made configurable
+                instanciaEventoId: instanciaId,
+                recorridoId: recorridoId,
+                userId: recorrido.userId,
+              },
+              transaction,
+            );
+          }
+        }),
+      ]);
+
+      await transaction.commit();
+
+      // Return updated recorrido
+      return this.findById(recorridoId);
+    } catch (error) {
+      await transaction.rollback();
+      logger.error(
+        `Error applying optimization to recorrido ${recorridoId}: ${JSON.stringify(error)}`,
+      );
+      throw errors.app.recorrido.optimization_error;
+    }
   }
 }
 export const recorridoService = new RecorridoService();
