@@ -239,6 +239,9 @@ class ReservaService {
     filter: ReservaFilterParams,
     bodegaId?: number,
   ): Promise<PaginatedResponse<Reserva>> {
+    logger.debug(
+      `Reserva findAll - filter: ${JSON.stringify(filter)}, bodegaId: ${bodegaId}`,
+    );
     const where = this.generateWhereConditions();
     const order = generateOrderConditions(filter);
     const { limit, offset } = generatePaginationParams(filter);
@@ -290,21 +293,31 @@ class ReservaService {
           model: InstanciaEvento,
           as: 'instanciaEvento',
           where: filtrosFecha || undefined,
+          required: !!(filtrosFecha || filter.eventoId) || !!bodegaId,
           include: [
             {
               model: Evento,
               as: 'evento',
               where: filter.eventoId ? { id: filter.eventoId } : undefined,
-              required: !!filter.eventoId,
-              include: [
-                {
-                  model: Sucursal,
-                  as: 'sucursal',
-                  where: bodegaId ? { bodegaId } : undefined,
-                  required: !!bodegaId,
-                  attributes: ['id', 'nombre', 'bodegaId'],
-                },
-              ],
+              required: !!filter.eventoId || !!bodegaId,
+              include: bodegaId
+                ? [
+                    {
+                      model: Sucursal,
+                      as: 'sucursal',
+                      where: { bodegaId },
+                      required: true,
+                      attributes: ['id', 'nombre', 'bodegaId'],
+                    },
+                  ]
+                : [
+                    {
+                      model: Sucursal,
+                      as: 'sucursal',
+                      required: false,
+                      attributes: ['id', 'nombre', 'bodegaId'],
+                    },
+                  ],
             },
           ],
         },

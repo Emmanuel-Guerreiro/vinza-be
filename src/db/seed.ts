@@ -862,14 +862,14 @@ async function seed() {
 
     console.log(`${usuariosCreados.length} usuarios finales creados`);
 
-    // Obtener algunos eventos para crear instancias específicas
+    // Obtener todos los eventos para crear instancias específicas
     const eventosDisponibles = await eventoService.findAll({
       page: 1,
-      limit: 5,
+      limit: 20,
       orderBy: 'nombre:ASC',
     });
 
-    // Crear algunas instancias de eventos específicas para las próximas semanas
+    // Crear instancias de eventos para diferentes fechas
     const fechasFuturas = [
       new Date('2025-11-01'), // Viernes
       new Date('2025-11-02'), // Sábado
@@ -877,65 +877,212 @@ async function seed() {
       new Date('2025-11-08'), // Viernes
       new Date('2025-11-09'), // Sábado
       new Date('2025-11-10'), // Domingo
+      new Date('2025-11-15'), // Viernes
+      new Date('2025-11-16'), // Sábado
+      new Date('2025-11-22'), // Viernes
+      new Date('2025-11-23'), // Sábado
     ];
 
     const instanciasCreadas = [];
-    for (let i = 0; i < Math.min(eventosDisponibles.items.length, 3); i++) {
+
+    // Crear instancias para más eventos
+    for (let i = 0; i < eventosDisponibles.items.length; i++) {
       const evento = eventosDisponibles.items[i];
 
-      // Obtener la primera recurrencia del evento
+      // Obtener todas las recurrencias del evento
       const recurrencias = await evento.$get('recurrencias');
       if (recurrencias.length > 0) {
-        const recurrencia = recurrencias[0];
+        // Crear 2-3 instancias por evento para tener más variedad
+        const numInstanciasPorEvento = Math.floor(Math.random() * 2) + 2; // 2-3 instancias
 
-        // Crear instancias para algunas fechas futuras
-        for (let j = 0; j < Math.min(fechasFuturas.length, 2); j++) {
-          const fecha = fechasFuturas[j];
+        for (
+          let j = 0;
+          j < numInstanciasPorEvento && j < fechasFuturas.length;
+          j++
+        ) {
+          const fecha = fechasFuturas[j % fechasFuturas.length];
+          const recurrencia = recurrencias[0]; // Usar la primera recurrencia
+
           const instancia = await InstanciaEvento.create({
             fecha: fecha,
             eventoId: evento.id,
             recurrenciaEventoId: recurrencia.id,
           });
-          instanciasCreadas.push(instancia);
+          instanciasCreadas.push({
+            instancia,
+            evento,
+          });
         }
       }
     }
 
     console.log(`${instanciasCreadas.length} instancias de eventos creadas`);
 
-    // Crear recorridos y reservas para cada usuario
+    // Obtener estados de reserva
+    const estadoPendiente = await estadoReservaService.findByName(
+      EstadoReservaEnum.PENDIENTE,
+    );
+    const estadoConfirmada = await estadoReservaService.findByName(
+      EstadoReservaEnum.CONFIRMADA,
+    );
+    const estadoCancelada = await estadoReservaService.findByName(
+      EstadoReservaEnum.CANCELADA,
+    );
+
+    // Crear múltiples reservas con diferentes estados para cada usuario
     for (let i = 0; i < usuariosCreados.length; i++) {
       const usuario = usuariosCreados[i];
 
-      // Crear un recorrido para el usuario
-      const recorrido = await recorridoService.create({
-        userId: usuario.id,
-        name: `Recorrido de ${usuario.nombre} - ${new Date().toLocaleDateString()}`,
+      // Crear 2-3 recorridos por usuario para simular diferentes viajes
+      const numRecorridos = Math.floor(Math.random() * 2) + 2; // 2-3 recorridos
+
+      for (let r = 0; r < numRecorridos; r++) {
+        const recorrido = await recorridoService.create({
+          userId: usuario.id,
+          name: `Recorrido ${r + 1} de ${usuario.nombre} - ${new Date().toLocaleDateString()}`,
+        });
+
+        // Crear 2-4 reservas por recorrido
+        const numReservasPorRecorrido = Math.floor(Math.random() * 3) + 2; // 2-4 reservas
+        const instanciasParaEsteRecorrido = instanciasCreadas
+          .sort(() => 0.5 - Math.random()) // Mezclar aleatoriamente
+          .slice(0, numReservasPorRecorrido);
+
+        for (const { instancia, evento } of instanciasParaEsteRecorrido) {
+          try {
+            // Determinar el estado de la reserva
+            const randomEstado = Math.random();
+            let estadoActual = estadoPendiente!;
+
+            // 40% PENDIENTE, 40% CONFIRMADA, 20% CANCELADA
+            if (randomEstado > 0.4 && randomEstado <= 0.8 && estadoConfirmada) {
+              estadoActual = estadoConfirmada!;
+            } else if (randomEstado > 0.8 && estadoCancelada) {
+              estadoActual = estadoCancelada!;
+            }
+
+            const reserva = await reservaService.create({
+              userId: usuario.id,
+              instanciaEventoId: instancia.id,
+              recorridoId: recorrido.id,
+              cantidadGente: Math.floor(Math.random() * 4) + 1, // 1-4 personas
+            });
+
+            // Cambiar el estado de la reserva si no es PENDIENTE
+            if (
+              estadoActual &&
+              estadoActual.nombre !== EstadoReservaEnum.PENDIENTE
+            ) {
+              await reserva.$set('estados', [estadoActual.id]);
+            }
+
+            console.log(
+              `Reserva creada para ${usuario.nombre} en ${evento.nombre}: ${reserva.cantidadGente} personas - Estado: ${estadoActual?.nombre || 'N/A'}`,
+            );
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error ? error.message : 'Error desconocido';
+            console.log(
+              `Error creando reserva para ${usuario.nombre}: ${errorMessage}`,
+            );
+          }
+        }
+      }
+    }
+
+    // Crear reservas adicionales para usuarios específicos con eventos específicos
+    console.log('Creando reservas adicionales para mayor variedad...');
+
+    // Obtener eventos específicos por bodega para diversificar
+    const eventosZuccardi = [evento1, evento2, evento3];
+    const eventosCatena = [evento5, evento6];
+    const eventosTrapiche = [evento7, evento8, evento9];
+    const eventosLuigiBosca = [evento10];
+
+    // Crear usuarios adicionales para tener más reservas
+    const usuariosAdicionales = [
+      {
+        nombre: 'Pedro',
+        apellido: 'Sánchez',
+        email: 'pedro.sanchez@email.com',
+      },
+      {
+        nombre: 'Sofia',
+        apellido: 'Morales',
+        email: 'sofia.morales@email.com',
+      },
+      { nombre: 'Juan', apellido: 'Pérez', email: 'juan.perez@email.com' },
+    ];
+
+    for (const userData of usuariosAdicionales) {
+      const usuarioAdicional = await User.create({
+        nombre: userData.nombre,
+        apellido: userData.apellido,
+        email: userData.email,
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1990-01-01'),
+        validado: new Date(),
       });
 
-      // Crear 1-2 reservas para este usuario
-      const numReservas = Math.floor(Math.random() * 2) + 1; // 1-2 reservas
-      const instanciasSeleccionadas = instanciasCreadas
-        .sort(() => 0.5 - Math.random()) // Mezclar aleatoriamente
-        .slice(0, numReservas);
+      // Crear 1-2 recorridos con 3-5 reservas cada uno
+      const numRecorridos = Math.floor(Math.random() * 2) + 1;
 
-      for (const instancia of instanciasSeleccionadas) {
-        try {
-          const reserva = await reservaService.create({
-            userId: usuario.id,
-            instanciaEventoId: instancia.id,
-            recorridoId: recorrido.id,
-            cantidadGente: Math.floor(Math.random() * 3) + 1, // 1-3 personas
-          });
-          console.log(
-            `Reserva creada para ${usuario.nombre}: ${reserva.cantidadGente} personas`,
-          );
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : 'Error desconocido';
-          console.log(
-            `Error creando reserva para ${usuario.nombre}: ${errorMessage}`,
-          );
+      for (let r = 0; r < numRecorridos; r++) {
+        const recorrido = await recorridoService.create({
+          userId: usuarioAdicional.id,
+          name: `Recorrido ${r + 1} de ${usuarioAdicional.nombre}`,
+        });
+
+        // Seleccionar eventos aleatorios de todas las bodegas
+        const todosEventos = [
+          ...eventosZuccardi,
+          ...eventosCatena,
+          ...eventosTrapiche,
+          ...eventosLuigiBosca,
+        ];
+
+        // Crear instancias para estos eventos
+        for (const evento of todosEventos) {
+          if (Math.random() > 0.5) continue; // Skip 50% de eventos
+
+          const recurrencias = await evento.$get('recurrencias');
+          if (recurrencias.length > 0) {
+            const fecha =
+              fechasFuturas[Math.floor(Math.random() * fechasFuturas.length)];
+            const instancia = await InstanciaEvento.create({
+              fecha,
+              eventoId: evento.id,
+              recurrenciaEventoId: recurrencias[0].id,
+            });
+
+            const reserva = await reservaService.create({
+              userId: usuarioAdicional.id,
+              instanciaEventoId: instancia.id,
+              recorridoId: recorrido.id,
+              cantidadGente: Math.floor(Math.random() * 3) + 1,
+            });
+
+            // Asignar estado aleatorio
+            const randomEstado = Math.random();
+            let estadoActual = estadoPendiente!;
+
+            if (randomEstado > 0.4 && randomEstado <= 0.8 && estadoConfirmada) {
+              estadoActual = estadoConfirmada!;
+            } else if (randomEstado > 0.8 && estadoCancelada) {
+              estadoActual = estadoCancelada!;
+            }
+
+            if (
+              estadoActual &&
+              estadoActual.nombre !== EstadoReservaEnum.PENDIENTE
+            ) {
+              await reserva.$set('estados', [estadoActual.id]);
+            }
+
+            console.log(
+              `Reserva adicional creada para ${usuarioAdicional.nombre} en ${evento.nombre}`,
+            );
+          }
         }
       }
     }
