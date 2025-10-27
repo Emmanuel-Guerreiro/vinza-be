@@ -26,6 +26,8 @@ import { RecurrenciaEvento } from './model';
 import { instanciaEventoService } from '@/instancia-evento/service';
 import { EstadoInstanciaEvento } from '@/estado-instancia-evento/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
+import { findAllParamsSchema as instanciaEventoFindAllParamsSchema } from '@/instancia-evento/schema';
+import { FindAllParams as InstanciaEventoFindAllParams } from '@/instancia-evento/types';
 import { Reserva } from '@/reserva/model';
 import { EstadoReserva } from '@/estado-reserva/model';
 import { Valoracion, ValoracionMedia } from '@/valoracion/model';
@@ -485,15 +487,24 @@ class EventoService {
   /**
    * Obtiene todas las instancias de un evento específico
    */
-  public async getInstanciasEvento(eventoId: number) {
+  public async getInstanciasEvento(eventoId: number, queryParams?: unknown) {
     const evento = await this.findOne(eventoId);
     if (!evento) throw errors.app.evento.not_found;
 
+    // Validar y parsear los query params con el schema de instancia evento
+    const params: Partial<InstanciaEventoFindAllParams> = queryParams
+      ? instanciaEventoFindAllParamsSchema.parse(queryParams)
+      : {};
+
     const res = await instanciaEventoService.findAll({
       eventoId,
-      page: 1,
-      limit: 1000, // Límite alto para obtener todas las instancias
-      orderBy: 'id:asc',
+      page: params.page || 1,
+      limit: params.limit || 1000, // Límite alto para obtener todas las instancias
+      orderBy: params.orderBy || 'id:asc',
+      fechaDesde: params.fechaDesde,
+      fechaHasta: params.fechaHasta,
+      estadoId: params.estadoId,
+      recurrenciaEventoId: params.recurrenciaEventoId,
     });
 
     return res;

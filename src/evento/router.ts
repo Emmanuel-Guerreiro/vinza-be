@@ -595,7 +595,7 @@ router.delete(
  * /eventos/{id}/instancias:
  *   get:
  *     summary: Get all instances of a specific event
- *     description: Get all instances of a specific event
+ *     description: Get all instances of a specific event with optional filters
  *     tags:
  *       - Eventos
  *     parameters:
@@ -603,6 +603,53 @@ router.delete(
  *         in: path
  *         required: true
  *         description: The id of the evento
+ *       - name: fechaDesde
+ *         in: query
+ *         required: false
+ *         description: Filter instances from this date
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: fechaHasta
+ *         in: query
+ *         required: false
+ *         description: Filter instances until this date
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: estadoId
+ *         in: query
+ *         required: false
+ *         description: Filter by estado id
+ *         schema:
+ *           type: number
+ *       - name: recurrenciaEventoId
+ *         in: query
+ *         required: false
+ *         description: Filter by recurrencia id
+ *         schema:
+ *           type: number
+ *       - name: page
+ *         in: query
+ *         required: false
+ *         description: Page number
+ *         schema:
+ *           type: number
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         required: false
+ *         description: Items per page
+ *         schema:
+ *           type: number
+ *           default: 1000
+ *       - name: orderBy
+ *         in: query
+ *         required: false
+ *         description: Order by field (e.g., 'fecha:asc' or 'fecha:desc')
+ *         schema:
+ *           type: string
+ *           default: 'id:asc'
  *     responses:
  *       200:
  *         description: List of event instances retrieved successfully
