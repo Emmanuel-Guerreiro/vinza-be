@@ -61,21 +61,61 @@ router.get(
  *     parameters:
  *       - name: page
  *         in: query
+ *         description: Page number for pagination
+ *         required: false
  *         schema:
  *           type: integer
  *       - name: limit
  *         in: query
+ *         description: Number of items per page
+ *         required: false
  *         schema:
  *           type: integer
  *       - name: orderBy
  *         in: query
+ *         description: Order results by field and direction. Format field:direction
+ *         required: false
  *         schema:
  *           type: string
  *       - name: estado
  *         in: query
+ *         description: Filter by reservation state
+ *         required: false
  *         schema:
  *           type: string
  *           enum: [PENDIENTE, CONFIRMADA, CANCELADA]
+ *       - name: nombre
+ *         in: query
+ *         description: Filter by user name (partial match, case-insensitive)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: email
+ *         in: query
+ *         description: Filter by user email (partial match, case-insensitive)
+ *         required: false
+ *         schema:
+ *           type: string
+ *       - name: eventoId
+ *         in: query
+ *         description: Filter by event ID
+ *         required: false
+ *         schema:
+ *           type: integer
+ *       - name: fechaDesde
+ *         in: query
+ *         description: Filter reservations where event instance date is greater than or equal to this date
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: fechaHasta
+ *         in: query
+ *         description: Filter reservations where event instance date is less than or equal to this date
+ *         required: false
+ *         schema:
+ *           type: string
+ *           format: date
  *     responses:
  *       200:
  *         description: Reservas retrieved successfully

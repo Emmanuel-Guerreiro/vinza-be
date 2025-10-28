@@ -239,43 +239,98 @@ class ReservaService {
     filter: ReservaFilterParams,
     bodegaId?: number,
   ): Promise<PaginatedResponse<Reserva>> {
-    const where = this.generateWhereConditions(filter);
+    logger.debug(
+      `Reserva findAll - filter: ${JSON.stringify(filter)}, bodegaId: ${bodegaId}`,
+    );
+    const where = this.generateWhereConditions();
     const order = generateOrderConditions(filter);
     const { limit, offset } = generatePaginationParams(filter);
+
+    // Construir filtros de fecha para InstanciaEvento
+    let filtrosFecha: Record<string, unknown> | null = null;
+    if (filter.fechaDesde || filter.fechaHasta) {
+      filtrosFecha = {};
+      if (filter.fechaDesde && filter.fechaHasta) {
+        filtrosFecha.fecha = {
+          [Op.between]: [filter.fechaDesde, filter.fechaHasta],
+        };
+      } else if (filter.fechaDesde) {
+        filtrosFecha.fecha = {
+          [Op.gte]: filter.fechaDesde,
+        };
+      } else if (filter.fechaHasta) {
+        filtrosFecha.fecha = {
+          [Op.lte]: filter.fechaHasta,
+        };
+      }
+    }
+
+    // Construir filtros de usuario para User
+    let userWhere: Record<string, unknown> | null = null;
+    if (filter.nombre || filter.email) {
+      userWhere = {};
+      if (filter.nombre) {
+        userWhere.nombre = {
+          [Op.iLike]: `%${filter.nombre}%`,
+        };
+      }
+      if (filter.email) {
+        userWhere.email = {
+          [Op.iLike]: `%${filter.email}%`,
+        };
+      }
+    }
 
     const queryOptions = {
       include: [
         {
           model: EstadoReserva,
           as: 'estados',
+          where: filter.estado ? { nombre: filter.estado } : undefined,
+          required: !!filter.estado,
         },
         {
           model: InstanciaEvento,
           as: 'instanciaEvento',
+          where: filtrosFecha || undefined,
+          required: !!(filtrosFecha || filter.eventoId) || !!bodegaId,
           include: [
             {
               model: Evento,
               as: 'evento',
-              include: [
-                {
-                  model: Sucursal,
-                  as: 'sucursal',
-                  where: bodegaId ? { bodegaId } : undefined,
-                  required: !!bodegaId,
-                  attributes: ['id', 'nombre', 'bodegaId'],
-                },
-              ],
+              where: filter.eventoId ? { id: filter.eventoId } : undefined,
+              required: !!filter.eventoId || !!bodegaId,
+              include: bodegaId
+                ? [
+                    {
+                      model: Sucursal,
+                      as: 'sucursal',
+                      where: { bodegaId },
+                      required: true,
+                      attributes: ['id', 'nombre', 'bodegaId'],
+                    },
+                  ]
+                : [
+                    {
+                      model: Sucursal,
+                      as: 'sucursal',
+                      required: false,
+                      attributes: ['id', 'nombre', 'bodegaId'],
+                    },
+                  ],
             },
           ],
         },
         {
           model: Recorrido,
           as: 'recorrido',
-          attributes: ['id'],
+          attributes: ['id', 'userId'],
           include: [
             {
               model: User,
               as: 'user',
+              where: userWhere || undefined,
+              required: !!(filter.nombre || filter.email),
               attributes: ['id', 'nombre', 'apellido', 'email'],
             },
           ],
@@ -405,13 +460,9 @@ class ReservaService {
     };
   }
 
-  private generateWhereConditions(filter: ReservaFilterParams) {
+  private generateWhereConditions() {
     const where: WhereOptions = {};
-    if (filter.estado) {
-      where.estados = {
-        [Op.in]: [filter.estado],
-      };
-    }
+    // Los filtros de estado, nombre, email, eventoId y fechas se manejan en los includes
     return where;
   }
 }

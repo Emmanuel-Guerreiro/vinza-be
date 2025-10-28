@@ -22,6 +22,9 @@ import { User } from '@/users/model';
 import { valoracionService } from '@/valoracion/service';
 import { faqService } from '@/faqs/service';
 import { FaqRecipientsEnum } from '@/faqs/enums';
+import { reservaService } from '@/reserva/service';
+import { recorridoService } from '@/recorrido/service';
+import { InstanciaEvento } from '@/instancia-evento/model';
 import { sequelize } from '.';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
@@ -819,6 +822,291 @@ async function seed() {
       }),
     );
 
+    // ========================================
+    // 10. CREAR USUARIOS FINALES Y RESERVAS
+    // ========================================
+
+    console.log('Creando usuarios finales y reservas...');
+
+    // Crear usuarios finales (clientes)
+    const usuariosFinales = [
+      {
+        nombre: 'Ana',
+        apellido: 'García',
+        email: 'ana.garcia@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1990-05-15'),
+        validado: new Date(),
+      },
+      {
+        nombre: 'Carlos',
+        apellido: 'López',
+        email: 'carlos.lopez@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1985-08-22'),
+        validado: new Date(),
+      },
+      {
+        nombre: 'María',
+        apellido: 'Rodríguez',
+        email: 'maria.rodriguez@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1992-12-03'),
+        validado: new Date(),
+      },
+      {
+        nombre: 'Diego',
+        apellido: 'Martínez',
+        email: 'diego.martinez@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1988-03-18'),
+        validado: new Date(),
+      },
+      {
+        nombre: 'Laura',
+        apellido: 'Fernández',
+        email: 'laura.fernandez@email.com',
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1995-07-25'),
+        validado: new Date(),
+      },
+    ];
+
+    const usuariosCreados = await Promise.all(
+      usuariosFinales.map(async (usuarioData) => {
+        return await User.create(usuarioData);
+      }),
+    );
+
+    console.log(`${usuariosCreados.length} usuarios finales creados`);
+
+    // Obtener todos los eventos para crear instancias específicas
+    const eventosDisponibles = await eventoService.findAll({
+      page: 1,
+      limit: 20,
+      orderBy: 'nombre:ASC',
+    });
+
+    // Crear instancias de eventos para diferentes fechas
+    const fechasFuturas = [
+      new Date('2025-11-01'), // Viernes
+      new Date('2025-11-02'), // Sábado
+      new Date('2025-11-03'), // Domingo
+      new Date('2025-11-08'), // Viernes
+      new Date('2025-11-09'), // Sábado
+      new Date('2025-11-10'), // Domingo
+      new Date('2025-11-15'), // Viernes
+      new Date('2025-11-16'), // Sábado
+      new Date('2025-11-22'), // Viernes
+      new Date('2025-11-23'), // Sábado
+    ];
+
+    const instanciasCreadas = [];
+
+    // Crear instancias para más eventos
+    for (let i = 0; i < eventosDisponibles.items.length; i++) {
+      const evento = eventosDisponibles.items[i];
+
+      // Obtener todas las recurrencias del evento
+      const recurrencias = await evento.$get('recurrencias');
+      if (recurrencias.length > 0) {
+        // Crear 2-3 instancias por evento para tener más variedad
+        const numInstanciasPorEvento = Math.floor(Math.random() * 2) + 2; // 2-3 instancias
+
+        for (
+          let j = 0;
+          j < numInstanciasPorEvento && j < fechasFuturas.length;
+          j++
+        ) {
+          const fecha = fechasFuturas[j % fechasFuturas.length];
+          const recurrencia = recurrencias[0]; // Usar la primera recurrencia
+
+          const instancia = await InstanciaEvento.create({
+            fecha: fecha,
+            eventoId: evento.id,
+            recurrenciaEventoId: recurrencia.id,
+          });
+          instanciasCreadas.push({
+            instancia,
+            evento,
+          });
+        }
+      }
+    }
+
+    console.log(`${instanciasCreadas.length} instancias de eventos creadas`);
+
+    // Obtener estados de reserva
+    const estadoPendiente = await estadoReservaService.findByName(
+      EstadoReservaEnum.PENDIENTE,
+    );
+    const estadoConfirmada = await estadoReservaService.findByName(
+      EstadoReservaEnum.CONFIRMADA,
+    );
+    const estadoCancelada = await estadoReservaService.findByName(
+      EstadoReservaEnum.CANCELADA,
+    );
+
+    // Crear múltiples reservas con diferentes estados para cada usuario
+    for (let i = 0; i < usuariosCreados.length; i++) {
+      const usuario = usuariosCreados[i];
+
+      // Crear 2-3 recorridos por usuario para simular diferentes viajes
+      const numRecorridos = Math.floor(Math.random() * 2) + 2; // 2-3 recorridos
+
+      for (let r = 0; r < numRecorridos; r++) {
+        const recorrido = await recorridoService.create({
+          userId: usuario.id,
+          name: `Recorrido ${r + 1} de ${usuario.nombre} - ${new Date().toLocaleDateString()}`,
+        });
+
+        // Crear 2-4 reservas por recorrido
+        const numReservasPorRecorrido = Math.floor(Math.random() * 3) + 2; // 2-4 reservas
+        const instanciasParaEsteRecorrido = instanciasCreadas
+          .sort(() => 0.5 - Math.random()) // Mezclar aleatoriamente
+          .slice(0, numReservasPorRecorrido);
+
+        for (const { instancia, evento } of instanciasParaEsteRecorrido) {
+          try {
+            // Determinar el estado de la reserva
+            const randomEstado = Math.random();
+            let estadoActual = estadoPendiente!;
+
+            // 40% PENDIENTE, 40% CONFIRMADA, 20% CANCELADA
+            if (randomEstado > 0.4 && randomEstado <= 0.8 && estadoConfirmada) {
+              estadoActual = estadoConfirmada!;
+            } else if (randomEstado > 0.8 && estadoCancelada) {
+              estadoActual = estadoCancelada!;
+            }
+
+            const reserva = await reservaService.create({
+              userId: usuario.id,
+              instanciaEventoId: instancia.id,
+              recorridoId: recorrido.id,
+              cantidadGente: Math.floor(Math.random() * 4) + 1, // 1-4 personas
+            });
+
+            // Cambiar el estado de la reserva si no es PENDIENTE
+            if (
+              estadoActual &&
+              estadoActual.nombre !== EstadoReservaEnum.PENDIENTE
+            ) {
+              await reserva.$set('estados', [estadoActual.id]);
+            }
+
+            console.log(
+              `Reserva creada para ${usuario.nombre} en ${evento.nombre}: ${reserva.cantidadGente} personas - Estado: ${estadoActual?.nombre || 'N/A'}`,
+            );
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error ? error.message : 'Error desconocido';
+            console.log(
+              `Error creando reserva para ${usuario.nombre}: ${errorMessage}`,
+            );
+          }
+        }
+      }
+    }
+
+    // Crear reservas adicionales para usuarios específicos con eventos específicos
+    console.log('Creando reservas adicionales para mayor variedad...');
+
+    // Obtener eventos específicos por bodega para diversificar
+    const eventosZuccardi = [evento1, evento2, evento3];
+    const eventosCatena = [evento5, evento6];
+    const eventosTrapiche = [evento7, evento8, evento9];
+    const eventosLuigiBosca = [evento10];
+
+    // Crear usuarios adicionales para tener más reservas
+    const usuariosAdicionales = [
+      {
+        nombre: 'Pedro',
+        apellido: 'Sánchez',
+        email: 'pedro.sanchez@email.com',
+      },
+      {
+        nombre: 'Sofia',
+        apellido: 'Morales',
+        email: 'sofia.morales@email.com',
+      },
+      { nombre: 'Juan', apellido: 'Pérez', email: 'juan.perez@email.com' },
+    ];
+
+    for (const userData of usuariosAdicionales) {
+      const usuarioAdicional = await User.create({
+        nombre: userData.nombre,
+        apellido: userData.apellido,
+        email: userData.email,
+        contrasena: await hashPassword('cliente123'),
+        fecha_nacimiento: new Date('1990-01-01'),
+        validado: new Date(),
+      });
+
+      // Crear 1-2 recorridos con 3-5 reservas cada uno
+      const numRecorridos = Math.floor(Math.random() * 2) + 1;
+
+      for (let r = 0; r < numRecorridos; r++) {
+        const recorrido = await recorridoService.create({
+          userId: usuarioAdicional.id,
+          name: `Recorrido ${r + 1} de ${usuarioAdicional.nombre}`,
+        });
+
+        // Seleccionar eventos aleatorios de todas las bodegas
+        const todosEventos = [
+          ...eventosZuccardi,
+          ...eventosCatena,
+          ...eventosTrapiche,
+          ...eventosLuigiBosca,
+        ];
+
+        // Crear instancias para estos eventos
+        for (const evento of todosEventos) {
+          if (Math.random() > 0.5) continue; // Skip 50% de eventos
+
+          const recurrencias = await evento.$get('recurrencias');
+          if (recurrencias.length > 0) {
+            const fecha =
+              fechasFuturas[Math.floor(Math.random() * fechasFuturas.length)];
+            const instancia = await InstanciaEvento.create({
+              fecha,
+              eventoId: evento.id,
+              recurrenciaEventoId: recurrencias[0].id,
+            });
+
+            const reserva = await reservaService.create({
+              userId: usuarioAdicional.id,
+              instanciaEventoId: instancia.id,
+              recorridoId: recorrido.id,
+              cantidadGente: Math.floor(Math.random() * 3) + 1,
+            });
+
+            // Asignar estado aleatorio
+            const randomEstado = Math.random();
+            let estadoActual = estadoPendiente!;
+
+            if (randomEstado > 0.4 && randomEstado <= 0.8 && estadoConfirmada) {
+              estadoActual = estadoConfirmada!;
+            } else if (randomEstado > 0.8 && estadoCancelada) {
+              estadoActual = estadoCancelada!;
+            }
+
+            if (
+              estadoActual &&
+              estadoActual.nombre !== EstadoReservaEnum.PENDIENTE
+            ) {
+              await reserva.$set('estados', [estadoActual.id]);
+            }
+
+            console.log(
+              `Reserva adicional creada para ${usuarioAdicional.nombre} en ${evento.nombre}`,
+            );
+          }
+        }
+      }
+    }
+
+    console.log('Usuarios finales y reservas creados exitosamente');
+
     console.log('Database seeded successfully');
 
     // ========================================
@@ -857,6 +1145,22 @@ async function seed() {
       '  Email: alejandra.bosca@luigibosca.com.ar | Password: luigibosca123',
     );
     console.log('  Nombre: Alejandra Bosca - Administradora de Luigi Bosca');
+    console.log('\n=== USUARIOS FINALES (CLIENTES) ===');
+    console.log('USUARIO FINAL 1:');
+    console.log('  Email: ana.garcia@email.com | Password: cliente123');
+    console.log('  Nombre: Ana García - Cliente final');
+    console.log('\nUSUARIO FINAL 2:');
+    console.log('  Email: carlos.lopez@email.com | Password: cliente123');
+    console.log('  Nombre: Carlos López - Cliente final');
+    console.log('\nUSUARIO FINAL 3:');
+    console.log('  Email: maria.rodriguez@email.com | Password: cliente123');
+    console.log('  Nombre: María Rodríguez - Cliente final');
+    console.log('\nUSUARIO FINAL 4:');
+    console.log('  Email: diego.martinez@email.com | Password: cliente123');
+    console.log('  Nombre: Diego Martínez - Cliente final');
+    console.log('\nUSUARIO FINAL 5:');
+    console.log('  Email: laura.fernandez@email.com | Password: cliente123');
+    console.log('  Nombre: Laura Fernández - Cliente final');
     console.log('\n=== PRUEBAS DE AUTORIZACIÓN ===');
     console.log('1. Login con laura.catena@bodegacatenazapata.com');
     console.log(

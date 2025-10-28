@@ -87,7 +87,7 @@ export class EventoController {
 
   public getInstanciasEvento(req: Request, res: Response) {
     this.eventoService
-      .getInstanciasEvento(+req.params.id)
+      .getInstanciasEvento(+req.params.id, req.query)
       .then((data) => res.json(data));
   }
 
