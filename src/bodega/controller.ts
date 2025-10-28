@@ -5,6 +5,7 @@ import {
   findAllParamsSchema,
   UpdateBodegaSchema,
   validateBodegaSchema,
+  bodegaMetricsSchema,
 } from './schema';
 
 export class BodegaController {
@@ -18,6 +19,7 @@ export class BodegaController {
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
     this.validate = this.validate.bind(this);
+    this.getMetrics = this.getMetrics.bind(this);
   }
 
   public getAll(req: Request, res: Response, next: NextFunction) {
@@ -81,6 +83,15 @@ export class BodegaController {
         this.bodegaService
           .validate(+req.params.id, dto)
           .then((data) => res.json(data)),
+      )
+      .catch((error) => next(error));
+  }
+
+  public getMetrics(req: Request, res: Response, next: NextFunction) {
+    bodegaMetricsSchema
+      .parseAsync(req.params)
+      .then((params) =>
+        this.bodegaService.getMetrics(params.id).then((data) => res.json(data)),
       )
       .catch((error) => next(error));
   }

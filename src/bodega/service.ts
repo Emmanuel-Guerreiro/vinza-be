@@ -9,6 +9,10 @@ import {
   FindAllParams,
   UpdateBodegaDto,
   ValidateBodegaDto,
+  BodegaMetrics,
+  IngresoMensual,
+  EventoPorCategoria,
+  OcupacionSemanal,
 } from './types';
 import logger from '@/logger';
 import { PaginatedResponse } from '@/pagination/types';
@@ -21,6 +25,17 @@ import { Sucursal } from '@/sucursal/model';
 import { multimediaService } from '@/multimedia/service';
 import { MultimediaBodegas } from '@/multimedia/model';
 import { usersService } from '@/users/service';
+import { Evento } from '@/evento/model';
+import { EstadoEvento } from '@/estado-evento/model';
+import { EstadoEventoEnum } from '@/estado-evento/enum';
+import { ValoracionMedia } from '@/valoracion/model';
+import { Reserva } from '@/reserva/model';
+import { EstadoReserva } from '@/estado-reserva/model';
+import { EstadoReservaEnum } from '@/estado-reserva/enum';
+import { InstanciaEvento } from '@/instancia-evento/model';
+import { CategoriaEvento } from '@/categoria-evento/model';
+import dayjs from 'dayjs';
+import 'dayjs/locale/es';
 
 class BodegaService {
   public async createWithMultimedia(
@@ -224,6 +239,363 @@ class BodegaService {
     }
     await bodega.update({ validada: dto.es_valida ? new Date() : null });
     return bodega;
+  }
+
+  public async getMetrics(id: number): Promise<BodegaMetrics> {
+    const bodega = await Bodega.findByPk(id);
+    if (!bodega) {
+      throw errors.app.bodega.not_found;
+    }
+
+    // Get all sucursales for this bodega
+    const sucursales = await Sucursal.findAll({
+      where: { bodegaId: id },
+      attributes: ['id'],
+    });
+    const sucursalIds = sucursales.map((s) => s.id);
+
+    // Execute all metrics calculations in parallel
+    const [
+      eventosActivos,
+      personalActivo,
+      puntuacionPromedio,
+      bodegasActivas,
+      tasaOcupacion,
+      ingresosMensuales,
+      historialIngresosMensuales,
+      eventosPorCategoria,
+      ocupacionSemanal,
+    ] = await Promise.all([
+      this.getEventosActivos(sucursalIds),
+      this.getPersonalActivo(id),
+      this.getPuntuacionPromedio(sucursalIds),
+      this.getBodegasActivas(sucursales.length),
+      this.getTasaOcupacion(sucursalIds),
+      this.getIngresosMensuales(sucursalIds),
+      this.getHistorialIngresosMensuales(sucursalIds),
+      this.getEventosPorCategoria(sucursalIds),
+      this.getOcupacionSemanal(sucursalIds),
+    ]);
+
+    return {
+      eventosActivos,
+      personalActivo,
+      puntuacionPromedio,
+      bodegasActivas,
+      tasaOcupacion,
+      ingresosMensuales,
+      historialIngresosMensuales,
+      eventosPorCategoria,
+      ocupacionSemanal,
+    };
+  }
+
+  private async getEventosActivos(sucursalIds: number[]): Promise<number> {
+    return await Evento.count({
+      where: {
+        sucursalId: {
+          [Op.in]: sucursalIds,
+        },
+      },
+      include: [
+        {
+          model: EstadoEvento,
+          as: 'estado',
+          where: {
+            nombre: EstadoEventoEnum.ACTIVO,
+          },
+          required: true,
+        },
+      ],
+    });
+  }
+
+  private async getPersonalActivo(bodegaId: number): Promise<number> {
+    const personalActivo = await usersService.findAllByBodega(bodegaId);
+    return personalActivo.length;
+  }
+
+  private async getPuntuacionPromedio(sucursalIds: number[]): Promise<number> {
+    const valoracionesMedias = await ValoracionMedia.findAll({
+      include: [
+        {
+          model: Evento,
+          as: 'evento',
+          where: {
+            sucursalId: {
+              [Op.in]: sucursalIds,
+            },
+          },
+          required: true,
+        },
+      ],
+    });
+
+    const puntuacionPromedio =
+      valoracionesMedias.length > 0
+        ? valoracionesMedias.reduce(
+            (sum, vm) => sum + Number(vm.valor_medio),
+            0,
+          ) / valoracionesMedias.length
+        : 0;
+
+    return Math.round(puntuacionPromedio * 100) / 100; // Round to 2 decimal places
+  }
+
+  private async getBodegasActivas(sucursalesCount: number): Promise<number> {
+    return sucursalesCount;
+  }
+
+  private async getTasaOcupacion(sucursalIds: number[]): Promise<number> {
+    const reservasConfirmadas = await Reserva.findAll({
+      include: [
+        {
+          model: EstadoReserva,
+          as: 'estados',
+          where: {
+            nombre: EstadoReservaEnum.CONFIRMADA,
+          },
+          required: true,
+        },
+        {
+          model: InstanciaEvento,
+          include: [
+            {
+              model: Evento,
+              where: {
+                sucursalId: {
+                  [Op.in]: sucursalIds,
+                },
+              },
+              required: true,
+            },
+          ],
+        },
+      ],
+    });
+
+    const totalOcupacionConfirmada = reservasConfirmadas.reduce(
+      (sum, reserva) => sum + reserva.cantidadGente,
+      0,
+    );
+
+    const totalCupoEventos = await Evento.sum('cupo', {
+      where: {
+        sucursalId: {
+          [Op.in]: sucursalIds,
+        },
+      },
+    });
+
+    const tasaOcupacion =
+      totalCupoEventos > 0
+        ? (totalOcupacionConfirmada / totalCupoEventos) * 100
+        : 0;
+
+    return Math.round(tasaOcupacion * 100) / 100; // Round to 2 decimal places
+  }
+
+  private async getIngresosMensuales(sucursalIds: number[]): Promise<number> {
+    // Get current month start and end dates using dayjs
+    const startOfMonth = dayjs().startOf('month').toDate();
+    const endOfMonth = dayjs().endOf('month').toDate();
+
+    const reservasConfirmadas = await Reserva.findAll({
+      where: {
+        // @ts-expect-error - Database column name is created_at
+        created_at: {
+          [Op.between]: [startOfMonth, endOfMonth],
+        },
+      },
+      include: [
+        {
+          model: EstadoReserva,
+          as: 'estados',
+          where: {
+            nombre: EstadoReservaEnum.CONFIRMADA,
+          },
+          required: true,
+        },
+        {
+          model: InstanciaEvento,
+          include: [
+            {
+              model: Evento,
+              where: {
+                sucursalId: {
+                  [Op.in]: sucursalIds,
+                },
+              },
+              required: true,
+            },
+          ],
+        },
+      ],
+    });
+
+    // Calculate total revenue: cantidadGente * precio for each confirmed reservation
+    const ingresosMensuales = reservasConfirmadas.reduce(
+      (sum, reserva) => sum + reserva.cantidadGente * Number(reserva.precio),
+      0,
+    );
+
+    return Math.round(ingresosMensuales * 100) / 100; // Round to 2 decimal places
+  }
+
+  private async getHistorialIngresosMensuales(
+    sucursalIds: number[],
+  ): Promise<IngresoMensual[]> {
+    const historial: IngresoMensual[] = [];
+
+    // Set Spanish locale for month names
+    dayjs.locale('es');
+
+    // Get the last 5 months using dayjs
+    for (let i = 4; i >= 0; i--) {
+      const targetDate = dayjs().subtract(i, 'month');
+      const startOfMonth = targetDate.startOf('month').toDate();
+      const endOfMonth = targetDate.endOf('month').toDate();
+
+      const reservasConfirmadas = await Reserva.findAll({
+        where: {
+          // @ts-expect-error - Database column name is created_at
+          created_at: {
+            [Op.between]: [startOfMonth, endOfMonth],
+          },
+        },
+        include: [
+          {
+            model: EstadoReserva,
+            as: 'estados',
+            where: {
+              nombre: EstadoReservaEnum.CONFIRMADA,
+            },
+            required: true,
+          },
+          {
+            model: InstanciaEvento,
+            include: [
+              {
+                model: Evento,
+                where: {
+                  sucursalId: {
+                    [Op.in]: sucursalIds,
+                  },
+                },
+                required: true,
+              },
+            ],
+          },
+        ],
+      });
+
+      const ingresosDelMes = reservasConfirmadas.reduce(
+        (sum, reserva) => sum + reserva.cantidadGente * Number(reserva.precio),
+        0,
+      );
+
+      historial.push({
+        month: targetDate.format('YYYY-MMMM'), // YYYY-MonthName format using dayjs
+        ingresos: ingresosDelMes,
+      });
+    }
+
+    return historial;
+  }
+
+  private async getEventosPorCategoria(
+    sucursalIds: number[],
+  ): Promise<EventoPorCategoria[]> {
+    const eventos = await Evento.findAll({
+      where: {
+        sucursalId: {
+          [Op.in]: sucursalIds,
+        },
+      },
+      include: [
+        {
+          model: CategoriaEvento,
+          as: 'categoria',
+          required: true,
+        },
+      ],
+    });
+
+    // Group events by category and count them
+    const eventosPorCategoriaMap = new Map<string, number>();
+
+    eventos.forEach((evento) => {
+      const categoriaNombre = evento.categoria?.nombre || 'Sin Categoría';
+      const currentCount = eventosPorCategoriaMap.get(categoriaNombre) || 0;
+      eventosPorCategoriaMap.set(categoriaNombre, currentCount + 1);
+    });
+
+    // Convert map to array
+    const eventosPorCategoria: EventoPorCategoria[] = Array.from(
+      eventosPorCategoriaMap.entries(),
+    ).map(([categoria, cantidad]) => ({
+      categoria,
+      cantidad,
+    }));
+
+    return eventosPorCategoria;
+  }
+
+  private async getOcupacionSemanal(
+    sucursalIds: number[],
+  ): Promise<OcupacionSemanal[]> {
+    const ocupacionSemanal: OcupacionSemanal[] = [];
+
+    // Set Spanish locale for day names
+    dayjs.locale('es');
+
+    // Get the next 7 days starting from today
+    for (let i = 0; i < 7; i++) {
+      const targetDate = dayjs().add(i, 'day');
+      const startOfDay = targetDate.startOf('day').toDate();
+      const endOfDay = targetDate.endOf('day').toDate();
+
+      const reservasConfirmadas = await Reserva.findAll({
+        where: {
+          // @ts-expect-error - Database column name is created_at
+          created_at: {
+            [Op.between]: [startOfDay, endOfDay],
+          },
+        },
+        include: [
+          {
+            model: EstadoReserva,
+            as: 'estados',
+            where: {
+              nombre: EstadoReservaEnum.CONFIRMADA,
+            },
+            required: true,
+          },
+          {
+            model: InstanciaEvento,
+            include: [
+              {
+                model: Evento,
+                where: {
+                  sucursalId: {
+                    [Op.in]: sucursalIds,
+                  },
+                },
+                required: true,
+              },
+            ],
+          },
+        ],
+      });
+
+      ocupacionSemanal.push({
+        dia: targetDate.format('dddd'), // Full day name in Spanish
+        fecha: targetDate.format('YYYY-MM-DD'), // Date in YYYY-MM-DD format
+        reservasConfirmadas: reservasConfirmadas.length,
+      });
+    }
+
+    return ocupacionSemanal;
   }
 
   /**

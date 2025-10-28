@@ -39,3 +39,7 @@ export const findAllParamsSchema = paginationAndOrderSchema(
 export const validateBodegaSchema = z.object({
   es_valida: z.boolean(),
 });
+
+export const bodegaMetricsSchema = z.object({
+  id: z.coerce.number(),
+});

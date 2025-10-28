@@ -43,12 +43,11 @@ class InstanciaEventoService {
         {
           model: Evento,
           as: 'evento',
-          attributes: ['id', 'nombre', 'descripcion', 'precio', 'cupo'],
           include: [
             {
               model: Sucursal,
               as: 'sucursal',
-              attributes: ['id', 'nombre'],
+              required: true,
             },
           ],
         },

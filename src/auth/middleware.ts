@@ -28,6 +28,7 @@ export const authMiddleware = (
     }
     req.user = (decoded as unknown as JwtAuthPayload).user;
     req.bodegaId = (decoded as unknown as JwtAuthPayload).bodegaId;
+
     req.logger.debug(`Setting user context, ${req.user}`);
     // This context is used to log the user in the audit
     setContext('user', req.user);

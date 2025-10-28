@@ -17,3 +17,31 @@ export type UpdateBodegaDto = Partial<CreateBodegaDto>;
 export type FindAllParams = z.infer<typeof findAllParamsSchema>;
 
 export type ValidateBodegaDto = z.infer<typeof validateBodegaSchema>;
+
+export interface IngresoMensual {
+  month: string;
+  ingresos: number;
+}
+
+export interface EventoPorCategoria {
+  categoria: string;
+  cantidad: number;
+}
+
+export interface OcupacionSemanal {
+  dia: string;
+  fecha: string;
+  reservasConfirmadas: number;
+}
+
+export interface BodegaMetrics {
+  eventosActivos: number;
+  personalActivo: number;
+  puntuacionPromedio: number;
+  bodegasActivas: number;
+  tasaOcupacion: number;
+  ingresosMensuales: number;
+  historialIngresosMensuales: IngresoMensual[];
+  eventosPorCategoria: EventoPorCategoria[];
+  ocupacionSemanal: OcupacionSemanal[];
+}

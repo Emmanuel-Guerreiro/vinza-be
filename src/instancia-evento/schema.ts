@@ -115,6 +115,10 @@ export const findAllParamsSchema = paginationAndOrderSchema(
       .number()
       .min(0, 'El precio mínimo debe ser un número mayor o igual a 0')
       .optional(),
+    bodegaId: z.coerce
+      .number()
+      .positive('El ID de la bodega debe ser un número positivo')
+      .optional(),
   })
   .refine(
     (data) => {
