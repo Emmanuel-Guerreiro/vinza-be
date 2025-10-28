@@ -18,11 +18,14 @@ export interface ReservaAttributes {
   recorridoId: number;
   estados?: EstadoReserva[];
   instanciaEvento: InstanciaEvento;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export type ReservaCreationAttributes = Omit<
   ReservaAttributes,
-  'id' | 'instanciaEvento'
+  'id' | 'instanciaEvento' | 'createdAt' | 'updatedAt' | 'deletedAt'
 >;
 @Table({
   tableName: 'reservas',

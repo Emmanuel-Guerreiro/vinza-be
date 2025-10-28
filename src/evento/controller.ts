@@ -5,6 +5,8 @@ import {
   updateEventoSchema,
 } from './schema';
 import { IEventoService } from './service';
+import { instanciaEventoService } from '@/instancia-evento/service';
+import { findAllParamsSchema as instanciaEventoFindAllParamsSchema } from '@/instancia-evento/schema';
 
 export class EventoController {
   readonly eventoService;
@@ -24,6 +26,7 @@ export class EventoController {
     this.getAllByBodega = this.getAllByBodega.bind(this);
     this.obtenerReservasInstancia = this.obtenerReservasInstancia.bind(this);
     this.canDelete = this.canDelete.bind(this);
+    this.getInstanciasEventos = this.getInstanciasEventos.bind(this);
   }
 
   public getAll(req: Request, res: Response) {
@@ -174,5 +177,22 @@ export class EventoController {
       .canDelete(+req.params.id)
       .then((data) => res.json(data))
       .catch((err) => next(err));
+  }
+
+  public getInstanciasEventos(req: Request, res: Response, next: NextFunction) {
+    try {
+      const query = instanciaEventoFindAllParamsSchema.parse({
+        ...req.query,
+        bodegaId: req.bodegaId,
+      });
+      // Add bodegaId filter if user is authenticated and has bodegaId
+
+      instanciaEventoService
+        .findAll(query)
+        .then((data) => res.json(data))
+        .catch((err) => next(err));
+    } catch (err) {
+      next(err);
+    }
   }
 }

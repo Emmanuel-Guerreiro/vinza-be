@@ -255,6 +255,107 @@ router.post(
   controller.validate,
 );
 
+/**
+ * @openapi
+ * /bodegas/{id}/metrics:
+ *   get:
+ *     summary: Get bodega metrics
+ *     tags:
+ *       - Bodegas
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the bodega
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Bodega metrics retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 eventosActivos:
+ *                   type: integer
+ *                   description: Number of active events
+ *                   example: 15
+ *                 personalActivo:
+ *                   type: integer
+ *                   description: Number of active users in the organization
+ *                   example: 8
+ *                 puntuacionPromedio:
+ *                   type: number
+ *                   description: Average rating of all events in the bodega
+ *                   example: 4.2
+ *                 bodegasActivas:
+ *                   type: integer
+ *                   description: Number of active sucursales
+ *                   example: 3
+ *                 tasaOcupacion:
+ *                   type: number
+ *                   description: Occupation rate percentage
+ *                   example: 75.5
+ *                 ingresosMensuales:
+ *                   type: number
+ *                   description: Monthly revenue from confirmed reservations
+ *                   example: 12500.75
+ *                 historialIngresosMensuales:
+ *                   type: array
+ *                   description: Last 5 months revenue history
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       month:
+ *                         type: string
+ *                         description: Month in YYYY-MonthName format (Spanish)
+ *                         example: "2024-enero"
+ *                       ingresos:
+ *                         type: number
+ *                         description: Revenue for that month
+ *                         example: 8500.25
+ *                 eventosPorCategoria:
+ *                   type: array
+ *                   description: Number of events per category
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       categoria:
+ *                         type: string
+ *                         description: Category name
+ *                         example: "Degustación de Vinos"
+ *                       cantidad:
+ *                         type: integer
+ *                         description: Number of events in this category
+ *                         example: 5
+ *                 ocupacionSemanal:
+ *                   type: array
+ *                   description: Weekly occupation for the next 7 days (including today)
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       dia:
+ *                         type: string
+ *                         description: Day name in Spanish
+ *                         example: "lunes"
+ *                       fecha:
+ *                         type: string
+ *                         description: Date in YYYY-MM-DD format
+ *                         example: "2024-12-16"
+ *                       reservasConfirmadas:
+ *                         type: integer
+ *                         description: Number of confirmed reservations for this day
+ *                         example: 8
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Bodega not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/:id/metrics', controller.getMetrics);
+
 logger.debug('Bodega router initialized');
 
 export default router;

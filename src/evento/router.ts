@@ -48,6 +48,106 @@ const upload = multer({
 
 /**
  * @openapi
+ * /eventos/instancias-eventos:
+ *   get:
+ *     summary: Get all event instances with filtering options
+ *     tags:
+ *       - Eventos
+ *     parameters:
+ *       - name: eventoId
+ *         in: query
+ *         description: Filter by specific evento ID
+ *         schema:
+ *           type: integer
+ *       - name: recurrenciaEventoId
+ *         in: query
+ *         description: Filter by specific recurrence ID
+ *         schema:
+ *           type: integer
+ *       - name: estadoId
+ *         in: query
+ *         description: Filter by instance state ID
+ *         schema:
+ *           type: integer
+ *       - name: fechaDesde
+ *         in: query
+ *         description: Filter instances from this date
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: fechaHasta
+ *         in: query
+ *         description: Filter instances until this date
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: bodegaId
+ *         in: query
+ *         description: Filter by bodega ID (automatically set for authenticated users)
+ *         schema:
+ *           type: integer
+ *       - name: sucursalId
+ *         in: query
+ *         description: Filter by sucursal ID
+ *         schema:
+ *           type: integer
+ *       - name: categoriaEventoId
+ *         in: query
+ *         description: Filter by event category ID
+ *         schema:
+ *           type: integer
+ *       - name: precioMinimo
+ *         in: query
+ *         description: Filter by minimum price
+ *         schema:
+ *           type: number
+ *       - name: precioMaximo
+ *         in: query
+ *         description: Filter by maximum price
+ *         schema:
+ *           type: number
+ *       - name: page
+ *         in: query
+ *         description: Page number for pagination
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         description: Number of items per page
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *       - name: orderBy
+ *         in: query
+ *         description: Field to order by
+ *         schema:
+ *           type: string
+ *           enum: [id, fecha, eventoId, recurrenciaEventoId, estadoId, created_at, updated_at, deleted_at]
+ *       - name: orderDirection
+ *         in: query
+ *         description: Order direction
+ *         schema:
+ *           type: string
+ *           enum: [ASC, DESC]
+ *           default: ASC
+ *     responses:
+ *       200:
+ *         description: Success
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/instancias',
+  authMiddleware,
+  requirePermissions([Permissions.EVENTOS_READ]),
+  controller.getInstanciasEventos,
+);
+
+/**
+ * @openapi
  * /eventos:
  *   get:
  *     summary: Get all eventos
