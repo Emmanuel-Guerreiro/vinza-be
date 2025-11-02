@@ -457,6 +457,68 @@ router.delete(
   controller.delete,
 );
 
+/**
+ * @openapi
+ * /users/{id}/pause:
+ *   security:
+ *     - bearerAuth: []
+ *   post:
+ *     summary: Pause a user
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the user
+ *     responses:
+ *       200:
+ *         description: User paused successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post(
+  '/:id/pause',
+  authMiddleware,
+  requirePermissions([Permissions.USERS_MANAGE]),
+  controller.pause,
+);
+
+/**
+ * @openapi
+ * /users/{id}/unpause:
+ *   security:
+ *     - bearerAuth: []
+ *   post:
+ *     summary: Unpause a user
+ *     tags:
+ *       - Users
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the user
+ *     responses:
+ *       200:
+ *         description: User unpaused successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post(
+  '/:id/unpause',
+  authMiddleware,
+  requirePermissions([Permissions.USERS_MANAGE]),
+  controller.unpause,
+);
+
 logger.debug('Users router initialized');
 
 export default router;

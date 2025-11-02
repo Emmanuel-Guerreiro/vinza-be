@@ -10,6 +10,7 @@ export class RolesController {
     this.findOne = this.findOne.bind(this);
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
+    this.canDelete = this.canDelete.bind(this);
   }
 
   public async create(req: Request, res: Response, next: NextFunction) {
@@ -62,6 +63,13 @@ export class RolesController {
     this.rolesService
       .delete(+id)
       .then((role) => res.json(role))
+      .catch((error) => next(error));
+  }
+
+  public canDelete(req: Request, res: Response, next: NextFunction) {
+    this.rolesService
+      .canDelete(+req.params.id)
+      .then((canDelete) => res.json({ canDelete }))
       .catch((error) => next(error));
   }
 }

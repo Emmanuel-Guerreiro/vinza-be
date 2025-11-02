@@ -4,6 +4,7 @@ import { CreateSucursalDto, UpdateSucursalDto } from './types';
 import { sequelize } from '@/db';
 import { auditEmitter } from '@/audit/event';
 import { Transaction } from 'sequelize';
+import { Evento } from '@/evento/model';
 
 class SucursalService {
   public async create(dto: CreateSucursalDto, transaction?: Transaction) {
@@ -93,12 +94,36 @@ class SucursalService {
   public async delete(id: number) {
     const sucursal = await Sucursal.findByPk(id);
     if (!sucursal) throw errors.app.sucursal.not_found;
+
+    if (sucursal.es_principal) {
+      throw errors.app.sucursal.cannot_delete_principal;
+    }
+
+    const sucursalesCount = await Sucursal.count({
+      where: { bodegaId: sucursal.bodegaId },
+    });
+
+    if (sucursalesCount === 1) {
+      throw errors.app.sucursal.cannot_delete_only_sucursal;
+    }
+
     await sucursal.destroy();
     auditEmitter.emitEntry({
       tipoEvento: 'sucursal:delete',
       valor: sucursal.dataValues,
     });
     return sucursal;
+  }
+
+  public async canDelete(id: number) {
+    const sucursal = await Sucursal.findByPk(id);
+    if (!sucursal) throw errors.app.sucursal.not_found;
+
+    const eventosWithSucursal = await Evento.count({
+      where: { sucursalId: id },
+    });
+
+    return eventosWithSucursal === 0;
   }
 }
 
