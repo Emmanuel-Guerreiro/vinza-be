@@ -636,7 +636,7 @@ router.post(
  *       500:
  *         description: Internal server error
  */
-router.put(
+router.post(
   '/:id',
   authMiddleware,
   requirePermissions([Permissions.EVENTOS_MANAGE]),

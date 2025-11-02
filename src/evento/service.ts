@@ -34,6 +34,7 @@ import { Valoracion, ValoracionMedia } from '@/valoracion/model';
 import { valoracionService } from '@/valoracion/service';
 import { multimediaService } from '@/multimedia/service';
 import { MultimediaEventos } from '@/multimedia/model';
+import { EstadoInstanciaEventoEnum } from '@/estado-instancia-evento/enum';
 
 class EventoService {
   public async createWithMultimedia(
@@ -330,7 +331,8 @@ class EventoService {
       if (!evento) throw errors.app.evento.not_found;
 
       // Validar datos del evento
-      await this.validateEventoData(dto, transaction);
+      await this.validateEventoData(dto, transaction, id);
+
       const {
         recurrencias,
         addMultimedia,
@@ -338,21 +340,39 @@ class EventoService {
         multimediaPortada,
         ...eventoData
       } = dto;
+      if (dto.estadoId !== undefined) {
+        const enumValues = Object.values(EstadoInstanciaEventoEnum);
+        const estadoNombre = enumValues[dto.estadoId - 1];
+
+        if (!estadoNombre) {
+          throw new Error(`Estado inválido: ${dto.estadoId}`);
+        }
+        const estado = await EstadoInstanciaEvento.findOne({
+          where: { nombre: estadoNombre },
+          transaction,
+        });
+
+        if (!estado) {
+          throw new Error(
+            `No se encontró el estado con nombre ${estadoNombre}`,
+          );
+        }
+
+        // Asignar el ID correcto
+        eventoData.estadoId = estado.id;
+      }
 
       if (recurrencias !== undefined) {
-        // Eliminar recurrencias existentes
         await RecurrenciaEvento.destroy({
           where: { eventoId: id },
           transaction,
         });
 
-        // Crear nuevas recurrencias si se proporcionan
         if (recurrencias.length > 0) {
           const recurrenciasData = recurrencias.map((recurrencia) => ({
             ...recurrencia,
             eventoId: id,
           }));
-
           await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
         }
       }
@@ -370,7 +390,6 @@ class EventoService {
       }
 
       await evento.update(eventoData, { transaction });
-
       await evento.reload({ transaction });
 
       await transaction.commit();
@@ -634,6 +653,7 @@ class EventoService {
   private async validateEventoData(
     dto: CreateEventoDto | UpdateEventoDto,
     transaction?: Transaction,
+    idToIgnore?: number, // 👈 nuevo parámetro opcional
   ) {
     // Validar que estadoId exista si se proporciona
     if (dto.estadoId) {
@@ -659,21 +679,18 @@ class EventoService {
       if (!sucursal) throw errors.app.sucursal.not_found;
     }
 
-    // Validar que no hayan 2 eventos activos con el mismo nombre en la misma bodega
+    // ✅ Validar que no existan 2 eventos activos con el mismo nombre en la misma bodega (ignorando el actual si se edita)
     if (dto.nombre && dto.sucursalId) {
       const existingEvento = await Evento.findOne({
         where: {
           nombre: dto.nombre,
           sucursalId: dto.sucursalId,
+          ...(idToIgnore ? { id: { [Op.ne]: idToIgnore } } : {}), // 👈 ignora el actual
         },
         include: [
           {
             model: Sucursal,
-            include: [
-              {
-                model: Bodega,
-              },
-            ],
+            include: [{ model: Bodega }],
           },
         ],
         transaction,
