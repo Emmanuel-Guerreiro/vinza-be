@@ -1,6 +1,7 @@
 import logger from '@/logger';
 import { CronJob } from 'cron';
 import { instanciaEventoService } from '@/instancia-evento/service';
+import { notificacionService } from '@/notificacion/service';
 
 const dailyMaintenanceJob = new CronJob(
   '0 2 * * *',
@@ -50,6 +51,32 @@ const generarInstanciasEventoJob = new CronJob(
   'America/Argentina/Buenos_Aires', // timezone de Argentina
 );
 
+const sendPunctuationNotificationsJob = new CronJob(
+  '*/5 * * * *', // Ejecutar cada 5 minutos
+  () => {
+    logger.info('Iniciando envío de notificaciones de puntuación');
+
+    notificacionService
+      .sendPunctuationNotifications()
+      .then((resultado) => {
+        if (resultado) {
+          logger.info(
+            `Notificaciones de puntuación enviadas. Total creadas: ${resultado.notificationsCreated}`,
+          );
+        } else {
+          logger.info('No se crearon nuevas notificaciones de puntuación');
+        }
+      })
+      .catch((error) => {
+        logger.error('Error en envío de notificaciones de puntuación:', error);
+        logger.error(error);
+      });
+  },
+  null, // onComplete callback
+  true, // start immediately
+  'America/Argentina/Buenos_Aires', // timezone de Argentina
+);
+
 // Función para inicializar todos los cron jobs
 export function initializeCronJobs() {
   logger.info('Inicializando cron jobs...');
@@ -57,7 +84,12 @@ export function initializeCronJobs() {
   // Iniciar los jobs
   dailyMaintenanceJob.start();
   generarInstanciasEventoJob.start();
+  sendPunctuationNotificationsJob.start();
   logger.info('Cron jobs inicializados correctamente');
 }
 
-export { dailyMaintenanceJob, generarInstanciasEventoJob };
+export {
+  dailyMaintenanceJob,
+  generarInstanciasEventoJob,
+  sendPunctuationNotificationsJob,
+};

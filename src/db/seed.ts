@@ -22,6 +22,8 @@ import { User } from '@/users/model';
 import { valoracionService } from '@/valoracion/service';
 import { faqService } from '@/faqs/service';
 import { FaqRecipientsEnum } from '@/faqs/enums';
+import { TipoNotificacion } from '@/notificacion/model';
+import { TipoNotificacionEnum } from '@/notificacion/enum';
 import { sequelize } from '.';
 // import { estadoReservaService } from '@/estado-reserva/service'; // Comentado temporalmente
 // import { EstadoReserva } from '@/estado-reserva/enum'; // Comentado temporalmente
@@ -104,6 +106,11 @@ async function seed() {
 
     // Create configuración de días máximos
     await maximosDiasAdelanteReservaService.patch({ valor: 30 });
+
+    // Create tipos de notificación
+    await TipoNotificacion.create({
+      nombre: TipoNotificacionEnum.PUNCTUATION,
+    });
 
     // ========================================
     // 2. CREAR PERMISOS Y ROLES

@@ -1,5 +1,6 @@
 import { EstadoReserva, HEstadoReserva } from '@/estado-reserva/model';
 import { InstanciaEvento } from '@/instancia-evento/model';
+import { Notificacion } from '@/notificacion/model';
 import { Recorrido } from '@/recorrido/model';
 import {
   BelongsTo,
@@ -7,6 +8,7 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
@@ -67,4 +69,7 @@ export class Reserva extends Model<
 
   @BelongsToMany(() => EstadoReserva, () => HEstadoReserva)
   estados!: EstadoReserva[];
+
+  @HasMany(() => Notificacion)
+  notificaciones!: Notificacion[];
 }

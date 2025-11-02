@@ -6,9 +6,11 @@ import {
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
+import { Notificacion } from '@/notificacion/model';
 
 export interface UserAttributes {
   id: number;
@@ -73,6 +75,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
 
   @BelongsTo(() => Bodega)
   bodega?: Bodega;
+
+  @HasMany(() => Notificacion)
+  notificaciones?: Notificacion[];
 }
 
 // Intermediate table for User-Rol relationship
