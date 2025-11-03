@@ -5,6 +5,7 @@ import {
   createEventoSchema,
   findAllParamsSchema,
   updateEventoSchema,
+  updateEventoWithMultimediaSchema,
 } from './schema';
 import { IEventoService } from './service';
 
@@ -17,6 +18,7 @@ export class EventoController {
     this.getOne = this.getOne.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
+    this.updateWithMultimedia = this.updateWithMultimedia.bind(this);
     this.delete = this.delete.bind(this);
     this.getInstanciasEvento = this.getInstanciasEvento.bind(this);
     this.generarInstanciasEvento = this.generarInstanciasEvento.bind(this);
@@ -68,16 +70,38 @@ export class EventoController {
         recurrencias: req.body.recurrencias
           ? JSON.parse(req.body.recurrencias)
           : undefined,
+      });
+      // Update the evento (core fields only)
+      const evento = await this.eventoService.update(+req.params.id, dto);
+      res.json(evento);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public async updateWithMultimedia(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const dto = updateEventoWithMultimediaSchema.parse({
+        ...req.body,
+        // Parse JSON fields from form data
+        recurrencias: req.body.recurrencias
+          ? JSON.parse(req.body.recurrencias)
+          : undefined,
         removeMultimedia: req.body.removeMultimedia
           ? JSON.parse(req.body.removeMultimedia)
           : undefined,
       });
       const files = req.files as Express.Multer.File[];
       // Update the evento
-      const evento = await this.eventoService.update(+req.params.id, {
-        ...dto,
-        addMultimedia: files ?? [],
-      });
+      const evento = await this.eventoService.updateWithMultimedia(
+        +req.params.id,
+        dto,
+        files ?? [],
+      );
       res.json(evento);
     } catch (err) {
       next(err);

@@ -101,6 +101,9 @@ export const updateEventoSchema = z.object({
     .array(recurrenciaSchema)
     .min(1, 'Debe proporcionar al menos una recurrencia para el evento')
     .optional(),
+});
+
+export const updateEventoWithMultimediaSchema = updateEventoSchema.extend({
   removeMultimedia: z.array(z.number()).optional(),
   multimediaPortada: z.string().optional(),
 });

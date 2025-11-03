@@ -149,7 +149,8 @@ router.post(
  * @openapi
  * /bodegas/{id}:
  *   put:
- *     summary: Update a bodega
+ *     summary: Update a bodega with multimedia
+ *     description: Update an existing bodega with multimedia files. Supports form data with file uploads.
  *     tags:
  *       - Bodegas
  *     parameters:
@@ -160,7 +161,7 @@ router.post(
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -172,27 +173,36 @@ router.post(
  *                 type: string
  *                 description: Descripción de la bodega
  *                 example: "Bodega principal de almacenamiento"
- *               roles:
+ *               deleteMultimedia:
+ *                 type: string
+ *                 description: JSON string con array de IDs de multimedia a eliminar
+ *                 example: '[1, 2, 3]'
+ *               multimediaPortada:
+ *                 type: string
+ *                 description: Nombre del archivo multimedia que será la portada de la bodega
+ *                 example: "portada.jpg"
+ *               multimedia:
  *                 type: array
+ *                 description: Array de archivos multimedia (imágenes y videos) a agregar
  *                 items:
- *                   type: number
- *                 description: Los ids de los roles relacionados
- *                 example: [1]
- *               users:
- *                 type: array
- *                 items:
- *                   type: number
- *                 description: Los ids de los usuarios relacionados
- *                 example: [1,2]
+ *                   type: string
+ *                   format: binary
+ *                 maxItems: 10
  *     responses:
  *       200:
  *         description: Bodega updated successfully
  *       400:
- *         description: Bad request
+ *         description: Bad request - Invalid form data or file validation failed
+ *       413:
+ *         description: Payload too large - File size exceeds limit
  *       500:
  *         description: Internal server error
  */
-router.put('/:id', controller.update);
+router.put(
+  '/:id',
+  upload.array('multimedia', 10), // Handle up to 10 multimedia files
+  controller.updateWithMultimedia,
+);
 
 /**
  * @openapi

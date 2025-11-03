@@ -4,6 +4,7 @@ import {
   createBodegaWithMultimediaSchema,
   findAllParamsSchema,
   UpdateBodegaSchema,
+  updateBodegaWithMultimediaSchema,
   validateBodegaSchema,
   bodegaMetricsSchema,
 } from './schema';
@@ -17,6 +18,7 @@ export class BodegaController {
     this.getOne = this.getOne.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
+    this.updateWithMultimedia = this.updateWithMultimedia.bind(this);
     this.delete = this.delete.bind(this);
     this.validate = this.validate.bind(this);
     this.getMetrics = this.getMetrics.bind(this);
@@ -67,6 +69,32 @@ export class BodegaController {
           .then((data) => res.json(data)),
       )
       .catch((error) => next(error));
+  }
+
+  public async updateWithMultimedia(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const dto = updateBodegaWithMultimediaSchema.parse({
+        ...req.body,
+        // Parse JSON fields from form data
+        deleteMultimedia: req.body.deleteMultimedia
+          ? JSON.parse(req.body.deleteMultimedia)
+          : undefined,
+      });
+      const files = req.files as Express.Multer.File[];
+      // Update the bodega
+      const bodega = await this.bodegaService.updateWithMultimedia(
+        +req.params.id,
+        dto,
+        files ?? [],
+      );
+      res.json(bodega);
+    } catch (err) {
+      next(err);
+    }
   }
 
   public delete(req: Request, res: Response, next: NextFunction) {

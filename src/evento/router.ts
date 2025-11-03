@@ -646,7 +646,7 @@ router.put(
   requirePermissions([Permissions.EVENTOS_MANAGE]),
   eventoAuthMiddleware,
   upload.array('multimedia', 10), // Handle up to 10 multimedia files
-  controller.update,
+  controller.updateWithMultimedia,
 );
 
 /**

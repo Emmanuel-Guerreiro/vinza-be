@@ -15,6 +15,7 @@ import {
   CreateEventoWithMultimediaDto,
   FindAllParams,
   UpdateEventoDto,
+  UpdateEventoWithMultimediaDto,
 } from './types';
 import logger from '@/logger';
 import { PaginatedResponse } from '@/pagination/types';
@@ -71,7 +72,7 @@ class EventoService {
 
     try {
       // Validar datos del evento
-      await this.validateEventoData(dto, transaction);
+      await this.validateEventoData(dto, { isUpdate: false, transaction });
 
       // Validar que se proporcionen recurrencias (ahora son obligatorias)
       if (!dto.recurrencias || dto.recurrencias.length === 0) {
@@ -348,17 +349,72 @@ class EventoService {
   public async update(id: number, dto: UpdateEventoDto) {
     const transaction = await sequelize.transaction();
     try {
-      const evento = await Evento.findByPk(id);
+      const evento = await Evento.findByPk(id, { transaction });
       if (!evento) throw errors.app.evento.not_found;
 
       // Validar datos del evento
-      await this.validateEventoData(dto, transaction);
+      await this.validateEventoData(
+        { ...dto, id },
+        { isUpdate: true, transaction },
+      );
+      const { recurrencias, ...eventoData } = dto;
+
+      if (recurrencias !== undefined) {
+        // Eliminar recurrencias existentes
+        await RecurrenciaEvento.destroy({
+          where: { eventoId: id },
+          transaction,
+        });
+
+        // Crear nuevas recurrencias si se proporcionan
+        if (recurrencias.length > 0) {
+          const recurrenciasData = recurrencias.map((recurrencia) => ({
+            ...recurrencia,
+            eventoId: id,
+          }));
+
+          await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
+        }
+      }
+
+      await evento.update(eventoData, { transaction });
+
+      await evento.reload({ transaction });
+
+      await transaction.commit();
+
+      auditEmitter.emitEntry({
+        tipoEvento: 'evento:update',
+        valor: evento.dataValues,
+      });
+
+      return evento;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  public async updateWithMultimedia(
+    id: number,
+    dto: UpdateEventoWithMultimediaDto,
+    files: Express.Multer.File[],
+  ) {
+    const transaction = await sequelize.transaction();
+    try {
+      const evento = await Evento.findByPk(id, { transaction });
+      if (!evento) throw errors.app.evento.not_found;
+
+      // Validar datos del evento
+      await this.validateEventoData(
+        { ...dto, id },
+        { isUpdate: true, transaction },
+      );
       const {
         recurrencias,
-        addMultimedia,
         removeMultimedia,
         multimediaPortada,
-        ...eventoData
+        ...coreUpdateDto
       } = dto;
 
       if (recurrencias !== undefined) {
@@ -379,10 +435,18 @@ class EventoService {
         }
       }
 
-      if (addMultimedia || removeMultimedia || multimediaPortada) {
+      // Update core evento fields
+      await evento.update(coreUpdateDto, { transaction });
+
+      // Handle multimedia updates
+      if (
+        (removeMultimedia && removeMultimedia.length > 0) ||
+        (files && files.length > 0) ||
+        multimediaPortada
+      ) {
         await multimediaService.updateMultimediaForEvento(
           {
-            files: addMultimedia || [],
+            files: files ?? [],
             eventoId: id,
             portadaFileName: multimediaPortada,
             removeMultimediaIds: removeMultimedia,
@@ -390,8 +454,6 @@ class EventoService {
           transaction,
         );
       }
-
-      await evento.update(eventoData, { transaction });
 
       await evento.reload({ transaction });
 
@@ -663,9 +725,10 @@ class EventoService {
    * Valida los datos del evento (estadoId, categoriaId, sucursalId, nombre duplicado)
    */
   private async validateEventoData(
-    dto: CreateEventoDto | UpdateEventoDto,
-    transaction?: Transaction,
+    dto: CreateEventoDto | (UpdateEventoDto & { id?: number }),
+    options?: { isUpdate?: boolean; transaction?: Transaction },
   ) {
+    const { isUpdate, transaction } = options || {};
     // Validar que estadoId exista si se proporciona
     if (dto.estadoId) {
       const estadoEvento = await estadoEventoService.findOne(
@@ -710,7 +773,13 @@ class EventoService {
         transaction,
       });
 
-      if (existingEvento) {
+      if (
+        (existingEvento && !isUpdate) || // Si esta creando que no exista de antes
+        (isUpdate &&
+          existingEvento &&
+          'id' in dto &&
+          existingEvento.id !== dto.id) // Si esta actualizando que el que tiene el nombre sea otro evento
+      ) {
         throw errors.app.evento.nombre_duplicate;
       }
     }

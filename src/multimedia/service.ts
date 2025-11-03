@@ -139,6 +139,73 @@ export class MultimediaService {
       }
     }
   }
+
+  public async updateMultimediaForBodega(
+    {
+      files,
+      bodegaId,
+      portadaFileName,
+      removeMultimediaIds,
+    }: {
+      files: Express.Multer.File[];
+      bodegaId: number;
+      portadaFileName?: string | null;
+      removeMultimediaIds?: number[];
+    },
+    transaction?: Transaction,
+  ) {
+    // Remove multimedia files if specified
+    if (removeMultimediaIds && removeMultimediaIds.length > 0) {
+      await MultimediaBodegas.destroy({
+        where: {
+          id: { [Op.in]: removeMultimediaIds },
+          bodegaId,
+        },
+        transaction,
+      });
+    }
+
+    // Upload new multimedia files if provided
+    if (files && files.length > 0) {
+      await this.uploadMultipleFilesForBodega(
+        {
+          files,
+          bodegaId,
+          portadaFileName,
+        },
+        transaction,
+      );
+    }
+
+    // Update portada if specified and no new files uploaded
+    if (portadaFileName && (!files || files.length === 0)) {
+      // Find existing multimedia with the specified filename
+      const existingMultimedia = await MultimediaBodegas.findOne({
+        where: {
+          bodegaId,
+          url: { [Op.like]: `%${portadaFileName}%` },
+        },
+        transaction,
+      });
+
+      if (existingMultimedia) {
+        // Remove portada status from all multimedia for this bodega
+        await MultimediaBodegas.update(
+          { es_portada: null },
+          {
+            where: { bodegaId },
+            transaction,
+          },
+        );
+
+        // Set the specified multimedia as portada
+        await existingMultimedia.update(
+          { es_portada: new Date() },
+          { transaction },
+        );
+      }
+    }
+  }
 }
 
 export const multimediaService = new MultimediaService(storageService);
