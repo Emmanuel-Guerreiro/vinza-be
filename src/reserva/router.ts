@@ -275,5 +275,37 @@ router.delete(
   requirePermissions([Permissions.RESERVAS_MANAGE]),
   controller.delete,
 );
+
+/**
+ * @openapi
+ * /reserva/{id}/cancelar-forzado:
+ *   put:
+ *     summary: Forcefully cancel a reserva (admin only)
+ *     tags:
+ *       - Reservas
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID of the reserva to cancel forcefully
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Reserva canceled successfully
+ *       400:
+ *         description: Bad request
+ *       404:
+ *         description: Reserva not found or user does not have access to this reserva's bodega
+ *       500:
+ *         description: Internal server error
+ */
+router.put(
+  '/:id/cancelar-forzado',
+  authMiddleware,
+  requirePermissions([Permissions.RESERVAS_MANAGE]),
+  controller.cancelarForzado,
+);
+
 logger.debug('Reservas router initialized');
 export default router;

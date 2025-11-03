@@ -6,6 +6,7 @@ import {
   MailType,
   PasswordRecoveryEmail,
   AccountValidationEmail,
+  ReservaCanceladaForzadoEmail,
   MailerSendVariables,
 } from './types';
 import config from '@/config';
@@ -71,6 +72,21 @@ class Mailer {
           html = fs
             .readFileSync(templatePath, 'utf8')
             .replace('{{code}}', code);
+          break;
+        }
+        case MailType.RESERVA_CANCELADA_FORZADO: {
+          const { eventoNombre, fecha } =
+            variables.data as unknown as ReservaCanceladaForzadoEmail;
+          subject = 'Reserva Cancelada';
+          const templatePath = path.join(
+            __dirname,
+            'emails',
+            'reserva-cancelada-forzado.html',
+          );
+          html = fs
+            .readFileSync(templatePath, 'utf8')
+            .replace('{{eventoNombre}}', eventoNombre)
+            .replace('{{fecha}}', fecha);
           break;
         }
         default:

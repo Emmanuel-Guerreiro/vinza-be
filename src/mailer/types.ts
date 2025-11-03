@@ -1,6 +1,7 @@
 export enum MailType {
   PASSWORD_RECOVERY = 'PASSWORD_RECOVERY',
   ACCOUNT_VALIDATION = 'ACCOUNT_VALIDATION',
+  RESERVA_CANCELADA_FORZADO = 'RESERVA_CANCELADA_FORZADO',
 }
 
 export interface PasswordRecoveryEmail {
@@ -11,6 +12,11 @@ export interface PasswordRecoveryEmail {
 export interface AccountValidationEmail {
   email: string;
   code: string;
+}
+
+export interface ReservaCanceladaForzadoEmail {
+  eventoNombre: string;
+  fecha: string;
 }
 
 export type MailerSendVariables<
