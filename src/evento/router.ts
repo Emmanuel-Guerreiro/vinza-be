@@ -495,6 +495,10 @@ router.get(
  *                 type: string
  *                 description: Precio del evento
  *                 example: "25.50"
+ *               esEventoUnico:
+ *                 type: boolean
+ *                 description: Indica si el evento es unico
+ *                 example: true
  *               recurrencias:
  *                 type: string
  *                 description: JSON string con array de recurrencias del evento mínimo 1 recurrencia

@@ -67,6 +67,45 @@ router.get('/mi-bodega', authMiddleware, controller.getAllByBodega);
 
 /**
  * @openapi
+ * /sucursales/{id}/can-delete:
+ *   security:
+ *     - bearerAuth: []
+ *   get:
+ *     summary: Check if a sucursal can be deleted
+ *     tags:
+ *       - Sucursales
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the sucursal
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 canDelete:
+ *                   type: boolean
+ *                   description: Whether the sucursal can be deleted
+ *       404:
+ *         description: Sucursal not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/:id/can-delete',
+  authMiddleware,
+  requirePermissions([Permissions.BODEGAS_MANAGE]),
+  controller.canDelete,
+);
+
+/**
+ * @openapi
  * /sucursales/{id}:
  *   get:
  *     summary: Get a sucursal by id
@@ -200,45 +239,6 @@ router.put('/:id', controller.update);
  *         description: Internal server error
  */
 router.delete('/:id', controller.delete);
-
-/**
- * @openapi
- * /sucursales/{id}/can-delete:
- *   security:
- *     - bearerAuth: []
- *   get:
- *     summary: Check if a sucursal can be deleted
- *     tags:
- *       - Sucursales
- *     parameters:
- *       - name: id
- *         in: path
- *         required: true
- *         description: The id of the sucursal
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Success
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 canDelete:
- *                   type: boolean
- *                   description: Whether the sucursal can be deleted
- *       404:
- *         description: Sucursal not found
- *       500:
- *         description: Internal server error
- */
-router.get(
-  '/:id/can-delete',
-  authMiddleware,
-  requirePermissions([Permissions.BODEGAS_MANAGE]),
-  controller.canDelete,
-);
 
 logger.debug('Sucursal router initialized');
 

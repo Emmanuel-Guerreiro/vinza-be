@@ -1,3 +1,5 @@
+import { findAllParamsSchema as instanciaEventoFindAllParamsSchema } from '@/instancia-evento/schema';
+import { instanciaEventoService } from '@/instancia-evento/service';
 import type { NextFunction, Request, Response } from 'express';
 import {
   createEventoSchema,
@@ -5,8 +7,6 @@ import {
   updateEventoSchema,
 } from './schema';
 import { IEventoService } from './service';
-import { instanciaEventoService } from '@/instancia-evento/service';
-import { findAllParamsSchema as instanciaEventoFindAllParamsSchema } from '@/instancia-evento/schema';
 
 export class EventoController {
   readonly eventoService;
@@ -102,21 +102,20 @@ export class EventoController {
     this.eventoService
       .generarInstanciasEvento(+req.params.id)
       .then((data) => {
-        if (!data) {
-          // Si no hay datos, responder con error
-          res.status(500).json({ error: 'No se pudo generar instancias' });
+        res.json(data);
+      })
+      .catch((err) => {
+        // Manejar error específico para eventos únicos
+        if (err instanceof Error && err.message.includes('eventos únicos')) {
+          res.status(400).json({
+            error:
+              'No se pueden generar instancias adicionales para eventos únicos',
+            message: err.message,
+          });
           return;
         }
-
-        // Si es un evento único, responder con 200 pero con mensaje informativo
-        if ('tipo' in data && data.tipo === 'evento_unico') {
-          res.status(200).json(data);
-        } else {
-          // Si se generaron instancias, responder normalmente
-          res.json(data);
-        }
-      })
-      .catch((err) => next(err));
+        next(err);
+      });
   }
 
   public suspenderInstanciaEvento(

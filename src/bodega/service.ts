@@ -148,7 +148,6 @@ class BodegaService {
     const where = this.generateWhereConditions(params);
     const order = generateOrderConditions(params);
     const { limit, offset } = generatePaginationParams(params);
-
     const [meta, items] = await Promise.all([
       this.getCountAndMetadata(params, where, limit),
       Bodega.findAll({

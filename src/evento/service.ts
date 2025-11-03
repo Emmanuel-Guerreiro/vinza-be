@@ -68,6 +68,7 @@ class EventoService {
   public async create(dto: CreateEventoDto, t?: Transaction) {
     const transaction = t || (await sequelize.transaction());
     const shouldCommit = !t; // Only commit if we created the transaction
+
     try {
       // Validar datos del evento
       await this.validateEventoData(dto, transaction);
@@ -79,27 +80,48 @@ class EventoService {
 
       const evento = await Evento.create(dto, { transaction });
 
-      // Crear las recurrencias obligatorias
-      const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
-        ...recurrencia,
-        eventoId: evento.id,
-      }));
-
-      await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
-
       await valoracionService.initializeValoracionMedia(evento.id, transaction);
 
       // Generar instancias automáticamente después de crear el evento
+      if (dto.eventoUnico) {
+        // Para eventos únicos: NO crear recurrencias en DB, solo crear instancias desde DTO
+        // Cada recurrencia del DTO tiene su propia fecha_unica
+        const recurrenciasParaInstancias = dto.recurrencias.map((rec) => ({
+          dia: rec.dia.toString(),
+          hora: rec.hora.toString(),
+          fecha_unica: rec.fecha_unica ?? null,
+        }));
 
-      await instanciaEventoService.generarInstanciasParaEvento(
-        {
+        await instanciaEventoService.generarInstanciasDesdeDtoRecurrencias(
+          {
+            eventoId: evento.id,
+            recurrencias: recurrenciasParaInstancias,
+          },
+          transaction,
+        );
+        logger.info(
+          `Instancias únicas generadas automáticamente para evento ${evento.id} desde DTO recurrencias`,
+        );
+      } else {
+        // Para eventos recurrentes: crear recurrencias en DB y luego generar instancias
+        const recurrenciasData = dto.recurrencias.map((recurrencia) => ({
+          ...recurrencia,
           eventoId: evento.id,
-        },
-        transaction,
-      );
-      logger.info(
-        `Instancias generadas automáticamente para evento ${evento.id}`,
-      );
+        }));
+
+        await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
+
+        // Generar múltiples instancias basadas en el patrón de recurrencia
+        await instanciaEventoService.generarInstanciasParaEventoRecurrente(
+          {
+            eventoId: evento.id,
+          },
+          transaction,
+        );
+        logger.info(
+          `Instancias recurrentes generadas automáticamente para evento ${evento.id}`,
+        );
+      }
 
       // Load all relations within the transaction before commit
       await evento.reload({
@@ -528,6 +550,7 @@ class EventoService {
 
   /**
    * Fuerza la generación de instancias para un evento específico
+   * Solo puede usarse para eventos recurrentes
    */
   public async generarInstanciasEvento(
     eventoId: number,
@@ -535,13 +558,21 @@ class EventoService {
     const evento = await this.findOne(eventoId);
     if (!evento) throw errors.app.evento.not_found;
 
+    // Verificar si es un evento único o recurrente
+    const esUnico = await instanciaEventoService.esEventoUnico(eventoId);
+
+    if (esUnico) {
+      throw new Error(
+        'No se pueden generar instancias adicionales para eventos únicos. Los eventos únicos solo tienen una instancia creada al momento de crear el evento.',
+      );
+    }
+
     // Verificar que el evento tenga recurrencias
     if (!evento.recurrencias || evento.recurrencias.length === 0) {
       throw errors.app.evento.recurrencias_required;
     }
 
-    // Llamar al servicio de instancia-evento para generar instancias del evento específico
-    return await instanciaEventoService.generarInstanciasParaEvento({
+    return await instanciaEventoService.generarInstanciasParaEventoRecurrente({
       eventoId,
     });
   }
