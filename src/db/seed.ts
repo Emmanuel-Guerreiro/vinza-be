@@ -39,19 +39,37 @@ async function seed() {
     // ========================================
 
     // Estados de recorrido
+    const estadoRecorridoDescriptions: Record<EstadoRecorridoEnum, string> = {
+      [EstadoRecorridoEnum.PENDIENTE]:
+        'El recorrido está pendiente de confirmación',
+      [EstadoRecorridoEnum.CONFIRMADO]: 'El recorrido está confirmado y activo',
+      [EstadoRecorridoEnum.CANCELADO]: 'El recorrido ha sido cancelado',
+    };
+
     await Promise.all(
       Object.values(EstadoRecorridoEnum).map((nombre) =>
         estadoRecorridoService.create({
           nombre,
+          descripcion: estadoRecorridoDescriptions[nombre],
         }),
       ),
     );
 
     // Create estados de evento
+    const estadoDescriptions: Record<EstadoEventoEnum, string> = {
+      [EstadoEventoEnum.ACTIVO]:
+        'El evento está activo y disponible para reservas',
+      [EstadoEventoEnum.SUSPENDIDO]:
+        'El evento está temporalmente suspendido y no disponible para reservas',
+      [EstadoEventoEnum.FINALIZADO]:
+        'El evento ha finalizado y ya no está disponible',
+    };
+
     await Promise.all(
       Object.values(EstadoEventoEnum).map(async (nombre) => {
         return await estadoEventoService.create({
           nombre,
+          descripcion: estadoDescriptions[nombre],
         });
       }),
     );
@@ -97,10 +115,23 @@ async function seed() {
     );
 
     // Create estados de instancia evento
+    const estadoInstanciaEventoDescriptions: Record<
+      EstadoInstanciaEventoEnum,
+      string
+    > = {
+      [EstadoInstanciaEventoEnum.ACTIVA]:
+        'La instancia del evento está activa y disponible para reservas',
+      [EstadoInstanciaEventoEnum.FINALIZADA]:
+        'La instancia del evento ha finalizado',
+      [EstadoInstanciaEventoEnum.SUSPENDIDA]:
+        'La instancia del evento está temporalmente suspendida',
+    };
+
     await Promise.all(
       Object.values(EstadoInstanciaEventoEnum).map(async (nombre) => {
         return await EstadoInstanciaEventoModel.create({
           nombre,
+          descripcion: estadoInstanciaEventoDescriptions[nombre],
         });
       }),
     );
@@ -814,10 +845,18 @@ async function seed() {
     // ========================================
 
     // Create all estado reserva - Comentado temporalmente
+    const estadoReservaDescriptions: Record<EstadoReservaEnum, string> = {
+      [EstadoReservaEnum.PENDIENTE]:
+        'La reserva está pendiente de confirmación',
+      [EstadoReservaEnum.CONFIRMADA]: 'La reserva está confirmada y activa',
+      [EstadoReservaEnum.CANCELADA]: 'La reserva ha sido cancelada',
+    };
+
     await Promise.all(
       Object.values(EstadoReservaEnum).map(async (nombre) => {
         return await estadoReservaService.create({
           nombre,
+          descripcion: estadoReservaDescriptions[nombre],
         });
       }),
     );

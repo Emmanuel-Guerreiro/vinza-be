@@ -11,6 +11,7 @@ import { Recorrido } from '../recorrido/model';
 export interface EstadoRecorridoAttributes {
   id: number;
   nombre: string;
+  descripcion: string;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
@@ -44,6 +45,9 @@ export class EstadoRecorrido extends Model<
     unique: true,
   })
   nombre!: string;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  descripcion!: string;
 
   @BelongsToMany(() => Recorrido, () => HEstadoRecorrido)
   recorridos!: Recorrido[];

@@ -15,6 +15,7 @@ import { EstadoInstanciaEventoEnum } from './enum';
 export interface EstadoInstanciaEventoAttributes {
   id: number;
   nombre: EstadoInstanciaEventoEnum | string;
+  descripcion: string;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
@@ -49,6 +50,9 @@ export class EstadoInstanciaEvento extends Model<
     unique: true,
   })
   nombre!: string;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  descripcion!: string;
 
   @CreatedAt
   @Column({ type: DataType.DATE })
