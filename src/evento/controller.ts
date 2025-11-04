@@ -1,12 +1,13 @@
+import { findAllParamsSchema as instanciaEventoFindAllParamsSchema } from '@/instancia-evento/schema';
+import { instanciaEventoService } from '@/instancia-evento/service';
 import type { NextFunction, Request, Response } from 'express';
 import {
   createEventoSchema,
   findAllParamsSchema,
   updateEventoSchema,
+  updateEventoWithMultimediaSchema,
 } from './schema';
 import { IEventoService } from './service';
-import { instanciaEventoService } from '@/instancia-evento/service';
-import { findAllParamsSchema as instanciaEventoFindAllParamsSchema } from '@/instancia-evento/schema';
 
 export class EventoController {
   readonly eventoService;
@@ -17,6 +18,7 @@ export class EventoController {
     this.getOne = this.getOne.bind(this);
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
+    this.updateWithMultimedia = this.updateWithMultimedia.bind(this);
     this.delete = this.delete.bind(this);
     this.getInstanciasEvento = this.getInstanciasEvento.bind(this);
     this.generarInstanciasEvento = this.generarInstanciasEvento.bind(this);
@@ -68,16 +70,38 @@ export class EventoController {
         recurrencias: req.body.recurrencias
           ? JSON.parse(req.body.recurrencias)
           : undefined,
+      });
+      // Update the evento (core fields only)
+      const evento = await this.eventoService.update(+req.params.id, dto);
+      res.json(evento);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  public async updateWithMultimedia(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const dto = updateEventoWithMultimediaSchema.parse({
+        ...req.body,
+        // Parse JSON fields from form data
+        recurrencias: req.body.recurrencias
+          ? JSON.parse(req.body.recurrencias)
+          : undefined,
         removeMultimedia: req.body.removeMultimedia
           ? JSON.parse(req.body.removeMultimedia)
           : undefined,
       });
       const files = req.files as Express.Multer.File[];
       // Update the evento
-      const evento = await this.eventoService.update(+req.params.id, {
-        ...dto,
-        addMultimedia: files ?? [],
-      });
+      const evento = await this.eventoService.updateWithMultimedia(
+        +req.params.id,
+        dto,
+        files ?? [],
+      );
       res.json(evento);
     } catch (err) {
       next(err);
@@ -102,21 +126,20 @@ export class EventoController {
     this.eventoService
       .generarInstanciasEvento(+req.params.id)
       .then((data) => {
-        if (!data) {
-          // Si no hay datos, responder con error
-          res.status(500).json({ error: 'No se pudo generar instancias' });
+        res.json(data);
+      })
+      .catch((err) => {
+        // Manejar error específico para eventos únicos
+        if (err instanceof Error && err.message.includes('eventos únicos')) {
+          res.status(400).json({
+            error:
+              'No se pueden generar instancias adicionales para eventos únicos',
+            message: err.message,
+          });
           return;
         }
-
-        // Si es un evento único, responder con 200 pero con mensaje informativo
-        if ('tipo' in data && data.tipo === 'evento_unico') {
-          res.status(200).json(data);
-        } else {
-          // Si se generaron instancias, responder normalmente
-          res.json(data);
-        }
-      })
-      .catch((err) => next(err));
+        next(err);
+      });
   }
 
   public suspenderInstanciaEvento(

@@ -26,3 +26,19 @@ export interface InstanciaEventoWithRelations extends InstanciaEvento {
 export interface FindAllRequest extends Request {
   query: FindAllParams;
 }
+
+export interface RecurrenciaDtoParaInstancia {
+  dia: string | number;
+  hora: string;
+  fecha_unica: Date | null;
+}
+
+export interface GenerarInstanciasDesdeDtoRecurrenciasDto {
+  eventoId: number;
+  recurrencias: RecurrenciaDtoParaInstancia[];
+}
+
+export interface GenerarInstanciasParaEventoRecurrenteDto {
+  eventoId: number;
+  diasMaximos?: number;
+}

@@ -8,6 +8,7 @@ import {
   CreateBodegaWithMultimediaDto,
   FindAllParams,
   UpdateBodegaDto,
+  UpdateBodegaWithMultimediaDto,
   ValidateBodegaDto,
   BodegaMetrics,
   IngresoMensual,
@@ -148,7 +149,6 @@ class BodegaService {
     const where = this.generateWhereConditions(params);
     const order = generateOrderConditions(params);
     const { limit, offset } = generatePaginationParams(params);
-
     const [meta, items] = await Promise.all([
       this.getCountAndMetadata(params, where, limit),
       Bodega.findAll({
@@ -205,6 +205,56 @@ class BodegaService {
         transaction,
         returning: true,
       });
+      await transaction.commit();
+
+      auditEmitter.emitEntry({
+        tipoEvento: 'bodega:update',
+        valor: updatedBodega.dataValues,
+      });
+      return updatedBodega;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  }
+
+  public async updateWithMultimedia(
+    id: number,
+    dto: UpdateBodegaWithMultimediaDto,
+    files: Express.Multer.File[],
+  ) {
+    const transaction = await sequelize.transaction();
+    try {
+      const bodega = await Bodega.findByPk(id, { transaction });
+      if (!bodega) {
+        throw errors.app.bodega.not_found;
+      }
+
+      const { deleteMultimedia, multimediaPortada, ...coreUpdateDto } = dto;
+
+      // Update core bodega fields
+      const updatedBodega = await bodega.update(coreUpdateDto, {
+        transaction,
+        returning: true,
+      });
+
+      // Handle multimedia updates
+      if (
+        (deleteMultimedia && deleteMultimedia.length > 0) ||
+        (files && files.length > 0) ||
+        multimediaPortada
+      ) {
+        await multimediaService.updateMultimediaForBodega(
+          {
+            files: files ?? [],
+            bodegaId: id,
+            portadaFileName: multimediaPortada,
+            removeMultimediaIds: deleteMultimedia,
+          },
+          transaction,
+        );
+      }
+
       await transaction.commit();
 
       auditEmitter.emitEntry({

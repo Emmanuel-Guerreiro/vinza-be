@@ -17,6 +17,7 @@ export class ReservaController {
     this.create = this.create.bind(this);
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
+    this.cancelarForzado = this.cancelarForzado.bind(this);
   }
 
   public getAll(req: Request, res: Response, next: NextFunction) {
@@ -77,6 +78,16 @@ export class ReservaController {
   public delete(req: Request, res: Response, next: NextFunction) {
     this.reservaService
       .delete(+req.params.id)
+      .then((data) => res.json(data))
+      .catch((err) => next(err));
+  }
+
+  public cancelarForzado(req: Request, res: Response, next: NextFunction) {
+    if (!req.bodegaId) {
+      return next(new Error('Bodega ID is required'));
+    }
+    this.reservaService
+      .cancelarForzado(+req.params.id, req.bodegaId)
       .then((data) => res.json(data))
       .catch((err) => next(err));
   }

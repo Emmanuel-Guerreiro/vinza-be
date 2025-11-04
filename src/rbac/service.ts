@@ -9,6 +9,7 @@ import {
 import { sequelize } from '@/db';
 import { Op } from 'sequelize';
 import { usersService } from '@/users/service';
+import { HRolUsuario } from '@/users/model';
 
 export class RolesService {
   public async create(dto: CreateRolDto) {
@@ -131,7 +132,29 @@ export class RolesService {
   }
 
   public async delete(id: number) {
+    const role = await Rol.findByPk(id);
+    if (!role) throw errors.app.user.roles_not_found;
+
+    const usersWithRole = await HRolUsuario.count({
+      where: { rolId: id },
+    });
+
+    if (usersWithRole > 0) {
+      throw errors.app.user.role_has_users;
+    }
+
     return Rol.destroy({ where: { id } });
+  }
+
+  public async canDelete(id: number) {
+    const role = await Rol.findByPk(id);
+    if (!role) throw errors.app.user.roles_not_found;
+
+    const usersWithRole = await HRolUsuario.count({
+      where: { rolId: id },
+    });
+
+    return usersWithRole === 0;
   }
 }
 

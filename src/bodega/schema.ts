@@ -6,6 +6,11 @@ export const UpdateBodegaSchema = z.object({
   descripcion: z.string().optional(),
 });
 
+export const updateBodegaWithMultimediaSchema = UpdateBodegaSchema.extend({
+  deleteMultimedia: z.array(z.number()).optional(),
+  multimediaPortada: z.string().optional(),
+});
+
 export const createBodegaSchema = z.object({
   nombre: z.string(),
   descripcion: z.string(),

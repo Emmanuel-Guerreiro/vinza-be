@@ -13,6 +13,7 @@ export class SucursalController {
     this.update = this.update.bind(this);
     this.delete = this.delete.bind(this);
     this.getAllByBodega = this.getAllByBodega.bind(this);
+    this.canDelete = this.canDelete.bind(this);
   }
 
   public getAll(_req: Request, res: Response, next: NextFunction) {
@@ -68,5 +69,12 @@ export class SucursalController {
     } else {
       res.json([]);
     }
+  }
+
+  public canDelete(req: Request, res: Response, next: NextFunction) {
+    this.sucursalService
+      .canDelete(+req.params.id)
+      .then((canDelete) => res.json({ canDelete }))
+      .catch((error) => next(error));
   }
 }

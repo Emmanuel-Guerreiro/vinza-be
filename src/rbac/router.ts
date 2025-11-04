@@ -223,6 +223,45 @@ router.delete(
 
 /**
  * @openapi
+ * /rbac/roles/{id}/can-delete:
+ *   security:
+ *     - bearerAuth: []
+ *   get:
+ *     summary: Check if a role can be deleted
+ *     tags:
+ *       - rbac
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the role
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 canDelete:
+ *                   type: boolean
+ *                   description: Whether the role can be deleted
+ *       404:
+ *         description: Role not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/roles/:id/can-delete',
+  authMiddleware,
+  requirePermissions([Permissions.ROLES_MANAGE]),
+  rolesController.canDelete,
+);
+
+/**
+ * @openapi
  * /rbac/permissions:
  *   get:
  *     summary: Get all permissions

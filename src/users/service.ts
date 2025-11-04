@@ -11,6 +11,7 @@ import { CreateUserDto, UpdateUserDto } from './types';
 class UsersService {
   public async create(dto: CreateUserDto) {
     const { roles, ...rest } = dto;
+
     const transaction = await sequelize.transaction();
     try {
       let user = await User.create(rest, { transaction });
@@ -137,11 +138,10 @@ class UsersService {
   }
 
   public async update(id: number, dto: UpdateUserDto) {
-    logger.info('ACA!!!', dto);
     const transaction = await sequelize.transaction();
     try {
       const { roles, ...rest } = dto;
-      logger.info('ACA2!!!', rest);
+
       // If roles are provided in dto, update the user's roles accordingly
       if (roles && roles.length > 0) {
         // Validate that all provided roles exist
@@ -182,7 +182,7 @@ class UsersService {
         // Remove roles from dto so they are not updated as a field
         delete dto.roles;
       }
-      logger.info('ACA2!!!');
+
       const [user] = (
         await User.update(rest, {
           where: { id },
@@ -215,6 +215,32 @@ class UsersService {
       valor: user.dataValues,
     });
     return user;
+  }
+
+  public async pause(id: number) {
+    const user = await User.findByPk(id);
+    if (!user) {
+      throw errors.app.user.not_found;
+    }
+    await user.update({ pausado: new Date() });
+    auditEmitter.emitEntry({
+      tipoEvento: 'user:update',
+      valor: user.dataValues,
+    });
+    return this.findOne(id);
+  }
+
+  public async unpause(id: number) {
+    const user = await User.findByPk(id);
+    if (!user) {
+      throw errors.app.user.not_found;
+    }
+    await user.update({ pausado: null });
+    auditEmitter.emitEntry({
+      tipoEvento: 'user:update',
+      valor: user.dataValues,
+    });
+    return this.findOne(id);
   }
 }
 

@@ -91,11 +91,23 @@
         "message_eng": "Roles not found",
         "status": 404
       },
+      "role_has_users": {
+        "key": "app.user.role_has_users",
+        "message": "No se puede eliminar el rol porque tiene usuarios asignados",
+        "message_eng": "Cannot delete role because it has users assigned",
+        "status": 400
+      },
       "permission_not_found": {
         "key": "app.user.permission_not_found",
         "message": "Permiso no encontrado",
         "message_eng": "Permission not found",
         "status": 404
+      },
+      "user_paused": {
+        "key": "app.user.user_paused",
+        "message": "El usuario está pausado",
+        "message_eng": "User is paused",
+        "status": 403
       }
     },
     "sucursal": {
@@ -104,6 +116,18 @@
         "message": "Sucursal no encontrada",
         "message_eng": "Sucursal not found",
         "status": 404
+      },
+      "cannot_delete_principal": {
+        "key": "app.sucursal.cannot_delete_principal",
+        "message": "No se puede eliminar la sucursal principal",
+        "message_eng": "Cannot delete principal sucursal",
+        "status": 400
+      },
+      "cannot_delete_only_sucursal": {
+        "key": "app.sucursal.cannot_delete_only_sucursal",
+        "message": "No se puede eliminar la única sucursal de la bodega",
+        "message_eng": "Cannot delete the only sucursal in the bodega",
+        "status": 400
       }
     },
     "bodega": {

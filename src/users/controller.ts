@@ -17,6 +17,8 @@ export class UsersController {
     this.delete = this.delete.bind(this);
     this.getMe = this.getMe.bind(this);
     this.updateMe = this.updateMe.bind(this);
+    this.pause = this.pause.bind(this);
+    this.unpause = this.unpause.bind(this);
   }
 
   public getAll(_req: Request, res: Response, next: NextFunction) {
@@ -85,6 +87,20 @@ export class UsersController {
     const dto = UpdateUserSchema.parse(req.body);
     this.usersService
       .update(req.user!, dto)
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
+  }
+
+  public pause(req: Request, res: Response, next: NextFunction) {
+    this.usersService
+      .pause(+req.params.id)
+      .then((data) => res.json(data))
+      .catch((error) => next(error));
+  }
+
+  public unpause(req: Request, res: Response, next: NextFunction) {
+    this.usersService
+      .unpause(+req.params.id)
       .then((data) => res.json(data))
       .catch((error) => next(error));
   }

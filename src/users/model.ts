@@ -21,6 +21,7 @@ export interface UserAttributes {
   roles: Rol[];
   bodegaId?: number;
   bodega?: Bodega;
+  pausado?: Date | null;
 }
 
 export interface UserCreationAttributes
@@ -28,6 +29,7 @@ export interface UserCreationAttributes
   roles?: Rol['id'][];
   bodegaId?: number;
   validado?: Date | null;
+  pausado?: Date | null;
 }
 
 @Table({
@@ -45,10 +47,10 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
   })
   id!: number;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false, defaultValue: '' })
   nombre!: string;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false, defaultValue: '' })
   apellido!: string;
 
   @Column({ type: DataType.STRING, allowNull: false, unique: true })
@@ -73,6 +75,9 @@ export class User extends Model<UserAttributes, UserCreationAttributes> {
 
   @BelongsTo(() => Bodega)
   bodega?: Bodega;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  pausado?: Date;
 }
 
 // Intermediate table for User-Rol relationship

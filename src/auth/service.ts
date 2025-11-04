@@ -33,8 +33,8 @@ export class AuthService {
     // Set user as not validated
     const hashed = await hashPassword(dto.password);
     const user = await usersService.create({
-      nombre: dto.name ?? dto.email,
-      apellido: dto.name ?? dto.email,
+      nombre: dto.name,
+      apellido: dto.name,
       email: dto.email,
       contrasena: hashed,
       validado: null,
@@ -71,6 +71,10 @@ export class AuthService {
     const user = await usersService.findOneByEmailWithBodega(dto.email);
     if (!user || !(await bcrypt.compare(dto.password, user.contrasena))) {
       throw errors.app.auth.non_valid_credentials;
+    }
+
+    if (user.pausado) {
+      throw errors.app.user.user_paused;
     }
 
     const token = this.generateAuthToken(user.dataValues);

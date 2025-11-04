@@ -19,7 +19,7 @@ export interface InstanciaEventoAttributes {
   id: number;
   fecha: Date;
   eventoId: number;
-  recurrenciaEventoId: number;
+  recurrenciaEventoId?: number;
   estadoId?: number;
   evento?: Evento;
   recurrenciaEvento?: RecurrenciaEvento;
@@ -61,8 +61,8 @@ export class InstanciaEvento extends Model<
   evento?: Evento;
 
   @ForeignKey(() => RecurrenciaEvento)
-  @Column({ type: DataType.INTEGER, allowNull: false })
-  recurrenciaEventoId!: number;
+  @Column({ type: DataType.INTEGER, allowNull: true })
+  recurrenciaEventoId?: number;
 
   @BelongsTo(() => RecurrenciaEvento)
   recurrenciaEvento?: RecurrenciaEvento;

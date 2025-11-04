@@ -2,6 +2,8 @@ import { Router } from 'express';
 import { SucursalController } from './controller';
 import { sucursalService } from './service';
 import { authMiddleware } from '@/auth/middleware';
+import { requirePermissions } from '@/rbac/middleware';
+import { Permissions } from '@/rbac/permissions';
 import logger from '@/logger';
 
 const controller = new SucursalController(sucursalService);
@@ -62,6 +64,45 @@ router.get('', controller.getAll);
  *         description: Internal server error
  */
 router.get('/mi-bodega', authMiddleware, controller.getAllByBodega);
+
+/**
+ * @openapi
+ * /sucursales/{id}/can-delete:
+ *   security:
+ *     - bearerAuth: []
+ *   get:
+ *     summary: Check if a sucursal can be deleted
+ *     tags:
+ *       - Sucursales
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: The id of the sucursal
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 canDelete:
+ *                   type: boolean
+ *                   description: Whether the sucursal can be deleted
+ *       404:
+ *         description: Sucursal not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/:id/can-delete',
+  authMiddleware,
+  requirePermissions([Permissions.BODEGAS_MANAGE]),
+  controller.canDelete,
+);
 
 /**
  * @openapi

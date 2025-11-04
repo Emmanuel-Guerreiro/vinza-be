@@ -7,6 +7,8 @@ import { estadoReservaService } from '@/estado-reserva/service';
 import { Evento } from '@/evento/model';
 import { eventoService } from '@/evento/service';
 import { InstanciaEvento } from '@/instancia-evento/model';
+import { mailer } from '@/mailer/service';
+import { MailType } from '@/mailer/types';
 import logger from '@/logger';
 import {
   generateOrderConditions,
@@ -235,6 +237,113 @@ class ReservaService {
     }
   }
 
+  public async cancelarForzado(id: number, userBodegaId: number) {
+    const transaction = await sequelize.transaction();
+    try {
+      const reserva = await Reserva.findByPk(id, {
+        transaction,
+        include: [
+          {
+            model: EstadoReserva,
+            as: 'estados',
+          },
+          {
+            model: InstanciaEvento,
+            as: 'instanciaEvento',
+            include: [
+              {
+                model: Evento,
+                as: 'evento',
+                include: [
+                  {
+                    model: Sucursal,
+                    as: 'sucursal',
+                    attributes: ['id', 'nombre', 'bodegaId'],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            model: Recorrido,
+            as: 'recorrido',
+            attributes: ['id'],
+            include: [
+              {
+                model: User,
+                as: 'user',
+                attributes: ['id', 'nombre', 'apellido', 'email'],
+              },
+            ],
+          },
+        ],
+      });
+
+      if (!reserva) throw errors.app.reserva.not_found;
+
+      if (
+        !reserva.instanciaEvento?.evento?.sucursal ||
+        reserva.instanciaEvento.evento.sucursal.bodegaId !== userBodegaId
+      ) {
+        throw errors.app.reserva.not_found;
+      }
+
+      if (reserva.estados?.[0].nombre === EstadoReservaEnum.CANCELADA) {
+        throw errors.app.reserva.invalid_state;
+      }
+
+      const estadoReserva = await estadoReservaService.findByName(
+        EstadoReservaEnum.CANCELADA,
+        transaction,
+      );
+      if (!estadoReserva) {
+        logger.error(
+          'Estado reserva not found en ReservaService.cancelarForzado',
+        );
+        throw errors.app.estado_reserva.estado_not_found;
+      }
+
+      await reserva.$set('estados', [estadoReserva.id], { transaction });
+
+      auditEmitter.emitEntry({
+        tipoEvento: 'reserva:delete',
+        valor: reserva.dataValues,
+      });
+
+      const evento = reserva.instanciaEvento?.evento;
+      const instanciaEvento = reserva.instanciaEvento;
+      const user = reserva.recorrido?.user;
+
+      if (evento && instanciaEvento && user?.email) {
+        const fecha = new Date(instanciaEvento.fecha).toLocaleDateString(
+          'es-ES',
+          {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          },
+        );
+
+        await mailer.send(MailType.RESERVA_CANCELADA_FORZADO, {
+          email: user.email,
+          data: {
+            eventoNombre: evento.nombre,
+            fecha,
+          },
+        });
+      }
+
+      await transaction.commit();
+      return reserva;
+    } catch (error) {
+      await transaction.rollback();
+      logger.error(
+        `Error canceling reserva forcefully: ${JSON.stringify(error)}`,
+      );
+      throw error;
+    }
+  }
+
   public async findAll(
     filter: ReservaFilterParams,
     bodegaId?: number,
@@ -368,6 +477,13 @@ class ReservaService {
             {
               model: Evento,
               as: 'evento',
+              include: [
+                {
+                  model: Sucursal,
+                  as: 'sucursal',
+                  attributes: ['id', 'nombre', 'bodegaId'],
+                },
+              ],
             },
           ],
         },

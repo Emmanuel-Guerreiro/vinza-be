@@ -13,6 +13,15 @@ const recurrenciaSchema = z
       required_error: 'La hora es requerida',
       invalid_type_error: 'La hora debe ser una hora válida',
     }),
+    fecha_unica: z.coerce
+      .date({
+        invalid_type_error: 'La fecha unica debe ser una fecha válida',
+      })
+      .transform((date) => {
+        return date || null;
+      })
+      .optional()
+      .nullable(),
     fecha_desde: z.coerce
       .date({
         invalid_type_error: 'La fecha desde debe ser una fecha válida',
@@ -62,6 +71,9 @@ export const createEventoSchema = z.object({
   recurrencias: z
     .array(recurrenciaSchema)
     .min(1, 'Debe proporcionar al menos una recurrencia para el evento'),
+  eventoUnico: z
+    .preprocess((val) => val === 'true' || val === true, z.boolean())
+    .optional(),
 });
 
 export const createEventoWithMultimediaSchema = createEventoSchema.extend({
@@ -89,6 +101,9 @@ export const updateEventoSchema = z.object({
     .array(recurrenciaSchema)
     .min(1, 'Debe proporcionar al menos una recurrencia para el evento')
     .optional(),
+});
+
+export const updateEventoWithMultimediaSchema = updateEventoSchema.extend({
   removeMultimedia: z.array(z.number()).optional(),
   multimediaPortada: z.string().optional(),
 });
