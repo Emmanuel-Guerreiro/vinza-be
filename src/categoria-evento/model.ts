@@ -14,6 +14,7 @@ import {
 export interface CategoriaEventoAttributes {
   id: number;
   nombre: string;
+  descripcion: string;
   created_at: string;
   updated_at: string;
   deleted_at?: string;
@@ -45,6 +46,9 @@ export class CategoriaEvento extends Model<
 
   @Column({ type: DataType.STRING, allowNull: false, unique: true })
   nombre!: string;
+
+  @Column({ type: DataType.STRING, allowNull: false })
+  descripcion!: string;
 
   @CreatedAt
   @Column({ type: DataType.DATE })

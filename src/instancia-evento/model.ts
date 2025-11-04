@@ -21,6 +21,7 @@ export interface InstanciaEventoAttributes {
   eventoId: number;
   recurrenciaEventoId?: number;
   estadoId?: number;
+
   evento?: Evento;
   recurrenciaEvento?: RecurrenciaEvento;
   estado?: EstadoInstanciaEvento;

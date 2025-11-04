@@ -346,52 +346,25 @@ class EventoService {
     return evento;
   }
 
-  public async update(id: number, dto: UpdateEventoDto) {
-    const transaction = await sequelize.transaction();
-    try {
-      const evento = await Evento.findByPk(id, { transaction });
-      if (!evento) throw errors.app.evento.not_found;
+  private async validateFechaHastaIsAfterLastEvent(
+    eventoId: number,
+    fechaHasta: Date,
+    transaction: Transaction,
+  ) {
+    const instanciasRelated = await InstanciaEvento.findAll({
+      where: {
+        eventoId,
+      },
+      order: [['fecha', 'DESC']],
+      transaction,
+    });
 
-      // Validar datos del evento
-      await this.validateEventoData(
-        { ...dto, id },
-        { isUpdate: true, transaction },
-      );
-      const { recurrencias, ...eventoData } = dto;
+    if (instanciasRelated.length === 0) {
+      throw errors.app.evento.instancias_not_found;
+    }
 
-      if (recurrencias !== undefined) {
-        // Eliminar recurrencias existentes
-        await RecurrenciaEvento.destroy({
-          where: { eventoId: id },
-          transaction,
-        });
-
-        // Crear nuevas recurrencias si se proporcionan
-        if (recurrencias.length > 0) {
-          const recurrenciasData = recurrencias.map((recurrencia) => ({
-            ...recurrencia,
-            eventoId: id,
-          }));
-
-          await RecurrenciaEvento.bulkCreate(recurrenciasData, { transaction });
-        }
-      }
-
-      await evento.update(eventoData, { transaction });
-
-      await evento.reload({ transaction });
-
-      await transaction.commit();
-
-      auditEmitter.emitEntry({
-        tipoEvento: 'evento:update',
-        valor: evento.dataValues,
-      });
-
-      return evento;
-    } catch (error) {
-      await transaction.rollback();
-      throw error;
+    if (instanciasRelated[0].fecha > fechaHasta) {
+      throw errors.app.evento.fecha_hasta_invalid;
     }
   }
 
@@ -414,10 +387,18 @@ class EventoService {
         recurrencias,
         removeMultimedia,
         multimediaPortada,
+
         ...coreUpdateDto
       } = dto;
 
       if (recurrencias !== undefined) {
+        if (recurrencias[0].fecha_hasta) {
+          await this.validateFechaHastaIsAfterLastEvent(
+            id,
+            recurrencias[0].fecha_hasta,
+            transaction,
+          );
+        }
         // Eliminar recurrencias existentes
         await RecurrenciaEvento.destroy({
           where: { eventoId: id },

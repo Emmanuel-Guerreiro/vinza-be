@@ -21,7 +21,7 @@ import {
   generatePaginationParams,
   generateOrderConditions,
 } from '@/pagination';
-import { Op, Transaction, WhereOptions } from 'sequelize';
+import { FindOptions, Op, Transaction, WhereOptions } from 'sequelize';
 import { Sucursal } from '@/sucursal/model';
 import { multimediaService } from '@/multimedia/service';
 import { MultimediaBodegas } from '@/multimedia/model';
@@ -149,23 +149,46 @@ class BodegaService {
     const where = this.generateWhereConditions(params);
     const order = generateOrderConditions(params);
     const { limit, offset } = generatePaginationParams(params);
+
+    const includes: FindOptions['include'] = [
+      {
+        model: MultimediaBodegas,
+        as: 'multimedia',
+      },
+
+      {
+        model: Sucursal,
+        as: 'sucursales',
+        include: [
+          {
+            model: Evento,
+            as: 'eventos',
+            required: true,
+            include: [
+              {
+                model: ValoracionMedia,
+                as: 'valoracionMedia',
+                where: {
+                  valor_medio: {
+                    [Op.gte]: params.puntuacion ?? 0,
+                  },
+                },
+                required: params.puntuacion ? true : undefined,
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
     const [meta, items] = await Promise.all([
-      this.getCountAndMetadata(params, where, limit),
+      this.getCountAndMetadata(params, where, limit, includes),
       Bodega.findAll({
         where,
         order,
         limit,
         offset,
-        include: [
-          {
-            model: MultimediaBodegas,
-            as: 'multimedia',
-          },
-          {
-            model: Sucursal,
-            as: 'sucursales',
-          },
-        ],
+        include: includes,
       }),
     ]);
 
@@ -671,9 +694,12 @@ class BodegaService {
     params: FindAllParams,
     where: WhereOptions,
     limit: number,
+    includes?: FindOptions['include'],
   ) {
     const totalItems = await Bodega.count({
       where,
+      include: includes,
+      distinct: true,
     });
 
     return {

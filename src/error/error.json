@@ -198,6 +198,18 @@
         "message": "No tienes permisos para crear eventos en esta sucursal",
         "message_eng": "You don't have permission to create events in this branch",
         "status": 403
+      },
+      "instancias_not_found": {
+        "key": "app.evento.instancias_not_found",
+        "message": "El evento no tiene instancias configuradas",
+        "message_eng": "Event has no instances configured",
+        "status": 404
+      },
+      "fecha_hasta_invalid": {
+        "key": "app.evento.fecha_hasta_invalid",
+        "message": "La fecha hasta no puede ser anterior a la fecha de la instancia más futura",
+        "message_eng": "The fecha hasta cannot be before the most future instance date",
+        "status": 400
       }
     },
 

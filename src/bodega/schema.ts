@@ -39,6 +39,7 @@ export const findAllParamsSchema = paginationAndOrderSchema(
   bodegaOrderByAttributes,
 ).extend({
   nombre: z.string().optional(),
+  puntuacion: z.coerce.number().int().min(1).max(5).optional(),
 });
 
 export const validateBodegaSchema = z.object({

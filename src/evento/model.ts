@@ -67,6 +67,7 @@ export interface EventoAttributes {
   descripcion: string;
   cupo: number;
   precio: number;
+  duracion: number;
   sucursalId: number;
   estadoId?: number;
   categoriaId?: number;
@@ -114,6 +115,9 @@ export class Evento extends Model<EventoAttributes, EventoCreationAttributes> {
 
   @Column({ type: DataType.DECIMAL(10, 2), allowNull: false })
   precio!: number;
+
+  @Column({ type: DataType.INTEGER, allowNull: false })
+  duracion!: number;
 
   @ForeignKey(() => Sucursal)
   @Column({ type: DataType.INTEGER, allowNull: false })
