@@ -7,7 +7,10 @@ import { auditEmitter } from '@/audit/event';
 
 class CategoriaEventoService {
   public async create(dto: CreateCategoriaEventoDto) {
-    const categoriaEvento = await CategoriaEvento.create(dto);
+    const categoriaEvento = await CategoriaEvento.create({
+      ...dto,
+      nombre: dto.nombre.trim(),
+    });
     auditEmitter.emitEntry({
       tipoEvento: 'categoria-evento:create',
       valor: categoriaEvento.dataValues,

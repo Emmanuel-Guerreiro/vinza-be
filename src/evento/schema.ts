@@ -68,6 +68,9 @@ export const createEventoSchema = z.object({
   estadoId: z.coerce.number().optional(),
   categoriaId: z.coerce.number().optional(),
   precio: z.coerce.number().positive('El precio debe ser un número mayor a 0'),
+  duracion: z.coerce
+    .number()
+    .positive('La duración debe ser un número mayor a 0'),
   recurrencias: z
     .array(recurrenciaSchema)
     .min(1, 'Debe proporcionar al menos una recurrencia para el evento'),
@@ -96,6 +99,10 @@ export const updateEventoSchema = z.object({
   precio: z.coerce
     .number()
     .positive('El precio debe ser un número mayor a 0')
+    .optional(),
+  duracion: z.coerce
+    .number()
+    .positive('La duración debe ser un número mayor a 0')
     .optional(),
   recurrencias: z
     .array(recurrenciaSchema)

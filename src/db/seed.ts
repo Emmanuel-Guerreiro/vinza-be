@@ -94,6 +94,34 @@ async function seed() {
     }
 
     // Create categorías de evento
+    const categoriaData = [
+      {
+        nombre: 'Degustación de Vinos',
+        descripcion:
+          'Eventos centrados en la degustación y evaluación sensorial de diferentes vinos',
+      },
+      {
+        nombre: 'Gastronomía y Maridaje',
+        descripcion:
+          'Eventos que combinan comida y vinos, enseñando el arte del maridaje',
+      },
+      {
+        nombre: 'Educación Enológica',
+        descripcion:
+          'Talleres y cursos educativos sobre viticultura, vinificación y enología',
+      },
+      {
+        nombre: 'Entretenimiento y Eventos',
+        descripcion:
+          'Eventos recreativos y de entretenimiento relacionados con el mundo del vino',
+      },
+      {
+        nombre: 'Bienestar y Salud',
+        descripcion:
+          'Eventos enfocados en el bienestar y aspectos saludables del consumo de vino',
+      },
+    ];
+
     const [
       categoriaDegustacion,
       categoriaGastronomia,
@@ -101,16 +129,8 @@ async function seed() {
       categoriaEntretenimiento,
       categoriaBienestar,
     ] = await Promise.all(
-      [
-        'Degustación de Vinos',
-        'Gastronomía y Maridaje',
-        'Educación Enológica',
-        'Entretenimiento y Eventos',
-        'Bienestar y Salud',
-      ].map(async (nombre) => {
-        return await categoriaEventoService.create({
-          nombre,
-        });
+      categoriaData.map(async (data) => {
+        return await categoriaEventoService.create(data);
       }),
     );
 
@@ -433,6 +453,16 @@ async function seed() {
     });
     await adminSistema.$set('roles', [adminSistemaRole.id]);
 
+    // Create validated user with email user@app.com
+    const userAppPassword = await hashPassword('user123');
+    await User.create({
+      nombre: 'User',
+      apellido: 'App',
+      email: 'user@app.com',
+      contrasena: userAppPassword,
+      validado: new Date(),
+    });
+
     // ========================================
     // 5.1 CREAR USUARIOS PARA CADA BODEGA
     // ========================================
@@ -488,6 +518,7 @@ async function seed() {
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaBienestar.id,
       precio: 25000,
+      duracion: 2,
       recurrencias: [
         {
           dia: DiaSemana.LUNES,
@@ -521,6 +552,7 @@ async function seed() {
       estadoId: suspendidoEstadoEvento.id,
       categoriaId: categoriaGastronomia.id,
       precio: 35000,
+      duracion: 3,
       recurrencias: [
         {
           dia: DiaSemana.SABADO,
@@ -548,6 +580,7 @@ async function seed() {
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEducacion.id,
       precio: 10000,
+      duracion: 2,
       recurrencias: [
         {
           dia: DiaSemana.MARTES,
@@ -586,6 +619,7 @@ async function seed() {
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
       precio: 10000,
+      duracion: 2,
       recurrencias: [
         {
           dia: DiaSemana.VIERNES,
@@ -605,6 +639,7 @@ async function seed() {
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaDegustacion.id,
       precio: 12000,
+      duracion: 2,
       recurrencias: [
         {
           dia: DiaSemana.SABADO,
@@ -625,6 +660,7 @@ async function seed() {
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaGastronomia.id,
       precio: 12000,
+      duracion: 4,
       recurrencias: [
         {
           dia: DiaSemana.DOMINGO,
@@ -645,6 +681,7 @@ async function seed() {
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaGastronomia.id,
       precio: 17000,
+      duracion: 3,
       recurrencias: [
         {
           dia: DiaSemana.MIERCOLES,
@@ -672,6 +709,7 @@ async function seed() {
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
       precio: 3500,
+      duracion: 2,
       recurrencias: [
         {
           dia: DiaSemana.VIERNES,
@@ -692,6 +730,7 @@ async function seed() {
       estadoId: suspendidoEstadoEvento.id,
       categoriaId: categoriaEducacion.id,
       precio: 28000,
+      duracion: 2,
       recurrencias: [
         {
           dia: DiaSemana.JUEVES,
@@ -712,6 +751,7 @@ async function seed() {
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaGastronomia.id,
       precio: 28000,
+      duracion: 2,
       recurrencias: [
         {
           dia: DiaSemana.MARTES,
@@ -738,6 +778,7 @@ async function seed() {
       estadoId: finalizadoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
       precio: 20000,
+      duracion: 3,
       recurrencias: [
         {
           dia: DiaSemana.VIERNES,
@@ -758,6 +799,7 @@ async function seed() {
       estadoId: finalizadoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
       precio: 150000,
+      duracion: 4,
       recurrencias: [
         {
           dia: DiaSemana.SABADO,
@@ -1184,6 +1226,10 @@ async function seed() {
       '  Email: alejandra.bosca@luigibosca.com.ar | Password: luigibosca123',
     );
     console.log('  Nombre: Alejandra Bosca - Administradora de Luigi Bosca');
+    console.log('\n=== USUARIO VALIDADO ===');
+    console.log('USUARIO VALIDADO:');
+    console.log('  Email: user@app.com | Password: user123');
+    console.log('  Nombre: User App - Usuario validado');
     console.log('\n=== USUARIOS FINALES (CLIENTES) ===');
     console.log('USUARIO FINAL 1:');
     console.log('  Email: ana.garcia@email.com | Password: cliente123');

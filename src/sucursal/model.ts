@@ -1,9 +1,11 @@
 import { Bodega } from '@/bodega/model';
+import { Evento } from '@/evento/model';
 import {
   BelongsTo,
   Column,
   DataType,
   ForeignKey,
+  HasMany,
   Model,
   Table,
 } from 'sequelize-typescript';
@@ -69,4 +71,7 @@ export class Sucursal extends Model<
 
   @BelongsTo(() => Bodega)
   bodega?: Bodega;
+
+  @HasMany(() => Evento)
+  eventos?: Evento[];
 }
