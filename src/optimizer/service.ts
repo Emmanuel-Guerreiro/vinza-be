@@ -198,7 +198,7 @@ export class OptimizerService {
     originalRecorrido: Recorrido,
     optimizationResponse: OptimizationResponse,
   ) {
-    const instances = await InstanciaEvento.findAll({
+    const allInstances = await InstanciaEvento.findAll({
       where: {
         id: {
           [Op.in]: optimizationResponse.chosen_occurrences.map((id) =>
@@ -218,7 +218,19 @@ export class OptimizerService {
           ],
         },
       ],
+      order: [['fecha', 'ASC']],
     });
+
+    const seenEventIds = new Set<number>();
+    const instances = allInstances.filter((instance) => {
+      const eventoId = instance.eventoId;
+      if (seenEventIds.has(eventoId)) {
+        return false;
+      }
+      seenEventIds.add(eventoId);
+      return true;
+    });
+
     return {
       originalInstances: originalRecorrido.reservas.map(
         (reserva) => reserva.instanciaEvento.id,
