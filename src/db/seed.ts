@@ -254,26 +254,31 @@ async function seed() {
       nombre: 'zuccardi',
       descripcion: 'Bodega Zuccardi',
       telefono: '1234567890',
+      validada: new Date(),
     });
 
     // Create additional bodegas
     const [bodegaCatena, bodegaTrapiche, bodegaLuigiBosca] = await Promise.all([
       Bodega.create({
-        nombre: 'catena-zapata',
-        descripcion: 'Bodega Catena Zapata',
+        nombre: 'Catena Zapata',
+        descripcion:
+          'Bodega familiar de renombre internacional, reconocida por sus vinos de alta gama y su compromiso con la excelencia enológica en Mendoza.',
         telefono: '1234567890',
         validada: new Date(),
       }),
       Bodega.create({
-        nombre: 'trapiche',
-        descripcion: 'Bodega Trapiche',
+        nombre: 'Trapiche',
+        descripcion:
+          'Una de las bodegas más emblemáticas de Argentina, con más de un siglo de tradición vitivinícola y vinos que representan la esencia mendocina.',
         telefono: '1234567890',
         validada: new Date(),
       }),
       Bodega.create({
-        nombre: 'luigi-bosca',
-        descripcion: 'Bodega Luigi Bosca',
+        nombre: 'Luigi Bosca',
+        descripcion:
+          'Bodega de origen italiano que combina tradición europea con terroir argentino, produciendo vinos premium de gran elegancia y carácter.',
         telefono: '1234567890',
+        validada: new Date(),
       }),
     ]);
 
@@ -284,7 +289,7 @@ async function seed() {
         es_principal: true,
         direccion: 'Ruta 89, Km 9.5, Valle de Uco, Mendoza',
         aclaraciones:
-          'Bodega principal con viñedos de alta montaña y centro de visitantes',
+          'Entrada: pasando el cartel indicador del km 9.5, doblar a la derecha y continuar 200 metros por camino de tierra.',
         bodegaId: zuccardi.id,
         latitude: -32.9668703,
         longitude: -68.5661086,
@@ -294,7 +299,7 @@ async function seed() {
         es_principal: false,
         direccion: 'Ruta 60, Km 22, Maipú, Mendoza',
         aclaraciones:
-          'Segunda bodega especializada en vinos tradicionales mendocinos',
+          'Entrada: después del semáforo del km 22, tomar el primer acceso a la izquierda y seguir 150 metros hasta el portón principal.',
         bodegaId: zuccardi.id,
         latitude: -33.7653509,
         longitude: -69.1378212,
@@ -308,16 +313,16 @@ async function seed() {
         es_principal: true,
         direccion: 'Ruta Provincial 15, Km 29, Agrelo, Luján de Cuyo, Mendoza',
         aclaraciones:
-          'Bodega histórica con arquitectura única y viñedos de alta calidad',
+          'Doblar a la izquierda por el camino señalizado, aproximadamente 300 metros hasta la bodega.',
         bodegaId: bodegaCatena.id,
         latitude: -33.1632792,
         longitude: -68.9125061,
       }),
       sucursalService.create({
-        nombre: 'Catena Zapata Buenos Aires',
+        nombre: 'Catena Zapata Showroom',
         es_principal: false,
-        direccion: 'Av. del Libertador 3800, Palermo, Buenos Aires',
-        aclaraciones: 'Showroom y centro de degustación en la capital federal',
+        direccion: 'Av. España 206',
+        aclaraciones: 'Entrada por calle España.',
         bodegaId: bodegaCatena.id,
         latitude: -32.9328185,
         longitude: -68.8483713,
@@ -325,39 +330,18 @@ async function seed() {
     ]);
 
     // Create sucursales for Trapiche
-    const [sucursalTrapiche1, sucursalTrapiche2, sucursalTrapiche3] =
-      await Promise.all([
-        sucursalService.create({
-          nombre: 'Trapiche Maipú',
-          es_principal: true,
-          direccion: 'Ruta Nacional 7, Km 1038, Maipú, Mendoza',
-          aclaraciones:
-            'Bodega histórica con más de 140 años de tradición vitivinícola',
-          bodegaId: bodegaTrapiche.id,
-          latitude: -32.972088345986265,
-          longitude: -68.74613558021821,
-        }),
-        sucursalService.create({
-          nombre: 'Trapiche Cafayate',
-          es_principal: false,
-          direccion: 'Ruta Nacional 40, Cafayate, Salta',
-          aclaraciones:
-            'Viñedos de altura para vinos premium de la región norte',
-          bodegaId: bodegaTrapiche.id,
-          latitude: -33.05177726191364,
-          longitude: -68.86987275109807,
-        }),
-        sucursalService.create({
-          nombre: 'Trapiche Patagonia',
-          es_principal: false,
-          direccion: 'Ruta 231, San Patricio del Chañar, Neuquén',
-          aclaraciones:
-            'Bodega patagónica especializada en vinos frescos y minerales',
-          bodegaId: bodegaTrapiche.id,
-          latitude: -33.03357323358593,
-          longitude: -68.9212073890647,
-        }),
-      ]);
+    const [sucursalTrapiche1] = await Promise.all([
+      sucursalService.create({
+        nombre: 'Trapiche Maipú',
+        es_principal: true,
+        direccion: 'Ruta Nacional 7, Km 1038, Maipú, Mendoza',
+        aclaraciones:
+          'En la ruta 7, tomar el acceso a la derecha, portón de hierro visible desde la ruta.',
+        bodegaId: bodegaTrapiche.id,
+        latitude: -32.972088345986265,
+        longitude: -68.74613558021821,
+      }),
+    ]);
 
     // Create sucursales for Luigi Bosca
     const [sucursalLuigiBosca1] = await Promise.all([
@@ -366,7 +350,7 @@ async function seed() {
         es_principal: true,
         direccion: 'Ruta Provincial 82, Km 8, Luján de Cuyo, Mendoza',
         aclaraciones:
-          'Bodega familiar con más de 120 años de historia y tradición italiana',
+          'Entrada: en el km 8, doblar a la derecha después del cartel indicador, seguir 80 metros por calle asfaltada hasta el portón principal.',
         bodegaId: bodegaLuigiBosca.id,
         latitude: -33.01942098518029,
         longitude: -68.87230483106366,
@@ -455,14 +439,15 @@ async function seed() {
 
     // Create validated user with email user@app.com
     const userAppPassword = await hashPassword('user123');
-    await User.create({
-      nombre: 'User',
-      apellido: 'App',
-      email: 'user@app.com',
+    const userApp = await User.create({
+      nombre: 'Pedro',
+      apellido: 'Perez',
+      email: 'pedro.perez@email.com',
       contrasena: userAppPassword,
       validado: new Date(),
+      fecha_nacimiento: new Date('1990-01-01'),
     });
-
+    await userApp.$set('roles', [adminRole.id]);
     // ========================================
     // 5.1 CREAR USUARIOS PARA CADA BODEGA
     // ========================================
@@ -612,8 +597,9 @@ async function seed() {
 
     // Evento 4: Evento único con fecha específica
     const evento4 = await eventoService.create({
-      nombre: 'Conferencia Única',
-      descripcion: 'Conferencia especial sobre innovación.',
+      nombre: 'Conferencia sobre innovación',
+      descripcion:
+        'Conferencia especial sobre innovación en la industria del vino.',
       cupo: 100,
       sucursalId: mainSucursal.id,
       estadoId: activoEstadoEvento.id,
@@ -702,10 +688,10 @@ async function seed() {
 
     // Evento 8: Festival de vinos del norte en Trapiche Norte
     const evento8 = await eventoService.create({
-      nombre: 'Festival de Vinos del Norte',
+      nombre: 'Festival de Vinos del valle',
       descripcion: 'Celebración de vinos de altura de Salta.',
       cupo: 60,
-      sucursalId: sucursalTrapiche2.id,
+      sucursalId: sucursalTrapiche1.id,
       estadoId: activoEstadoEvento.id,
       categoriaId: categoriaEntretenimiento.id,
       precio: 3500,
@@ -726,7 +712,7 @@ async function seed() {
       nombre: 'Enología para Principiantes',
       descripcion: 'Introducción al mundo del vino y la enología',
       cupo: 35,
-      sucursalId: sucursalTrapiche3.id,
+      sucursalId: sucursalTrapiche1.id,
       estadoId: suspendidoEstadoEvento.id,
       categoriaId: categoriaEducacion.id,
       precio: 28000,
@@ -1102,8 +1088,8 @@ async function seed() {
     const usuariosAdicionales = [
       {
         nombre: 'Pedro',
-        apellido: 'Sánchez',
-        email: 'pedro.sanchez@email.com',
+        apellido: 'Gomez',
+        email: 'pedro.gomez@email.com',
       },
       {
         nombre: 'Sofia',
