@@ -3,6 +3,7 @@ import { sequelize } from '@/db';
 import { errors } from '@/error';
 import { mailer } from '@/mailer/service';
 import { MailType } from '@/mailer/types';
+import { notificacionService } from '@/notificacion/service';
 import { permissionsService, rolesService } from '@/rbac/service';
 import {
   CodigoRecuperarContra,
@@ -81,7 +82,10 @@ export class AuthService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { contrasena: _, ...userWithoutPassword } = user.dataValues;
 
-    return { ...userWithoutPassword, token };
+    const calificacion_pendiente =
+      await notificacionService.getCalificacionesPendientes(user.id);
+
+    return { ...userWithoutPassword, token, calificacion_pendiente };
   }
 
   private async createDefaultRole() {
@@ -167,7 +171,11 @@ export class AuthService {
     const token = this.generateAuthToken(user.dataValues);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { contrasena, ...userWithoutPassword } = user.dataValues;
-    return { ...userWithoutPassword, token };
+
+    const calificacion_pendiente =
+      await notificacionService.getCalificacionesPendientes(user.id);
+
+    return { ...userWithoutPassword, token, calificacion_pendiente };
   }
 
   public async requestValidationCode(

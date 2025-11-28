@@ -1,4 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
+import { descartarNotificacionSchema } from '@/notificacion/schema';
+import { notificacionService } from '@/notificacion/service';
 import {
   loginSchema,
   registerSchema,
@@ -19,6 +21,7 @@ export class AuthController {
     this.validateAccount = this.validateAccount.bind(this);
     this.requestValidationCode = this.requestValidationCode.bind(this);
     this.changePassword = this.changePassword.bind(this);
+    this.descartarNotificacion = this.descartarNotificacion.bind(this);
   }
 
   public register(req: Request, res: Response, next: NextFunction) {
@@ -83,6 +86,22 @@ export class AuthController {
     this.authService
       .changePassword(userId, dto)
       .then((result) => res.json(result))
+      .catch((err) => next(err));
+  }
+
+  public descartarNotificacion(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    descartarNotificacionSchema
+      .parseAsync({ eventoId: req.params.eventoId })
+      .then((dto) =>
+        notificacionService
+          .descartarNotificacion(req.user!, dto.eventoId)
+          .then(() => res.status(204).send())
+          .catch((err) => next(err)),
+      )
       .catch((err) => next(err));
   }
 }

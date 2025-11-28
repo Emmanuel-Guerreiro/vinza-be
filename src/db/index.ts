@@ -29,6 +29,7 @@ import { Reserva } from '@/reserva/model';
 
 import { EstadoRecorrido, HEstadoRecorrido } from '@/estado-recorrido/model';
 import { Faq, FaqRecipient } from '@/faqs/model';
+import { NotificacionDescartada } from '@/notificacion/model';
 
 export const sequelize = new Sequelize({
   dialect: 'postgres',
@@ -73,6 +74,7 @@ export const sequelize = new Sequelize({
     HEstadoRecorrido,
     FaqRecipient,
     Faq,
+    NotificacionDescartada,
   ], // or [Player, Team],
 });
 

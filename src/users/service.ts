@@ -3,6 +3,7 @@ import { Bodega } from '@/bodega/model';
 import { sequelize } from '@/db';
 import { errors } from '@/error';
 import logger from '@/logger';
+import { notificacionService } from '@/notificacion/service';
 import { Permiso, Rol } from '@/rbac/model';
 import { Op, Transaction } from 'sequelize';
 import { User } from './model';
@@ -97,7 +98,16 @@ class UsersService {
       logger.debug(`User not found with id ${id}`);
       throw errors.app.user.not_found;
     }
-    return user;
+
+    const calificacion_pendiente =
+      await notificacionService.getCalificacionesPendientes(id);
+
+    return {
+      ...user.toJSON(),
+      calificacion_pendiente,
+    } as typeof user & {
+      calificacion_pendiente: typeof calificacion_pendiente;
+    };
   }
 
   public async findWithBodega(id: number, transaction?: Transaction) {

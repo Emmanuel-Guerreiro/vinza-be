@@ -400,5 +400,39 @@ router.post('/request-validation', controller.requestValidationCode);
  */
 router.post('/change-password', authMiddleware, controller.changePassword);
 
+/**
+ * @openapi
+ * /auth/notification/{eventoId}:
+ *   delete:
+ *     summary: Descartar notificación de calificación pendiente
+ *     description: Marca que el usuario descartó la notificación de calificación para un evento específico. La notificación no volverá a aparecer en futuros logins.
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: eventoId
+ *         in: path
+ *         required: true
+ *         description: ID del evento para el cual se descarta la notificación
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       204:
+ *         description: Notificación descartada exitosamente
+ *       400:
+ *         description: Error de validación - ID de evento inválido
+ *       401:
+ *         description: No autorizado - Token inválido o faltante
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.delete(
+  '/notification/:eventoId',
+  authMiddleware,
+  controller.descartarNotificacion,
+);
+
 logger.debug('Auth router initialized');
 export default router;
